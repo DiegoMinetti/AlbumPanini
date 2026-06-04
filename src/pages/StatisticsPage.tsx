@@ -31,8 +31,14 @@ export function StatisticsPage() {
   if (!active) return <NoActiveCollection />;
   if (loading) return <Spinner label={t('common.loading')} />;
 
-  const { overview, teams, categories, mostRepeated, completedTeams, nearCompleteTeams } =
-    statistics;
+  const {
+    overview,
+    teams,
+    categories,
+    mostRepeated,
+    completedTeams,
+    nearCompleteTeams,
+  } = statistics;
 
   const pieData = [
     { name: t('common.owned'), value: overview.owned },

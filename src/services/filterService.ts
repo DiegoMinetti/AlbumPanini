@@ -1,11 +1,7 @@
 import type { StoredSticker } from '@/types/collection';
 
 /** The high-level ownership filters offered in the sticker browser. */
-export type OwnershipFilter =
-  | 'all'
-  | 'missing'
-  | 'owned'
-  | 'duplicates';
+export type OwnershipFilter = 'all' | 'missing' | 'owned' | 'duplicates';
 
 export interface StickerFilter {
   ownership: OwnershipFilter;

@@ -1,9 +1,5 @@
 import { z } from 'zod';
-import {
-  collectionMetaSchema,
-  stickerSchema,
-  teamSchema,
-} from './collection';
+import { collectionMetaSchema, stickerSchema, teamSchema } from './collection';
 import { inventoryItemSchema } from './inventory';
 import { settingsSchema } from './settings';
 

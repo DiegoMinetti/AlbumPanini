@@ -87,8 +87,12 @@ export function DashboardPage() {
                 className="flex items-center justify-between text-sm"
               >
                 <span className="font-medium">
-                  {t(`toast.${entry.kind === 'add' ? 'added' : entry.kind === 'remove' ? 'removed' : 'saved'}`)}
-                  {entry.delta ? ` (${entry.delta > 0 ? '+' : ''}${entry.delta})` : ''}
+                  {t(
+                    `toast.${entry.kind === 'add' ? 'added' : entry.kind === 'remove' ? 'removed' : 'saved'}`
+                  )}
+                  {entry.delta
+                    ? ` (${entry.delta > 0 ? '+' : ''}${entry.delta})`
+                    : ''}
                 </span>
                 <span className="text-xs text-slate-400">
                   {formatRelativeTime(entry.timestamp, language)}

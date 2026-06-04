@@ -50,7 +50,9 @@ export interface OcrResult {
 /** Recognize text from an image source and extract candidate sticker codes. */
 export async function recognizeCodes(image: OcrImage): Promise<OcrResult> {
   const worker = await getWorker();
-  const { data } = await worker.recognize(image as Parameters<Worker['recognize']>[0]);
+  const { data } = await worker.recognize(
+    image as Parameters<Worker['recognize']>[0]
+  );
   const text = data.text ?? '';
   const codes = extractCodes(text);
   return {

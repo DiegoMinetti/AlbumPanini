@@ -1,0 +1,3752 @@
+{
+  "id": "worldcup-2026",
+  "schema": 1,
+  "name": "FIFA World Cup 2026",
+  "description": "Official-style sample album for the 2026 tournament.",
+  "version": "1.0.0",
+  "language": "en",
+  "teams": [
+    {
+      "id": "ARG",
+      "name": "Argentina",
+      "flag": "🇦🇷",
+      "primaryColor": "#75AADB",
+      "secondaryColor": "#FFFFFF",
+      "order": 0
+    },
+    {
+      "id": "BRA",
+      "name": "Brazil",
+      "flag": "🇧🇷",
+      "primaryColor": "#009C3B",
+      "secondaryColor": "#FFDF00",
+      "order": 1
+    },
+    {
+      "id": "FRA",
+      "name": "France",
+      "flag": "🇫🇷",
+      "primaryColor": "#0055A4",
+      "secondaryColor": "#EF4135",
+      "order": 2
+    },
+    {
+      "id": "ENG",
+      "name": "England",
+      "flag": "🏴",
+      "primaryColor": "#FFFFFF",
+      "secondaryColor": "#CF081F",
+      "order": 3
+    },
+    {
+      "id": "ESP",
+      "name": "Spain",
+      "flag": "🇪🇸",
+      "primaryColor": "#AA151B",
+      "secondaryColor": "#F1BF00",
+      "order": 4
+    },
+    {
+      "id": "GER",
+      "name": "Germany",
+      "flag": "🇩🇪",
+      "primaryColor": "#000000",
+      "secondaryColor": "#DD0000",
+      "order": 5
+    },
+    {
+      "id": "POR",
+      "name": "Portugal",
+      "flag": "🇵🇹",
+      "primaryColor": "#006600",
+      "secondaryColor": "#FF0000",
+      "order": 6
+    },
+    {
+      "id": "NED",
+      "name": "Netherlands",
+      "flag": "🇳🇱",
+      "primaryColor": "#AE1C28",
+      "secondaryColor": "#21468B",
+      "order": 7
+    },
+    {
+      "id": "BEL",
+      "name": "Belgium",
+      "flag": "🇧🇪",
+      "primaryColor": "#000000",
+      "secondaryColor": "#FDDA24",
+      "order": 8
+    },
+    {
+      "id": "ITA",
+      "name": "Italy",
+      "flag": "🇮🇹",
+      "primaryColor": "#008C45",
+      "secondaryColor": "#CD212A",
+      "order": 9
+    },
+    {
+      "id": "CRO",
+      "name": "Croatia",
+      "flag": "🇭🇷",
+      "primaryColor": "#FF0000",
+      "secondaryColor": "#FFFFFF",
+      "order": 10
+    },
+    {
+      "id": "URU",
+      "name": "Uruguay",
+      "flag": "🇺🇾",
+      "primaryColor": "#0038A8",
+      "secondaryColor": "#FCD116",
+      "order": 11
+    },
+    {
+      "id": "MEX",
+      "name": "Mexico",
+      "flag": "🇲🇽",
+      "primaryColor": "#006847",
+      "secondaryColor": "#CE1126",
+      "order": 12
+    },
+    {
+      "id": "USA",
+      "name": "United States",
+      "flag": "🇺🇸",
+      "primaryColor": "#0A3161",
+      "secondaryColor": "#B31942",
+      "order": 13
+    },
+    {
+      "id": "CAN",
+      "name": "Canada",
+      "flag": "🇨🇦",
+      "primaryColor": "#FF0000",
+      "secondaryColor": "#FFFFFF",
+      "order": 14
+    },
+    {
+      "id": "JPN",
+      "name": "Japan",
+      "flag": "🇯🇵",
+      "primaryColor": "#BC002D",
+      "secondaryColor": "#FFFFFF",
+      "order": 15
+    },
+    {
+      "id": "KOR",
+      "name": "South Korea",
+      "flag": "🇰🇷",
+      "primaryColor": "#003478",
+      "secondaryColor": "#C60C30",
+      "order": 16
+    },
+    {
+      "id": "MAR",
+      "name": "Morocco",
+      "flag": "🇲🇦",
+      "primaryColor": "#C1272D",
+      "secondaryColor": "#006233",
+      "order": 17
+    },
+    {
+      "id": "SEN",
+      "name": "Senegal",
+      "flag": "🇸🇳",
+      "primaryColor": "#00853F",
+      "secondaryColor": "#FDEF42",
+      "order": 18
+    },
+    {
+      "id": "COL",
+      "name": "Colombia",
+      "flag": "🇨🇴",
+      "primaryColor": "#FCD116",
+      "secondaryColor": "#003893",
+      "order": 19
+    },
+    {
+      "id": "JOR",
+      "name": "Jordan",
+      "flag": "🇯🇴",
+      "primaryColor": "#007A3D",
+      "secondaryColor": "#CE1126",
+      "order": 20
+    },
+    {
+      "id": "AUS",
+      "name": "Australia",
+      "flag": "🇦🇺",
+      "primaryColor": "#00843D",
+      "secondaryColor": "#FFCD00",
+      "order": 21
+    }
+  ],
+  "stickers": [
+    {
+      "id": "ARG-BADGE",
+      "code": "ARG 0",
+      "name": "Argentina Badge",
+      "teamId": "ARG",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "ARG-1",
+      "code": "ARG 1",
+      "name": "Argentina Player 1",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "ARG-2",
+      "code": "ARG 2",
+      "name": "Argentina Player 2",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "ARG-3",
+      "code": "ARG 3",
+      "name": "Argentina Player 3",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-4",
+      "code": "ARG 4",
+      "name": "Argentina Player 4",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-5",
+      "code": "ARG 5",
+      "name": "Argentina Player 5",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-6",
+      "code": "ARG 6",
+      "name": "Argentina Player 6",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-7",
+      "code": "ARG 7",
+      "name": "Argentina Player 7",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-8",
+      "code": "ARG 8",
+      "name": "Argentina Player 8",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-9",
+      "code": "ARG 9",
+      "name": "Argentina Player 9",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-10",
+      "code": "ARG 10",
+      "name": "Argentina Player 10",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-11",
+      "code": "ARG 11",
+      "name": "Argentina Player 11",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-12",
+      "code": "ARG 12",
+      "name": "Argentina Player 12",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-13",
+      "code": "ARG 13",
+      "name": "Argentina Player 13",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-14",
+      "code": "ARG 14",
+      "name": "Argentina Player 14",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-15",
+      "code": "ARG 15",
+      "name": "Argentina Player 15",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-16",
+      "code": "ARG 16",
+      "name": "Argentina Player 16",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-17",
+      "code": "ARG 17",
+      "name": "Argentina Player 17",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-BADGE",
+      "code": "BRA 0",
+      "name": "Brazil Badge",
+      "teamId": "BRA",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "BRA-1",
+      "code": "BRA 1",
+      "name": "Brazil Player 1",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "BRA-2",
+      "code": "BRA 2",
+      "name": "Brazil Player 2",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "BRA-3",
+      "code": "BRA 3",
+      "name": "Brazil Player 3",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-4",
+      "code": "BRA 4",
+      "name": "Brazil Player 4",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-5",
+      "code": "BRA 5",
+      "name": "Brazil Player 5",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-6",
+      "code": "BRA 6",
+      "name": "Brazil Player 6",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-7",
+      "code": "BRA 7",
+      "name": "Brazil Player 7",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-8",
+      "code": "BRA 8",
+      "name": "Brazil Player 8",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-9",
+      "code": "BRA 9",
+      "name": "Brazil Player 9",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-10",
+      "code": "BRA 10",
+      "name": "Brazil Player 10",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-11",
+      "code": "BRA 11",
+      "name": "Brazil Player 11",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-12",
+      "code": "BRA 12",
+      "name": "Brazil Player 12",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-13",
+      "code": "BRA 13",
+      "name": "Brazil Player 13",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-14",
+      "code": "BRA 14",
+      "name": "Brazil Player 14",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-15",
+      "code": "BRA 15",
+      "name": "Brazil Player 15",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-16",
+      "code": "BRA 16",
+      "name": "Brazil Player 16",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-17",
+      "code": "BRA 17",
+      "name": "Brazil Player 17",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-BADGE",
+      "code": "FRA 0",
+      "name": "France Badge",
+      "teamId": "FRA",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "FRA-1",
+      "code": "FRA 1",
+      "name": "France Player 1",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "FRA-2",
+      "code": "FRA 2",
+      "name": "France Player 2",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "FRA-3",
+      "code": "FRA 3",
+      "name": "France Player 3",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-4",
+      "code": "FRA 4",
+      "name": "France Player 4",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-5",
+      "code": "FRA 5",
+      "name": "France Player 5",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-6",
+      "code": "FRA 6",
+      "name": "France Player 6",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-7",
+      "code": "FRA 7",
+      "name": "France Player 7",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-8",
+      "code": "FRA 8",
+      "name": "France Player 8",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-9",
+      "code": "FRA 9",
+      "name": "France Player 9",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-10",
+      "code": "FRA 10",
+      "name": "France Player 10",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-11",
+      "code": "FRA 11",
+      "name": "France Player 11",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-12",
+      "code": "FRA 12",
+      "name": "France Player 12",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-13",
+      "code": "FRA 13",
+      "name": "France Player 13",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-14",
+      "code": "FRA 14",
+      "name": "France Player 14",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-15",
+      "code": "FRA 15",
+      "name": "France Player 15",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-16",
+      "code": "FRA 16",
+      "name": "France Player 16",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "FRA-17",
+      "code": "FRA 17",
+      "name": "France Player 17",
+      "teamId": "FRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-BADGE",
+      "code": "ENG 0",
+      "name": "England Badge",
+      "teamId": "ENG",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "ENG-1",
+      "code": "ENG 1",
+      "name": "England Player 1",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "ENG-2",
+      "code": "ENG 2",
+      "name": "England Player 2",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "ENG-3",
+      "code": "ENG 3",
+      "name": "England Player 3",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-4",
+      "code": "ENG 4",
+      "name": "England Player 4",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-5",
+      "code": "ENG 5",
+      "name": "England Player 5",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-6",
+      "code": "ENG 6",
+      "name": "England Player 6",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-7",
+      "code": "ENG 7",
+      "name": "England Player 7",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-8",
+      "code": "ENG 8",
+      "name": "England Player 8",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-9",
+      "code": "ENG 9",
+      "name": "England Player 9",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-10",
+      "code": "ENG 10",
+      "name": "England Player 10",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-11",
+      "code": "ENG 11",
+      "name": "England Player 11",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-12",
+      "code": "ENG 12",
+      "name": "England Player 12",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-13",
+      "code": "ENG 13",
+      "name": "England Player 13",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-14",
+      "code": "ENG 14",
+      "name": "England Player 14",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-15",
+      "code": "ENG 15",
+      "name": "England Player 15",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-16",
+      "code": "ENG 16",
+      "name": "England Player 16",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ENG-17",
+      "code": "ENG 17",
+      "name": "England Player 17",
+      "teamId": "ENG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-BADGE",
+      "code": "ESP 0",
+      "name": "Spain Badge",
+      "teamId": "ESP",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "ESP-1",
+      "code": "ESP 1",
+      "name": "Spain Player 1",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "ESP-2",
+      "code": "ESP 2",
+      "name": "Spain Player 2",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "ESP-3",
+      "code": "ESP 3",
+      "name": "Spain Player 3",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-4",
+      "code": "ESP 4",
+      "name": "Spain Player 4",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-5",
+      "code": "ESP 5",
+      "name": "Spain Player 5",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-6",
+      "code": "ESP 6",
+      "name": "Spain Player 6",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-7",
+      "code": "ESP 7",
+      "name": "Spain Player 7",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-8",
+      "code": "ESP 8",
+      "name": "Spain Player 8",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-9",
+      "code": "ESP 9",
+      "name": "Spain Player 9",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-10",
+      "code": "ESP 10",
+      "name": "Spain Player 10",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-11",
+      "code": "ESP 11",
+      "name": "Spain Player 11",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-12",
+      "code": "ESP 12",
+      "name": "Spain Player 12",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-13",
+      "code": "ESP 13",
+      "name": "Spain Player 13",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-14",
+      "code": "ESP 14",
+      "name": "Spain Player 14",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-15",
+      "code": "ESP 15",
+      "name": "Spain Player 15",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-16",
+      "code": "ESP 16",
+      "name": "Spain Player 16",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ESP-17",
+      "code": "ESP 17",
+      "name": "Spain Player 17",
+      "teamId": "ESP",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-BADGE",
+      "code": "GER 0",
+      "name": "Germany Badge",
+      "teamId": "GER",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "GER-1",
+      "code": "GER 1",
+      "name": "Germany Player 1",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "GER-2",
+      "code": "GER 2",
+      "name": "Germany Player 2",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "GER-3",
+      "code": "GER 3",
+      "name": "Germany Player 3",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-4",
+      "code": "GER 4",
+      "name": "Germany Player 4",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-5",
+      "code": "GER 5",
+      "name": "Germany Player 5",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-6",
+      "code": "GER 6",
+      "name": "Germany Player 6",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-7",
+      "code": "GER 7",
+      "name": "Germany Player 7",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-8",
+      "code": "GER 8",
+      "name": "Germany Player 8",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-9",
+      "code": "GER 9",
+      "name": "Germany Player 9",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-10",
+      "code": "GER 10",
+      "name": "Germany Player 10",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-11",
+      "code": "GER 11",
+      "name": "Germany Player 11",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-12",
+      "code": "GER 12",
+      "name": "Germany Player 12",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-13",
+      "code": "GER 13",
+      "name": "Germany Player 13",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-14",
+      "code": "GER 14",
+      "name": "Germany Player 14",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-15",
+      "code": "GER 15",
+      "name": "Germany Player 15",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-16",
+      "code": "GER 16",
+      "name": "Germany Player 16",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "GER-17",
+      "code": "GER 17",
+      "name": "Germany Player 17",
+      "teamId": "GER",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-BADGE",
+      "code": "POR 0",
+      "name": "Portugal Badge",
+      "teamId": "POR",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "POR-1",
+      "code": "POR 1",
+      "name": "Portugal Player 1",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "POR-2",
+      "code": "POR 2",
+      "name": "Portugal Player 2",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "POR-3",
+      "code": "POR 3",
+      "name": "Portugal Player 3",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-4",
+      "code": "POR 4",
+      "name": "Portugal Player 4",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-5",
+      "code": "POR 5",
+      "name": "Portugal Player 5",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-6",
+      "code": "POR 6",
+      "name": "Portugal Player 6",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-7",
+      "code": "POR 7",
+      "name": "Portugal Player 7",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-8",
+      "code": "POR 8",
+      "name": "Portugal Player 8",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-9",
+      "code": "POR 9",
+      "name": "Portugal Player 9",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-10",
+      "code": "POR 10",
+      "name": "Portugal Player 10",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-11",
+      "code": "POR 11",
+      "name": "Portugal Player 11",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-12",
+      "code": "POR 12",
+      "name": "Portugal Player 12",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-13",
+      "code": "POR 13",
+      "name": "Portugal Player 13",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-14",
+      "code": "POR 14",
+      "name": "Portugal Player 14",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-15",
+      "code": "POR 15",
+      "name": "Portugal Player 15",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-16",
+      "code": "POR 16",
+      "name": "Portugal Player 16",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "POR-17",
+      "code": "POR 17",
+      "name": "Portugal Player 17",
+      "teamId": "POR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-BADGE",
+      "code": "NED 0",
+      "name": "Netherlands Badge",
+      "teamId": "NED",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "NED-1",
+      "code": "NED 1",
+      "name": "Netherlands Player 1",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "NED-2",
+      "code": "NED 2",
+      "name": "Netherlands Player 2",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "NED-3",
+      "code": "NED 3",
+      "name": "Netherlands Player 3",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-4",
+      "code": "NED 4",
+      "name": "Netherlands Player 4",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-5",
+      "code": "NED 5",
+      "name": "Netherlands Player 5",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-6",
+      "code": "NED 6",
+      "name": "Netherlands Player 6",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-7",
+      "code": "NED 7",
+      "name": "Netherlands Player 7",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-8",
+      "code": "NED 8",
+      "name": "Netherlands Player 8",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-9",
+      "code": "NED 9",
+      "name": "Netherlands Player 9",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-10",
+      "code": "NED 10",
+      "name": "Netherlands Player 10",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-11",
+      "code": "NED 11",
+      "name": "Netherlands Player 11",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-12",
+      "code": "NED 12",
+      "name": "Netherlands Player 12",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-13",
+      "code": "NED 13",
+      "name": "Netherlands Player 13",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-14",
+      "code": "NED 14",
+      "name": "Netherlands Player 14",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-15",
+      "code": "NED 15",
+      "name": "Netherlands Player 15",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-16",
+      "code": "NED 16",
+      "name": "Netherlands Player 16",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "NED-17",
+      "code": "NED 17",
+      "name": "Netherlands Player 17",
+      "teamId": "NED",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-BADGE",
+      "code": "BEL 0",
+      "name": "Belgium Badge",
+      "teamId": "BEL",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "BEL-1",
+      "code": "BEL 1",
+      "name": "Belgium Player 1",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "BEL-2",
+      "code": "BEL 2",
+      "name": "Belgium Player 2",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "BEL-3",
+      "code": "BEL 3",
+      "name": "Belgium Player 3",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-4",
+      "code": "BEL 4",
+      "name": "Belgium Player 4",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-5",
+      "code": "BEL 5",
+      "name": "Belgium Player 5",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-6",
+      "code": "BEL 6",
+      "name": "Belgium Player 6",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-7",
+      "code": "BEL 7",
+      "name": "Belgium Player 7",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-8",
+      "code": "BEL 8",
+      "name": "Belgium Player 8",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-9",
+      "code": "BEL 9",
+      "name": "Belgium Player 9",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-10",
+      "code": "BEL 10",
+      "name": "Belgium Player 10",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-11",
+      "code": "BEL 11",
+      "name": "Belgium Player 11",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-12",
+      "code": "BEL 12",
+      "name": "Belgium Player 12",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-13",
+      "code": "BEL 13",
+      "name": "Belgium Player 13",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-14",
+      "code": "BEL 14",
+      "name": "Belgium Player 14",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-15",
+      "code": "BEL 15",
+      "name": "Belgium Player 15",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-16",
+      "code": "BEL 16",
+      "name": "Belgium Player 16",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BEL-17",
+      "code": "BEL 17",
+      "name": "Belgium Player 17",
+      "teamId": "BEL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-BADGE",
+      "code": "ITA 0",
+      "name": "Italy Badge",
+      "teamId": "ITA",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "ITA-1",
+      "code": "ITA 1",
+      "name": "Italy Player 1",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "ITA-2",
+      "code": "ITA 2",
+      "name": "Italy Player 2",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "ITA-3",
+      "code": "ITA 3",
+      "name": "Italy Player 3",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-4",
+      "code": "ITA 4",
+      "name": "Italy Player 4",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-5",
+      "code": "ITA 5",
+      "name": "Italy Player 5",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-6",
+      "code": "ITA 6",
+      "name": "Italy Player 6",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-7",
+      "code": "ITA 7",
+      "name": "Italy Player 7",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-8",
+      "code": "ITA 8",
+      "name": "Italy Player 8",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-9",
+      "code": "ITA 9",
+      "name": "Italy Player 9",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-10",
+      "code": "ITA 10",
+      "name": "Italy Player 10",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-11",
+      "code": "ITA 11",
+      "name": "Italy Player 11",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-12",
+      "code": "ITA 12",
+      "name": "Italy Player 12",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-13",
+      "code": "ITA 13",
+      "name": "Italy Player 13",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-14",
+      "code": "ITA 14",
+      "name": "Italy Player 14",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-15",
+      "code": "ITA 15",
+      "name": "Italy Player 15",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-16",
+      "code": "ITA 16",
+      "name": "Italy Player 16",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ITA-17",
+      "code": "ITA 17",
+      "name": "Italy Player 17",
+      "teamId": "ITA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-BADGE",
+      "code": "CRO 0",
+      "name": "Croatia Badge",
+      "teamId": "CRO",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "CRO-1",
+      "code": "CRO 1",
+      "name": "Croatia Player 1",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "CRO-2",
+      "code": "CRO 2",
+      "name": "Croatia Player 2",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "CRO-3",
+      "code": "CRO 3",
+      "name": "Croatia Player 3",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-4",
+      "code": "CRO 4",
+      "name": "Croatia Player 4",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-5",
+      "code": "CRO 5",
+      "name": "Croatia Player 5",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-6",
+      "code": "CRO 6",
+      "name": "Croatia Player 6",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-7",
+      "code": "CRO 7",
+      "name": "Croatia Player 7",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-8",
+      "code": "CRO 8",
+      "name": "Croatia Player 8",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-9",
+      "code": "CRO 9",
+      "name": "Croatia Player 9",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-10",
+      "code": "CRO 10",
+      "name": "Croatia Player 10",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-11",
+      "code": "CRO 11",
+      "name": "Croatia Player 11",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-12",
+      "code": "CRO 12",
+      "name": "Croatia Player 12",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-13",
+      "code": "CRO 13",
+      "name": "Croatia Player 13",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-14",
+      "code": "CRO 14",
+      "name": "Croatia Player 14",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-15",
+      "code": "CRO 15",
+      "name": "Croatia Player 15",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-16",
+      "code": "CRO 16",
+      "name": "Croatia Player 16",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CRO-17",
+      "code": "CRO 17",
+      "name": "Croatia Player 17",
+      "teamId": "CRO",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-BADGE",
+      "code": "URU 0",
+      "name": "Uruguay Badge",
+      "teamId": "URU",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "URU-1",
+      "code": "URU 1",
+      "name": "Uruguay Player 1",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "URU-2",
+      "code": "URU 2",
+      "name": "Uruguay Player 2",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "URU-3",
+      "code": "URU 3",
+      "name": "Uruguay Player 3",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-4",
+      "code": "URU 4",
+      "name": "Uruguay Player 4",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-5",
+      "code": "URU 5",
+      "name": "Uruguay Player 5",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-6",
+      "code": "URU 6",
+      "name": "Uruguay Player 6",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-7",
+      "code": "URU 7",
+      "name": "Uruguay Player 7",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-8",
+      "code": "URU 8",
+      "name": "Uruguay Player 8",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-9",
+      "code": "URU 9",
+      "name": "Uruguay Player 9",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-10",
+      "code": "URU 10",
+      "name": "Uruguay Player 10",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-11",
+      "code": "URU 11",
+      "name": "Uruguay Player 11",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-12",
+      "code": "URU 12",
+      "name": "Uruguay Player 12",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-13",
+      "code": "URU 13",
+      "name": "Uruguay Player 13",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-14",
+      "code": "URU 14",
+      "name": "Uruguay Player 14",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-15",
+      "code": "URU 15",
+      "name": "Uruguay Player 15",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-16",
+      "code": "URU 16",
+      "name": "Uruguay Player 16",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "URU-17",
+      "code": "URU 17",
+      "name": "Uruguay Player 17",
+      "teamId": "URU",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-BADGE",
+      "code": "MEX 0",
+      "name": "Mexico Badge",
+      "teamId": "MEX",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "MEX-1",
+      "code": "MEX 1",
+      "name": "Mexico Player 1",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "MEX-2",
+      "code": "MEX 2",
+      "name": "Mexico Player 2",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "MEX-3",
+      "code": "MEX 3",
+      "name": "Mexico Player 3",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-4",
+      "code": "MEX 4",
+      "name": "Mexico Player 4",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-5",
+      "code": "MEX 5",
+      "name": "Mexico Player 5",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-6",
+      "code": "MEX 6",
+      "name": "Mexico Player 6",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-7",
+      "code": "MEX 7",
+      "name": "Mexico Player 7",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-8",
+      "code": "MEX 8",
+      "name": "Mexico Player 8",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-9",
+      "code": "MEX 9",
+      "name": "Mexico Player 9",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-10",
+      "code": "MEX 10",
+      "name": "Mexico Player 10",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-11",
+      "code": "MEX 11",
+      "name": "Mexico Player 11",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-12",
+      "code": "MEX 12",
+      "name": "Mexico Player 12",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-13",
+      "code": "MEX 13",
+      "name": "Mexico Player 13",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-14",
+      "code": "MEX 14",
+      "name": "Mexico Player 14",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-15",
+      "code": "MEX 15",
+      "name": "Mexico Player 15",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-16",
+      "code": "MEX 16",
+      "name": "Mexico Player 16",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MEX-17",
+      "code": "MEX 17",
+      "name": "Mexico Player 17",
+      "teamId": "MEX",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-BADGE",
+      "code": "USA 0",
+      "name": "United States Badge",
+      "teamId": "USA",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "USA-1",
+      "code": "USA 1",
+      "name": "United States Player 1",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "USA-2",
+      "code": "USA 2",
+      "name": "United States Player 2",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "USA-3",
+      "code": "USA 3",
+      "name": "United States Player 3",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-4",
+      "code": "USA 4",
+      "name": "United States Player 4",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-5",
+      "code": "USA 5",
+      "name": "United States Player 5",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-6",
+      "code": "USA 6",
+      "name": "United States Player 6",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-7",
+      "code": "USA 7",
+      "name": "United States Player 7",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-8",
+      "code": "USA 8",
+      "name": "United States Player 8",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-9",
+      "code": "USA 9",
+      "name": "United States Player 9",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-10",
+      "code": "USA 10",
+      "name": "United States Player 10",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-11",
+      "code": "USA 11",
+      "name": "United States Player 11",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-12",
+      "code": "USA 12",
+      "name": "United States Player 12",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-13",
+      "code": "USA 13",
+      "name": "United States Player 13",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-14",
+      "code": "USA 14",
+      "name": "United States Player 14",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-15",
+      "code": "USA 15",
+      "name": "United States Player 15",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-16",
+      "code": "USA 16",
+      "name": "United States Player 16",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "USA-17",
+      "code": "USA 17",
+      "name": "United States Player 17",
+      "teamId": "USA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-BADGE",
+      "code": "CAN 0",
+      "name": "Canada Badge",
+      "teamId": "CAN",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "CAN-1",
+      "code": "CAN 1",
+      "name": "Canada Player 1",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "CAN-2",
+      "code": "CAN 2",
+      "name": "Canada Player 2",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "CAN-3",
+      "code": "CAN 3",
+      "name": "Canada Player 3",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-4",
+      "code": "CAN 4",
+      "name": "Canada Player 4",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-5",
+      "code": "CAN 5",
+      "name": "Canada Player 5",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-6",
+      "code": "CAN 6",
+      "name": "Canada Player 6",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-7",
+      "code": "CAN 7",
+      "name": "Canada Player 7",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-8",
+      "code": "CAN 8",
+      "name": "Canada Player 8",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-9",
+      "code": "CAN 9",
+      "name": "Canada Player 9",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-10",
+      "code": "CAN 10",
+      "name": "Canada Player 10",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-11",
+      "code": "CAN 11",
+      "name": "Canada Player 11",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-12",
+      "code": "CAN 12",
+      "name": "Canada Player 12",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-13",
+      "code": "CAN 13",
+      "name": "Canada Player 13",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-14",
+      "code": "CAN 14",
+      "name": "Canada Player 14",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-15",
+      "code": "CAN 15",
+      "name": "Canada Player 15",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-16",
+      "code": "CAN 16",
+      "name": "Canada Player 16",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "CAN-17",
+      "code": "CAN 17",
+      "name": "Canada Player 17",
+      "teamId": "CAN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-BADGE",
+      "code": "JPN 0",
+      "name": "Japan Badge",
+      "teamId": "JPN",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "JPN-1",
+      "code": "JPN 1",
+      "name": "Japan Player 1",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "JPN-2",
+      "code": "JPN 2",
+      "name": "Japan Player 2",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "JPN-3",
+      "code": "JPN 3",
+      "name": "Japan Player 3",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-4",
+      "code": "JPN 4",
+      "name": "Japan Player 4",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-5",
+      "code": "JPN 5",
+      "name": "Japan Player 5",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-6",
+      "code": "JPN 6",
+      "name": "Japan Player 6",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-7",
+      "code": "JPN 7",
+      "name": "Japan Player 7",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-8",
+      "code": "JPN 8",
+      "name": "Japan Player 8",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-9",
+      "code": "JPN 9",
+      "name": "Japan Player 9",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-10",
+      "code": "JPN 10",
+      "name": "Japan Player 10",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-11",
+      "code": "JPN 11",
+      "name": "Japan Player 11",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-12",
+      "code": "JPN 12",
+      "name": "Japan Player 12",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-13",
+      "code": "JPN 13",
+      "name": "Japan Player 13",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-14",
+      "code": "JPN 14",
+      "name": "Japan Player 14",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-15",
+      "code": "JPN 15",
+      "name": "Japan Player 15",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-16",
+      "code": "JPN 16",
+      "name": "Japan Player 16",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JPN-17",
+      "code": "JPN 17",
+      "name": "Japan Player 17",
+      "teamId": "JPN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-BADGE",
+      "code": "KOR 0",
+      "name": "South Korea Badge",
+      "teamId": "KOR",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "KOR-1",
+      "code": "KOR 1",
+      "name": "South Korea Player 1",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "KOR-2",
+      "code": "KOR 2",
+      "name": "South Korea Player 2",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "KOR-3",
+      "code": "KOR 3",
+      "name": "South Korea Player 3",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-4",
+      "code": "KOR 4",
+      "name": "South Korea Player 4",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-5",
+      "code": "KOR 5",
+      "name": "South Korea Player 5",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-6",
+      "code": "KOR 6",
+      "name": "South Korea Player 6",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-7",
+      "code": "KOR 7",
+      "name": "South Korea Player 7",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-8",
+      "code": "KOR 8",
+      "name": "South Korea Player 8",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-9",
+      "code": "KOR 9",
+      "name": "South Korea Player 9",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-10",
+      "code": "KOR 10",
+      "name": "South Korea Player 10",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-11",
+      "code": "KOR 11",
+      "name": "South Korea Player 11",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-12",
+      "code": "KOR 12",
+      "name": "South Korea Player 12",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-13",
+      "code": "KOR 13",
+      "name": "South Korea Player 13",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-14",
+      "code": "KOR 14",
+      "name": "South Korea Player 14",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-15",
+      "code": "KOR 15",
+      "name": "South Korea Player 15",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-16",
+      "code": "KOR 16",
+      "name": "South Korea Player 16",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "KOR-17",
+      "code": "KOR 17",
+      "name": "South Korea Player 17",
+      "teamId": "KOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-BADGE",
+      "code": "MAR 0",
+      "name": "Morocco Badge",
+      "teamId": "MAR",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "MAR-1",
+      "code": "MAR 1",
+      "name": "Morocco Player 1",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "MAR-2",
+      "code": "MAR 2",
+      "name": "Morocco Player 2",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "MAR-3",
+      "code": "MAR 3",
+      "name": "Morocco Player 3",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-4",
+      "code": "MAR 4",
+      "name": "Morocco Player 4",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-5",
+      "code": "MAR 5",
+      "name": "Morocco Player 5",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-6",
+      "code": "MAR 6",
+      "name": "Morocco Player 6",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-7",
+      "code": "MAR 7",
+      "name": "Morocco Player 7",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-8",
+      "code": "MAR 8",
+      "name": "Morocco Player 8",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-9",
+      "code": "MAR 9",
+      "name": "Morocco Player 9",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-10",
+      "code": "MAR 10",
+      "name": "Morocco Player 10",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-11",
+      "code": "MAR 11",
+      "name": "Morocco Player 11",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-12",
+      "code": "MAR 12",
+      "name": "Morocco Player 12",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-13",
+      "code": "MAR 13",
+      "name": "Morocco Player 13",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-14",
+      "code": "MAR 14",
+      "name": "Morocco Player 14",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-15",
+      "code": "MAR 15",
+      "name": "Morocco Player 15",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-16",
+      "code": "MAR 16",
+      "name": "Morocco Player 16",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "MAR-17",
+      "code": "MAR 17",
+      "name": "Morocco Player 17",
+      "teamId": "MAR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-BADGE",
+      "code": "SEN 0",
+      "name": "Senegal Badge",
+      "teamId": "SEN",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "SEN-1",
+      "code": "SEN 1",
+      "name": "Senegal Player 1",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "SEN-2",
+      "code": "SEN 2",
+      "name": "Senegal Player 2",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "SEN-3",
+      "code": "SEN 3",
+      "name": "Senegal Player 3",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-4",
+      "code": "SEN 4",
+      "name": "Senegal Player 4",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-5",
+      "code": "SEN 5",
+      "name": "Senegal Player 5",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-6",
+      "code": "SEN 6",
+      "name": "Senegal Player 6",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-7",
+      "code": "SEN 7",
+      "name": "Senegal Player 7",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-8",
+      "code": "SEN 8",
+      "name": "Senegal Player 8",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-9",
+      "code": "SEN 9",
+      "name": "Senegal Player 9",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-10",
+      "code": "SEN 10",
+      "name": "Senegal Player 10",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-11",
+      "code": "SEN 11",
+      "name": "Senegal Player 11",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-12",
+      "code": "SEN 12",
+      "name": "Senegal Player 12",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-13",
+      "code": "SEN 13",
+      "name": "Senegal Player 13",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-14",
+      "code": "SEN 14",
+      "name": "Senegal Player 14",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-15",
+      "code": "SEN 15",
+      "name": "Senegal Player 15",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-16",
+      "code": "SEN 16",
+      "name": "Senegal Player 16",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "SEN-17",
+      "code": "SEN 17",
+      "name": "Senegal Player 17",
+      "teamId": "SEN",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-BADGE",
+      "code": "COL 0",
+      "name": "Colombia Badge",
+      "teamId": "COL",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "COL-1",
+      "code": "COL 1",
+      "name": "Colombia Player 1",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "COL-2",
+      "code": "COL 2",
+      "name": "Colombia Player 2",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "COL-3",
+      "code": "COL 3",
+      "name": "Colombia Player 3",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-4",
+      "code": "COL 4",
+      "name": "Colombia Player 4",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-5",
+      "code": "COL 5",
+      "name": "Colombia Player 5",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-6",
+      "code": "COL 6",
+      "name": "Colombia Player 6",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-7",
+      "code": "COL 7",
+      "name": "Colombia Player 7",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-8",
+      "code": "COL 8",
+      "name": "Colombia Player 8",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-9",
+      "code": "COL 9",
+      "name": "Colombia Player 9",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-10",
+      "code": "COL 10",
+      "name": "Colombia Player 10",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-11",
+      "code": "COL 11",
+      "name": "Colombia Player 11",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-12",
+      "code": "COL 12",
+      "name": "Colombia Player 12",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-13",
+      "code": "COL 13",
+      "name": "Colombia Player 13",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-14",
+      "code": "COL 14",
+      "name": "Colombia Player 14",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-15",
+      "code": "COL 15",
+      "name": "Colombia Player 15",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-16",
+      "code": "COL 16",
+      "name": "Colombia Player 16",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "COL-17",
+      "code": "COL 17",
+      "name": "Colombia Player 17",
+      "teamId": "COL",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-BADGE",
+      "code": "JOR 0",
+      "name": "Jordan Badge",
+      "teamId": "JOR",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "JOR-1",
+      "code": "JOR 1",
+      "name": "Jordan Player 1",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "JOR-2",
+      "code": "JOR 2",
+      "name": "Jordan Player 2",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "JOR-3",
+      "code": "JOR 3",
+      "name": "Jordan Player 3",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-4",
+      "code": "JOR 4",
+      "name": "Jordan Player 4",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-5",
+      "code": "JOR 5",
+      "name": "Jordan Player 5",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-6",
+      "code": "JOR 6",
+      "name": "Jordan Player 6",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-7",
+      "code": "JOR 7",
+      "name": "Jordan Player 7",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-8",
+      "code": "JOR 8",
+      "name": "Jordan Player 8",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-9",
+      "code": "JOR 9",
+      "name": "Jordan Player 9",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-10",
+      "code": "JOR 10",
+      "name": "Jordan Player 10",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-11",
+      "code": "JOR 11",
+      "name": "Jordan Player 11",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-12",
+      "code": "JOR 12",
+      "name": "Jordan Player 12",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-13",
+      "code": "JOR 13",
+      "name": "Jordan Player 13",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-14",
+      "code": "JOR 14",
+      "name": "Jordan Player 14",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-15",
+      "code": "JOR 15",
+      "name": "Jordan Player 15",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-16",
+      "code": "JOR 16",
+      "name": "Jordan Player 16",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "JOR-17",
+      "code": "JOR 17",
+      "name": "Jordan Player 17",
+      "teamId": "JOR",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-BADGE",
+      "code": "AUS 0",
+      "name": "Australia Badge",
+      "teamId": "AUS",
+      "category": "badge",
+      "type": "foil",
+      "rarity": "special"
+    },
+    {
+      "id": "AUS-1",
+      "code": "AUS 1",
+      "name": "Australia Player 1",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "AUS-2",
+      "code": "AUS 2",
+      "name": "Australia Player 2",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "AUS-3",
+      "code": "AUS 3",
+      "name": "Australia Player 3",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-4",
+      "code": "AUS 4",
+      "name": "Australia Player 4",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-5",
+      "code": "AUS 5",
+      "name": "Australia Player 5",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-6",
+      "code": "AUS 6",
+      "name": "Australia Player 6",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-7",
+      "code": "AUS 7",
+      "name": "Australia Player 7",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-8",
+      "code": "AUS 8",
+      "name": "Australia Player 8",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-9",
+      "code": "AUS 9",
+      "name": "Australia Player 9",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-10",
+      "code": "AUS 10",
+      "name": "Australia Player 10",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-11",
+      "code": "AUS 11",
+      "name": "Australia Player 11",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-12",
+      "code": "AUS 12",
+      "name": "Australia Player 12",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-13",
+      "code": "AUS 13",
+      "name": "Australia Player 13",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-14",
+      "code": "AUS 14",
+      "name": "Australia Player 14",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-15",
+      "code": "AUS 15",
+      "name": "Australia Player 15",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-16",
+      "code": "AUS 16",
+      "name": "Australia Player 16",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "AUS-17",
+      "code": "AUS 17",
+      "name": "Australia Player 17",
+      "teamId": "AUS",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    }
+  ]
+}

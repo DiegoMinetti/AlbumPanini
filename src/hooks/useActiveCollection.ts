@@ -22,7 +22,8 @@ export function useActiveCollection(): ActiveCollectionResult {
   const setActive = useSettingsStore((s) => s.setActiveCollection);
 
   const active =
-    collections?.find((c) => c.id === activeId && c.status === 'active') ?? null;
+    collections?.find((c) => c.id === activeId && c.status === 'active') ??
+    null;
 
   useEffect(() => {
     if (!collections) return;

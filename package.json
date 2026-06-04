@@ -20,6 +20,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "icons": "node scripts/generate-icons.mjs",
     "prepare": "echo 'no git hooks configured'"
   },
   "dependencies": {

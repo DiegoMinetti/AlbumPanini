@@ -15,7 +15,7 @@ export function useCollection(
   id: string | null
 ): StoredCollection | undefined | null {
   return useLiveQuery(
-    () => (id ? db.collections.get(id) : Promise.resolve(undefined)),
+    async () => (id ? ((await db.collections.get(id)) ?? null) : null),
     [id]
   );
 }

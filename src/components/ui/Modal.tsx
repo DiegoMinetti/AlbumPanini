@@ -42,11 +42,11 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         aria-hidden="true"
       />
       <div className="relative z-10 w-full max-w-md animate-slide-up rounded-t-2xl bg-white p-4 shadow-xl dark:bg-slate-900 sm:rounded-2xl">
-        {title ? (
-          <h2 className="mb-3 text-lg font-bold">{title}</h2>
-        ) : null}
+        {title ? <h2 className="mb-3 text-lg font-bold">{title}</h2> : null}
         <div className="max-h-[70vh] overflow-y-auto">{children}</div>
-        {footer ? <div className="mt-4 flex justify-end gap-2">{footer}</div> : null}
+        {footer ? (
+          <div className="mt-4 flex justify-end gap-2">{footer}</div>
+        ) : null}
       </div>
     </div>
   );

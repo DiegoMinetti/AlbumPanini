@@ -1,0 +1,69 @@
+{
+  "id": "demo-mini",
+  "schema": 1,
+  "name": "Demo Mini",
+  "description": "A tiny collection for quick testing.",
+  "version": "1.0.0",
+  "language": "es",
+  "teams": [
+    {
+      "id": "ARG",
+      "name": "Argentina",
+      "flag": "🇦🇷",
+      "primaryColor": "#75AADB"
+    },
+    {
+      "id": "BRA",
+      "name": "Brazil",
+      "flag": "🇧🇷",
+      "primaryColor": "#009C3B"
+    }
+  ],
+  "stickers": [
+    {
+      "id": "ARG-1",
+      "code": "ARG 1",
+      "name": "Argentina 1",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-2",
+      "code": "ARG 2",
+      "name": "Argentina 2",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "ARG-3",
+      "code": "ARG 3",
+      "name": "Argentina 3",
+      "teamId": "ARG",
+      "category": "player",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "BRA-1",
+      "code": "BRA 1",
+      "name": "Brazil 1",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "BRA-12",
+      "code": "BRA 12",
+      "name": "Brazil 12",
+      "teamId": "BRA",
+      "category": "player",
+      "type": "regular",
+      "rarity": "common"
+    }
+  ]
+}

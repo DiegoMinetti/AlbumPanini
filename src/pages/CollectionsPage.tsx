@@ -80,7 +80,9 @@ export function CollectionsPage() {
               isActive={c.id === activeId}
               onSelect={() => setActive(c.id)}
               onRename={() => setDialog({ type: 'rename', collection: c })}
-              onDuplicate={() => setDialog({ type: 'duplicate', collection: c })}
+              onDuplicate={() =>
+                setDialog({ type: 'duplicate', collection: c })
+              }
               onArchive={() => void archiveCollection(c.id)}
               onDelete={() => setDialog({ type: 'delete', collection: c })}
             />
@@ -101,7 +103,9 @@ export function CollectionsPage() {
                 setActive(c.id);
               }}
               onRename={() => setDialog({ type: 'rename', collection: c })}
-              onDuplicate={() => setDialog({ type: 'duplicate', collection: c })}
+              onDuplicate={() =>
+                setDialog({ type: 'duplicate', collection: c })
+              }
               onArchive={() => void unarchiveCollection(c.id)}
               onDelete={() => setDialog({ type: 'delete', collection: c })}
             />
@@ -270,7 +274,11 @@ function CollectionRow({
         <button type="button" className="btn-ghost" onClick={onArchive}>
           {archived ? t('common.unarchive') : t('common.archive')}
         </button>
-        <button type="button" className="btn-ghost text-red-600" onClick={onDelete}>
+        <button
+          type="button"
+          className="btn-ghost text-red-600"
+          onClick={onDelete}
+        >
           {t('common.delete')}
         </button>
       </div>

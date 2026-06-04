@@ -129,12 +129,18 @@ export function ScanPage() {
               <button
                 type="button"
                 className="btn-primary flex-1"
-                onClick={() => videoRef.current && void recognize(videoRef.current)}
+                onClick={() =>
+                  videoRef.current && void recognize(videoRef.current)
+                }
                 disabled={processing}
               >
                 {t('scan.capture')}
               </button>
-              <button type="button" className="btn-secondary" onClick={stopCamera}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={stopCamera}
+              >
                 {t('common.close')}
               </button>
             </>
@@ -172,7 +178,10 @@ export function ScanPage() {
           <EmptyState title={t('scan.noCodes')} />
         ) : (
           <>
-            <ul className="mb-3 flex flex-wrap gap-2" data-testid="detected-codes">
+            <ul
+              className="mb-3 flex flex-wrap gap-2"
+              data-testid="detected-codes"
+            >
               {codes.map((code, i) => (
                 <li
                   key={`${code}-${i}`}

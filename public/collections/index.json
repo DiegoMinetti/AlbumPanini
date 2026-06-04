@@ -1,0 +1,28 @@
+{
+  "collections": [
+    {
+      "id": "worldcup-2026",
+      "file": "worldcup-2026.json",
+      "name": "FIFA World Cup 2026",
+      "description": "Official-style sample album for the 2026 tournament.",
+      "version": "1.0.0",
+      "language": "en"
+    },
+    {
+      "id": "pokemon-151",
+      "file": "pokemon-151.json",
+      "name": "Pokémon 151",
+      "description": "Classic 151 sample set (no teams).",
+      "version": "1.0.0",
+      "language": "en"
+    },
+    {
+      "id": "demo-mini",
+      "file": "demo-mini.json",
+      "name": "Demo Mini",
+      "description": "A tiny collection for quick testing.",
+      "version": "1.0.0",
+      "language": "es"
+    }
+  ]
+}

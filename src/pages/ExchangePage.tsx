@@ -21,7 +21,7 @@ import { imageToImageData, loadImageFromBlob } from '@/utils/file';
 export function ExchangePage() {
   const { t } = useTranslation();
   const { active, loading } = useActiveCollection();
-  const { stickers, inventory } = useCollectionData(active?.id ?? null);
+  const { stickers } = useCollectionData(active?.id ?? null);
 
   const [qr, setQr] = useState<string | null>(null);
   const [position, setPosition] = useState<OwnPosition | null>(null);
@@ -102,7 +102,11 @@ export function ExchangePage() {
             data-testid="exchange-qr"
           />
         ) : (
-          <button type="button" className="btn-primary" onClick={() => void handleGenerate()}>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => void handleGenerate()}
+          >
             {t('exchange.generate')}
           </button>
         )}
@@ -159,7 +163,10 @@ export function ExchangePage() {
       </section>
 
       {match ? (
-        <section className="card flex flex-col gap-4" data-testid="exchange-result">
+        <section
+          className="card flex flex-col gap-4"
+          data-testid="exchange-result"
+        >
           <p className="text-center text-sm font-semibold text-brand-600">
             {t('exchange.mutual', { count: match.mutualCount })}
           </p>
@@ -198,8 +205,7 @@ function MatchList({
   label: (id: string) => string;
   tone: 'emerald' | 'brand';
 }) {
-  const toneClass =
-    tone === 'emerald' ? 'text-emerald-600' : 'text-brand-600';
+  const toneClass = tone === 'emerald' ? 'text-emerald-600' : 'text-brand-600';
   return (
     <div>
       <h3 className={`mb-2 font-semibold ${toneClass}`}>

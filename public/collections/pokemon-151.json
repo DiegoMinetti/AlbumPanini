@@ -1,0 +1,1219 @@
+{
+  "id": "pokemon-151",
+  "schema": 1,
+  "name": "Pokémon 151",
+  "description": "Classic 151 sample set (no teams).",
+  "version": "1.0.0",
+  "language": "en",
+  "teams": [],
+  "stickers": [
+    {
+      "id": "PKM-1",
+      "code": "PKM 1",
+      "name": "Pokémon #1",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-2",
+      "code": "PKM 2",
+      "name": "Pokémon #2",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-3",
+      "code": "PKM 3",
+      "name": "Pokémon #3",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-4",
+      "code": "PKM 4",
+      "name": "Pokémon #4",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-5",
+      "code": "PKM 5",
+      "name": "Pokémon #5",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-6",
+      "code": "PKM 6",
+      "name": "Pokémon #6",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-7",
+      "code": "PKM 7",
+      "name": "Pokémon #7",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-8",
+      "code": "PKM 8",
+      "name": "Pokémon #8",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-9",
+      "code": "PKM 9",
+      "name": "Pokémon #9",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-10",
+      "code": "PKM 10",
+      "name": "Pokémon #10",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "PKM-11",
+      "code": "PKM 11",
+      "name": "Pokémon #11",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-12",
+      "code": "PKM 12",
+      "name": "Pokémon #12",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-13",
+      "code": "PKM 13",
+      "name": "Pokémon #13",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-14",
+      "code": "PKM 14",
+      "name": "Pokémon #14",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-15",
+      "code": "PKM 15",
+      "name": "Pokémon #15",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-16",
+      "code": "PKM 16",
+      "name": "Pokémon #16",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-17",
+      "code": "PKM 17",
+      "name": "Pokémon #17",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-18",
+      "code": "PKM 18",
+      "name": "Pokémon #18",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-19",
+      "code": "PKM 19",
+      "name": "Pokémon #19",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-20",
+      "code": "PKM 20",
+      "name": "Pokémon #20",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "PKM-21",
+      "code": "PKM 21",
+      "name": "Pokémon #21",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-22",
+      "code": "PKM 22",
+      "name": "Pokémon #22",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-23",
+      "code": "PKM 23",
+      "name": "Pokémon #23",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-24",
+      "code": "PKM 24",
+      "name": "Pokémon #24",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-25",
+      "code": "PKM 25",
+      "name": "Pokémon #25",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-26",
+      "code": "PKM 26",
+      "name": "Pokémon #26",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-27",
+      "code": "PKM 27",
+      "name": "Pokémon #27",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-28",
+      "code": "PKM 28",
+      "name": "Pokémon #28",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-29",
+      "code": "PKM 29",
+      "name": "Pokémon #29",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-30",
+      "code": "PKM 30",
+      "name": "Pokémon #30",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "PKM-31",
+      "code": "PKM 31",
+      "name": "Pokémon #31",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-32",
+      "code": "PKM 32",
+      "name": "Pokémon #32",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-33",
+      "code": "PKM 33",
+      "name": "Pokémon #33",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-34",
+      "code": "PKM 34",
+      "name": "Pokémon #34",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-35",
+      "code": "PKM 35",
+      "name": "Pokémon #35",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-36",
+      "code": "PKM 36",
+      "name": "Pokémon #36",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-37",
+      "code": "PKM 37",
+      "name": "Pokémon #37",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-38",
+      "code": "PKM 38",
+      "name": "Pokémon #38",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-39",
+      "code": "PKM 39",
+      "name": "Pokémon #39",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-40",
+      "code": "PKM 40",
+      "name": "Pokémon #40",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "PKM-41",
+      "code": "PKM 41",
+      "name": "Pokémon #41",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-42",
+      "code": "PKM 42",
+      "name": "Pokémon #42",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-43",
+      "code": "PKM 43",
+      "name": "Pokémon #43",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-44",
+      "code": "PKM 44",
+      "name": "Pokémon #44",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-45",
+      "code": "PKM 45",
+      "name": "Pokémon #45",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-46",
+      "code": "PKM 46",
+      "name": "Pokémon #46",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-47",
+      "code": "PKM 47",
+      "name": "Pokémon #47",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-48",
+      "code": "PKM 48",
+      "name": "Pokémon #48",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-49",
+      "code": "PKM 49",
+      "name": "Pokémon #49",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-50",
+      "code": "PKM 50",
+      "name": "Pokémon #50",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "legendary"
+    },
+    {
+      "id": "PKM-51",
+      "code": "PKM 51",
+      "name": "Pokémon #51",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-52",
+      "code": "PKM 52",
+      "name": "Pokémon #52",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-53",
+      "code": "PKM 53",
+      "name": "Pokémon #53",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-54",
+      "code": "PKM 54",
+      "name": "Pokémon #54",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-55",
+      "code": "PKM 55",
+      "name": "Pokémon #55",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-56",
+      "code": "PKM 56",
+      "name": "Pokémon #56",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-57",
+      "code": "PKM 57",
+      "name": "Pokémon #57",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-58",
+      "code": "PKM 58",
+      "name": "Pokémon #58",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-59",
+      "code": "PKM 59",
+      "name": "Pokémon #59",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-60",
+      "code": "PKM 60",
+      "name": "Pokémon #60",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "PKM-61",
+      "code": "PKM 61",
+      "name": "Pokémon #61",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-62",
+      "code": "PKM 62",
+      "name": "Pokémon #62",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-63",
+      "code": "PKM 63",
+      "name": "Pokémon #63",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-64",
+      "code": "PKM 64",
+      "name": "Pokémon #64",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-65",
+      "code": "PKM 65",
+      "name": "Pokémon #65",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-66",
+      "code": "PKM 66",
+      "name": "Pokémon #66",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-67",
+      "code": "PKM 67",
+      "name": "Pokémon #67",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-68",
+      "code": "PKM 68",
+      "name": "Pokémon #68",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-69",
+      "code": "PKM 69",
+      "name": "Pokémon #69",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-70",
+      "code": "PKM 70",
+      "name": "Pokémon #70",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "rare"
+    },
+    {
+      "id": "PKM-71",
+      "code": "PKM 71",
+      "name": "Pokémon #71",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-72",
+      "code": "PKM 72",
+      "name": "Pokémon #72",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-73",
+      "code": "PKM 73",
+      "name": "Pokémon #73",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-74",
+      "code": "PKM 74",
+      "name": "Pokémon #74",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-75",
+      "code": "PKM 75",
+      "name": "Pokémon #75",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-76",
+      "code": "PKM 76",
+      "name": "Pokémon #76",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-77",
+      "code": "PKM 77",
+      "name": "Pokémon #77",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-78",
+      "code": "PKM 78",
+      "name": "Pokémon #78",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-79",
+      "code": "PKM 79",
+      "name": "Pokémon #79",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-80",
+      "code": "PKM 80",
+      "name": "Pokémon #80",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "PKM-81",
+      "code": "PKM 81",
+      "name": "Pokémon #81",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-82",
+      "code": "PKM 82",
+      "name": "Pokémon #82",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-83",
+      "code": "PKM 83",
+      "name": "Pokémon #83",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-84",
+      "code": "PKM 84",
+      "name": "Pokémon #84",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-85",
+      "code": "PKM 85",
+      "name": "Pokémon #85",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-86",
+      "code": "PKM 86",
+      "name": "Pokémon #86",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-87",
+      "code": "PKM 87",
+      "name": "Pokémon #87",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-88",
+      "code": "PKM 88",
+      "name": "Pokémon #88",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-89",
+      "code": "PKM 89",
+      "name": "Pokémon #89",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-90",
+      "code": "PKM 90",
+      "name": "Pokémon #90",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "PKM-91",
+      "code": "PKM 91",
+      "name": "Pokémon #91",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-92",
+      "code": "PKM 92",
+      "name": "Pokémon #92",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-93",
+      "code": "PKM 93",
+      "name": "Pokémon #93",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-94",
+      "code": "PKM 94",
+      "name": "Pokémon #94",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-95",
+      "code": "PKM 95",
+      "name": "Pokémon #95",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-96",
+      "code": "PKM 96",
+      "name": "Pokémon #96",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-97",
+      "code": "PKM 97",
+      "name": "Pokémon #97",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-98",
+      "code": "PKM 98",
+      "name": "Pokémon #98",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-99",
+      "code": "PKM 99",
+      "name": "Pokémon #99",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-100",
+      "code": "PKM 100",
+      "name": "Pokémon #100",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "legendary"
+    },
+    {
+      "id": "PKM-101",
+      "code": "PKM 101",
+      "name": "Pokémon #101",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-102",
+      "code": "PKM 102",
+      "name": "Pokémon #102",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-103",
+      "code": "PKM 103",
+      "name": "Pokémon #103",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-104",
+      "code": "PKM 104",
+      "name": "Pokémon #104",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-105",
+      "code": "PKM 105",
+      "name": "Pokémon #105",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-106",
+      "code": "PKM 106",
+      "name": "Pokémon #106",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-107",
+      "code": "PKM 107",
+      "name": "Pokémon #107",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-108",
+      "code": "PKM 108",
+      "name": "Pokémon #108",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-109",
+      "code": "PKM 109",
+      "name": "Pokémon #109",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-110",
+      "code": "PKM 110",
+      "name": "Pokémon #110",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "PKM-111",
+      "code": "PKM 111",
+      "name": "Pokémon #111",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-112",
+      "code": "PKM 112",
+      "name": "Pokémon #112",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-113",
+      "code": "PKM 113",
+      "name": "Pokémon #113",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-114",
+      "code": "PKM 114",
+      "name": "Pokémon #114",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-115",
+      "code": "PKM 115",
+      "name": "Pokémon #115",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-116",
+      "code": "PKM 116",
+      "name": "Pokémon #116",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-117",
+      "code": "PKM 117",
+      "name": "Pokémon #117",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-118",
+      "code": "PKM 118",
+      "name": "Pokémon #118",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-119",
+      "code": "PKM 119",
+      "name": "Pokémon #119",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-120",
+      "code": "PKM 120",
+      "name": "Pokémon #120",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "PKM-121",
+      "code": "PKM 121",
+      "name": "Pokémon #121",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-122",
+      "code": "PKM 122",
+      "name": "Pokémon #122",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-123",
+      "code": "PKM 123",
+      "name": "Pokémon #123",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-124",
+      "code": "PKM 124",
+      "name": "Pokémon #124",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-125",
+      "code": "PKM 125",
+      "name": "Pokémon #125",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-126",
+      "code": "PKM 126",
+      "name": "Pokémon #126",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-127",
+      "code": "PKM 127",
+      "name": "Pokémon #127",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-128",
+      "code": "PKM 128",
+      "name": "Pokémon #128",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-129",
+      "code": "PKM 129",
+      "name": "Pokémon #129",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-130",
+      "code": "PKM 130",
+      "name": "Pokémon #130",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "rare"
+    },
+    {
+      "id": "PKM-131",
+      "code": "PKM 131",
+      "name": "Pokémon #131",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-132",
+      "code": "PKM 132",
+      "name": "Pokémon #132",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-133",
+      "code": "PKM 133",
+      "name": "Pokémon #133",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-134",
+      "code": "PKM 134",
+      "name": "Pokémon #134",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-135",
+      "code": "PKM 135",
+      "name": "Pokémon #135",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-136",
+      "code": "PKM 136",
+      "name": "Pokémon #136",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-137",
+      "code": "PKM 137",
+      "name": "Pokémon #137",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-138",
+      "code": "PKM 138",
+      "name": "Pokémon #138",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-139",
+      "code": "PKM 139",
+      "name": "Pokémon #139",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-140",
+      "code": "PKM 140",
+      "name": "Pokémon #140",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "rare"
+    },
+    {
+      "id": "PKM-141",
+      "code": "PKM 141",
+      "name": "Pokémon #141",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-142",
+      "code": "PKM 142",
+      "name": "Pokémon #142",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-143",
+      "code": "PKM 143",
+      "name": "Pokémon #143",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-144",
+      "code": "PKM 144",
+      "name": "Pokémon #144",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-145",
+      "code": "PKM 145",
+      "name": "Pokémon #145",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-146",
+      "code": "PKM 146",
+      "name": "Pokémon #146",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-147",
+      "code": "PKM 147",
+      "name": "Pokémon #147",
+      "category": "creature",
+      "type": "shiny",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-148",
+      "code": "PKM 148",
+      "name": "Pokémon #148",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-149",
+      "code": "PKM 149",
+      "name": "Pokémon #149",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    },
+    {
+      "id": "PKM-150",
+      "code": "PKM 150",
+      "name": "Pokémon #150",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "legendary"
+    },
+    {
+      "id": "PKM-151",
+      "code": "PKM 151",
+      "name": "Pokémon #151",
+      "category": "creature",
+      "type": "regular",
+      "rarity": "common"
+    }
+  ]
+}

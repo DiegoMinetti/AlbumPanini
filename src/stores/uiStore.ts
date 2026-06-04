@@ -12,11 +12,7 @@ export interface Toast {
 
 interface UiState {
   toasts: Toast[];
-  pushToast: (
-    message: string,
-    kind?: ToastKind,
-    duration?: number
-  ) => number;
+  pushToast: (message: string, kind?: ToastKind, duration?: number) => number;
   dismissToast: (id: number) => void;
 }
 

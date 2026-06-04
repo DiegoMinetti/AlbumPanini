@@ -26,9 +26,7 @@ export function PwaUpdatePrompt() {
       <div className="card flex w-full max-w-sm items-center justify-between gap-3">
         <span className="text-sm">
           {needRefresh ? t('common.save') + ' →' : '✓'}{' '}
-          {needRefresh
-            ? 'New version available'
-            : 'App ready to work offline'}
+          {needRefresh ? 'New version available' : 'App ready to work offline'}
         </span>
         <div className="flex gap-2">
           {needRefresh ? (

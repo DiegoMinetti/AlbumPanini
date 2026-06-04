@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "id": "panini-2026",
+  "name": "Panini 2026",
+  "description": "Paquete base del album 2026 para completar con el listado oficial.",
+  "version": "0.1.0",
+  "language": "es",
+  "teams": [
+    {
+      "id": "arg",
+      "name": "Argentina",
+      "flag": "AR",
+      "primaryColor": "#75AADB",
+      "secondaryColor": "#FFFFFF",
+      "order": 1
+    }
+  ],
+  "stickers": [
+    {
+      "id": "arg-001",
+      "code": "ARG 1",
+      "name": "Escudo",
+      "teamId": "arg",
+      "category": "badge",
+      "type": "regular",
+      "rarity": "common",
+      "order": 1
+    }
+  ]
+}

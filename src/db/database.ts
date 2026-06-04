@@ -96,7 +96,13 @@ export class PaniniDatabase extends Dexie {
   async clearAllData(): Promise<void> {
     await this.transaction(
       'rw',
-      [this.collections, this.teams, this.stickers, this.inventory, this.activity],
+      [
+        this.collections,
+        this.teams,
+        this.stickers,
+        this.inventory,
+        this.activity,
+      ],
       async () => {
         await Promise.all([
           this.collections.clear(),

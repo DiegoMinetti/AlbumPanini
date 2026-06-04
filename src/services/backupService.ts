@@ -14,7 +14,11 @@ import type {
   StoredTeam,
 } from '@/types/collection';
 import type { StoredInventoryItem } from '@/types/inventory';
-import { DEFAULT_SETTINGS, settingsSchema, type Settings } from '@/types/settings';
+import {
+  DEFAULT_SETTINGS,
+  settingsSchema,
+  type Settings,
+} from '@/types/settings';
 import { gunzipJson, gzipJson } from '@/utils/compression';
 import { makeUid } from '@/utils/ids';
 import { normalizeCode } from '@/utils/code';
@@ -68,7 +72,8 @@ export async function createBackupPayload(
 export async function exportBackup(settings: Settings): Promise<Blob> {
   const payload = await createBackupPayload(settings);
   const bytes = gzipJson(payload);
-  return new Blob([bytes], { type: 'application/gzip' });
+  // Copy into a fresh ArrayBuffer-backed view so the Blob part type is exact.
+  return new Blob([new Uint8Array(bytes)], { type: 'application/gzip' });
 }
 
 /** A sensible default filename for the exported backup. */
@@ -99,6 +104,8 @@ export function migrateBackup(raw: unknown): {
     );
   }
 
+  // Reassigned by stepwise migrations as new versions are added.
+  // eslint-disable-next-line prefer-const
   let working = record;
   const migratedFrom = version < BACKUP_VERSION ? version : undefined;
 

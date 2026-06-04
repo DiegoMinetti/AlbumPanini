@@ -35,28 +35,26 @@ const EMPTY_STATS: FullStatistics = {
  * derived statistics. Recomputes automatically whenever the underlying DB rows
  * change (dexie-react-hooks) and memoizes the stats derivation.
  */
-export function useCollectionData(
-  collectionId: string | null
-): CollectionData {
-  const stickers = useLiveQuery(
-    () =>
+export function useCollectionData(collectionId: string | null): CollectionData {
+  const stickers = useLiveQuery<StoredSticker[]>(
+    async () =>
       collectionId
         ? db.stickers.where('collectionId').equals(collectionId).toArray()
-        : Promise.resolve([]),
+        : [],
     [collectionId]
   );
-  const teams = useLiveQuery(
-    () =>
+  const teams = useLiveQuery<StoredTeam[]>(
+    async () =>
       collectionId
         ? db.teams.where('collectionId').equals(collectionId).toArray()
-        : Promise.resolve([]),
+        : [],
     [collectionId]
   );
   const inventoryRows = useLiveQuery(
-    () =>
+    async () =>
       collectionId
         ? db.inventory.where('collectionId').equals(collectionId).toArray()
-        : Promise.resolve([]),
+        : [],
     [collectionId]
   );
 

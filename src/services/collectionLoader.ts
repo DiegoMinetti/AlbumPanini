@@ -51,7 +51,9 @@ export async function fetchPackage(
 ): Promise<CollectionPackage> {
   const res = await fetch(collectionsUrl(entry.file), { signal });
   if (!res.ok) {
-    throw new Error(`Failed to load collection "${entry.file}" (${res.status})`);
+    throw new Error(
+      `Failed to load collection "${entry.file}" (${res.status})`
+    );
   }
   const json = await res.json();
   return collectionPackageSchema.parse(json);

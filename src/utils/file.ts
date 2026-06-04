@@ -13,8 +13,16 @@ export function downloadBlob(blob: Blob, filename: string): void {
 
 /** Read a File/Blob into a Uint8Array. */
 export async function readFileAsBytes(file: Blob): Promise<Uint8Array> {
-  const buffer = await file.arrayBuffer();
-  return new Uint8Array(buffer);
+  if (typeof file.arrayBuffer === 'function') {
+    return new Uint8Array(await file.arrayBuffer());
+  }
+  // Fallback for environments whose Blob lacks arrayBuffer (e.g. jsdom).
+  return new Promise<Uint8Array>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsArrayBuffer(file);
+  });
 }
 
 /** Read a File/Blob into a text string (UTF-8). */

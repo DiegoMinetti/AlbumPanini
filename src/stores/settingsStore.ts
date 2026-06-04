@@ -1,5 +1,9 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import {
+  createJSONStorage,
+  persist,
+  type StateStorage,
+} from 'zustand/middleware';
 import {
   DEFAULT_SETTINGS,
   type Language,
@@ -23,6 +27,40 @@ interface SettingsState extends Settings {
 /** localStorage key — must match the inline pre-paint script in index.html. */
 const STORAGE_KEY = 'panini-settings';
 
+/**
+ * Storage that uses localStorage when available and falls back to an in-memory
+ * map otherwise (private mode, opaque origins, SSR, tests). This keeps the app
+ * functional even when persistence is unavailable.
+ */
+const memoryStore = new Map<string, string>();
+const safeStorage: StateStorage = {
+  getItem: (name) => {
+    try {
+      return (
+        globalThis.localStorage?.getItem(name) ?? memoryStore.get(name) ?? null
+      );
+    } catch {
+      return memoryStore.get(name) ?? null;
+    }
+  },
+  setItem: (name, value) => {
+    try {
+      globalThis.localStorage?.setItem(name, value);
+    } catch {
+      /* ignore */
+    }
+    memoryStore.set(name, value);
+  },
+  removeItem: (name) => {
+    try {
+      globalThis.localStorage?.removeItem(name);
+    } catch {
+      /* ignore */
+    }
+    memoryStore.delete(name);
+  },
+};
+
 /** Resolve the effective dark-mode boolean for a theme mode. */
 export function resolveDark(theme: ThemeMode): boolean {
   if (theme === 'dark') return true;
@@ -36,7 +74,10 @@ export function resolveDark(theme: ThemeMode): boolean {
 /** Apply theme + haptics side effects to the document/runtime. */
 export function applyThemeSideEffects(settings: Settings): void {
   if (typeof document !== 'undefined') {
-    document.documentElement.classList.toggle('dark', resolveDark(settings.theme));
+    document.documentElement.classList.toggle(
+      'dark',
+      resolveDark(settings.theme)
+    );
     document.documentElement.lang = settings.language;
   }
   setHapticsEnabled(settings.haptics);
@@ -69,6 +110,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: STORAGE_KEY,
       version: 1,
+      storage: createJSONStorage(() => safeStorage),
       partialize: (state): Settings => ({
         theme: state.theme,
         language: state.language,

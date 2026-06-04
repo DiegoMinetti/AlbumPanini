@@ -14,7 +14,12 @@ const ACCENTS: Record<NonNullable<StatCardProps['accent']>, string> = {
   danger: 'text-red-600 dark:text-red-400',
 };
 
-export function StatCard({ label, value, accent = 'default', icon }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  accent = 'default',
+  icon,
+}: StatCardProps) {
   return (
     <div className="card flex flex-col gap-1">
       <div className="flex items-center justify-between">

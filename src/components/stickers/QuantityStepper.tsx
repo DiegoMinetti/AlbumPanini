@@ -14,9 +14,7 @@ export function QuantityStepper({
   size = 'md',
 }: QuantityStepperProps) {
   const btn =
-    size === 'sm'
-      ? 'h-8 w-8 text-base'
-      : 'min-h-tap min-w-tap text-lg';
+    size === 'sm' ? 'h-8 w-8 text-base' : 'min-h-tap min-w-tap text-lg';
 
   const dec = () => {
     haptics.light();
