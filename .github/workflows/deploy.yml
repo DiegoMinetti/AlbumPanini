@@ -1,7 +1,9 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -17,9 +19,19 @@ concurrency:
 
 jobs:
   build:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
 
       - uses: actions/setup-node@v4
         with:
@@ -31,8 +43,8 @@ jobs:
 
       - name: Build (with repository base path)
         env:
-          # Serves correctly from https://<user>.github.io/<repo>/
-          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          # Uses Pages-provided base path (fallback to /<repo>/ when unavailable).
+          VITE_BASE_PATH: ${{ steps.pages.outputs.base_path || format('/{0}/', github.event.repository.name) }}
           VITE_APP_VERSION: ${{ github.sha }}
         run: npm run build
 

@@ -5,7 +5,7 @@
   "type": "module",
   "license": "MIT",
   "private": true,
-  "homepage": "https://username.github.io/AlbumPanini",
+  "homepage": "https://diegominetti.github.io/AlbumPanini",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

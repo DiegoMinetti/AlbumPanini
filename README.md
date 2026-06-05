@@ -8,7 +8,7 @@ The app is **collection-driven**: it is not tied to any single album. Load any
 collection from a JSON package (World Cup, Champions League, Pokémon, Formula 1,
 …) and the whole UI adapts.
 
-[![CI](https://github.com/username/AlbumPanini/actions/workflows/ci.yml/badge.svg)](https://github.com/username/AlbumPanini/actions/workflows/ci.yml)
+[![CI](https://github.com/DiegoMinetti/AlbumPanini/actions/workflows/ci.yml/badge.svg)](https://github.com/DiegoMinetti/AlbumPanini/actions/workflows/ci.yml)
 
 ## Features
 
@@ -94,12 +94,22 @@ See [`docs/`](./docs) for deeper docs:
 
 ## Deployment (GitHub Pages)
 
-Pushing to `main` runs [`deploy.yml`](./.github/workflows/deploy.yml), which
-builds with `VITE_BASE_PATH=/<repo>/`, adds a `404.html` SPA fallback and
-publishes to GitHub Pages. The app uses **hash routing**, so deep links and hard
-refreshes never 404.
+This repository includes automatic deployment to GitHub Pages:
 
-Enable it once under **Settings → Pages → Build and deployment → GitHub Actions**.
+- CI runs first (`.github/workflows/ci.yml`).
+- If CI succeeds on `main`, deployment runs (`.github/workflows/deploy.yml`).
+- The workflow builds with the correct Pages base path and publishes `dist/`.
+
+Setup is needed only once in GitHub:
+
+1. Open **Settings → Pages**.
+2. In **Build and deployment**, set **Source = GitHub Actions**.
+3. Push to `main`.
+4. Wait for **CI** and then **Deploy to GitHub Pages** to finish.
+5. Open `https://diegominetti.github.io/AlbumPanini/`.
+
+For full step-by-step instructions and troubleshooting, see
+[GitHub Pages guide](./docs/GITHUB_PAGES.md).
 
 ## Privacy
 
