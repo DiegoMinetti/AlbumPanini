@@ -4,9 +4,9 @@
       "id": "worldcup-2026",
       "file": "worldcup-2026.json",
       "name": "FIFA World Cup 2026",
-      "description": "Official-style sample album for the 2026 tournament.",
-      "version": "1.0.0",
-      "language": "en"
+      "description": "Catálogo Panini FIFA World Cup 2026 enriquecido (Wikidata + Wikipedia).",
+      "version": "2.0.0",
+      "language": "es"
     },
     {
       "id": "pokemon-151",

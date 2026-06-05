@@ -5,3 +5,5 @@ export { useActiveCollection } from './useActiveCollection';
 export type { ActiveCollectionResult } from './useActiveCollection';
 export { useManifest } from './useManifest';
 export { useRecentActivity } from './useRecentActivity';
+export { useTournament } from './useTournament';
+export type { TournamentData } from './useTournament';

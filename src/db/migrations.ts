@@ -38,22 +38,18 @@ export const migrations: DbMigration[] = [
       meta: 'key',
     },
   },
+  {
+    version: 2,
+    description:
+      'Add tournament scenarios: scenarios, matchResults, knockoutPicks.',
+    stores: {
+      scenarios: 'id, collectionId, isOfficial, updatedAt',
+      matchResults: 'uid, scenarioId, matchId',
+      knockoutPicks: 'uid, scenarioId, slot',
+    },
+  },
   // ---------------------------------------------------------------------------
-  // FUTURE MIGRATIONS — append below. Example template (do not uncomment until
-  // there is a real change to make):
-  //
-  // {
-  //   version: 2,
-  //   description: 'Add wishlist flag to inventory.',
-  //   stores: {
-  //     inventory: 'uid, collectionId, stickerId, updatedAt, wishlist',
-  //   },
-  //   upgrade: async (tx) => {
-  //     await tx.table('inventory').toCollection().modify((item) => {
-  //       item.wishlist = false;
-  //     });
-  //   },
-  // },
+  // FUTURE MIGRATIONS — append below. Never edit an already-released entry.
   // ---------------------------------------------------------------------------
 ];
 

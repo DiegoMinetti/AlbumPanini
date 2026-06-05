@@ -74,6 +74,20 @@
     "quantity": "Cant. {{count}}",
     "noResults": "Ninguna figurita coincide con los filtros."
   },
+  "detail": {
+    "position": "Posición",
+    "club": "Club",
+    "nationality": "Nacionalidad",
+    "age": "Edad",
+    "birthDate": "Nacimiento",
+    "birthPlace": "Lugar de nacimiento",
+    "height": "Altura",
+    "weight": "Peso",
+    "shirtNumber": "Dorsal",
+    "preferredFoot": "Pie hábil",
+    "wikipedia": "Wikipedia",
+    "noData": "Sin datos extra para esta figurita."
+  },
   "bulk": {
     "title": "Importación masiva",
     "description": "Pegá códigos de figuritas, uno por línea o separados por espacios.",

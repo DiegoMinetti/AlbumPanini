@@ -10,6 +10,7 @@ interface StickerCardProps {
   showImage: boolean;
   onIncrement: (stickerId: string) => void;
   onDecrement: (stickerId: string) => void;
+  onSelect?: (sticker: StoredSticker) => void;
 }
 
 function statusRing(quantity: number): string {
@@ -25,10 +26,12 @@ function StickerCardComponent({
   showImage,
   onIncrement,
   onDecrement,
+  onSelect,
 }: StickerCardProps) {
   const { t } = useTranslation();
   const owned = quantity > 0;
   const dupes = Math.max(0, quantity - 1);
+  const select = onSelect ? () => onSelect(sticker) : undefined;
 
   return (
     <div
@@ -42,11 +45,17 @@ function StickerCardComponent({
           src={sticker.image}
           alt={sticker.name}
           loading="lazy"
-          className={`${view === 'grid' ? 'h-24 w-full' : 'h-14 w-14'} rounded-lg object-cover`}
+          onClick={select}
+          className={`${view === 'grid' ? 'h-24 w-full' : 'h-14 w-14'} rounded-lg object-cover ${select ? 'cursor-pointer' : ''}`}
         />
       ) : null}
 
-      <div className="min-w-0 flex-1">
+      <button
+        type="button"
+        onClick={select}
+        disabled={!select}
+        className="min-w-0 flex-1 text-left disabled:cursor-default"
+      >
         <div className="flex items-center gap-2">
           <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-bold uppercase text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             {sticker.code}
@@ -61,7 +70,7 @@ function StickerCardComponent({
         <p className="text-xs text-slate-500">
           {t('stickers.quantity', { count: quantity })}
         </p>
-      </div>
+      </button>
 
       <div className={view === 'grid' ? 'mt-1' : ''}>
         <QuantityStepper

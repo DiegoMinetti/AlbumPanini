@@ -8,6 +8,7 @@ interface StickerGridProps {
   showImages: boolean;
   onIncrement: (stickerId: string) => void;
   onDecrement: (stickerId: string) => void;
+  onSelect?: (sticker: StoredSticker) => void;
 }
 
 export function StickerGrid({
@@ -17,6 +18,7 @@ export function StickerGrid({
   showImages,
   onIncrement,
   onDecrement,
+  onSelect,
 }: StickerGridProps) {
   return (
     <div
@@ -36,6 +38,7 @@ export function StickerGrid({
           showImage={showImages}
           onIncrement={onIncrement}
           onDecrement={onDecrement}
+          onSelect={onSelect}
         />
       ))}
     </div>

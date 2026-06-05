@@ -16,11 +16,13 @@ import {
 } from '@/services/inventoryService';
 import { FilterBar } from '@/components/stickers/FilterBar';
 import { StickerGrid } from '@/components/stickers/StickerGrid';
+import { StickerDetailModal } from '@/components/stickers/StickerDetailModal';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Spinner } from '@/components/feedback/Spinner';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { NoActiveCollection } from '@/components/collections/NoActiveCollection';
 import { BulkImportModal } from '@/components/stickers/BulkImportModal';
+import type { StoredSticker } from '@/types/collection';
 
 export function StickersPage() {
   const { t } = useTranslation();
@@ -34,6 +36,7 @@ export function StickersPage() {
 
   const [filter, setFilter] = useState<StickerFilter>(DEFAULT_FILTER);
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [selected, setSelected] = useState<StoredSticker | null>(null);
 
   const categories = useMemo(() => distinctCategories(stickers), [stickers]);
   const rarities = useMemo(() => distinctRarities(stickers), [stickers]);
@@ -95,8 +98,15 @@ export function StickersPage() {
           showImages={showImages}
           onIncrement={(id) => void incrementSticker(collectionId, id)}
           onDecrement={(id) => void decrementSticker(collectionId, id)}
+          onSelect={setSelected}
         />
       )}
+
+      <StickerDetailModal
+        sticker={selected}
+        quantity={selected ? (inventory.get(selected.id) ?? 0) : 0}
+        onClose={() => setSelected(null)}
+      />
 
       <BulkImportModal
         open={bulkOpen}

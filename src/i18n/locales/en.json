@@ -74,6 +74,20 @@
     "quantity": "Qty {{count}}",
     "noResults": "No stickers match your filters."
   },
+  "detail": {
+    "position": "Position",
+    "club": "Club",
+    "nationality": "Nationality",
+    "age": "Age",
+    "birthDate": "Born",
+    "birthPlace": "Birthplace",
+    "height": "Height",
+    "weight": "Weight",
+    "shirtNumber": "Shirt #",
+    "preferredFoot": "Preferred foot",
+    "wikipedia": "Wikipedia",
+    "noData": "No extra data for this sticker."
+  },
   "bulk": {
     "title": "Bulk import",
     "description": "Paste sticker codes, one per line or separated by spaces.",

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { tournamentSchema, type Tournament } from './tournament';
 
 /**
  * Domain model for collections, teams and stickers.
@@ -40,6 +41,8 @@ export const teamSchema = z.object({
   secondaryColor: hexColorSchema.optional(),
   /** Optional explicit ordering within the collection. */
   order: z.number().int().optional(),
+  /** Collection-driven extra data (e.g. confederation, codes). */
+  meta: z.record(z.unknown()).optional(),
 });
 export type Team = z.infer<typeof teamSchema>;
 
@@ -59,6 +62,12 @@ export const stickerSchema = z.object({
   image: z.string().optional(),
   /** Optional explicit ordering. */
   order: z.number().int().optional(),
+  /**
+   * Collection-driven extra data carried verbatim into the UI (e.g. player
+   * bio: club, position, age, height). Kept generic so the model stays
+   * franchise-agnostic.
+   */
+  meta: z.record(z.unknown()).optional(),
 });
 export type Sticker = z.infer<typeof stickerSchema>;
 
@@ -82,6 +91,11 @@ export const collectionPackageSchema = collectionMetaSchema.extend({
   schema: z.number().int().positive().default(1),
   teams: z.array(teamSchema).default([]),
   stickers: z.array(stickerSchema).min(1),
+  /**
+   * Optional tournament structure (groups, fixture, knockout bracket). Present
+   * only for sports collections; everything else ignores it.
+   */
+  tournament: tournamentSchema.optional(),
 });
 export type CollectionPackage = z.infer<typeof collectionPackageSchema>;
 
@@ -115,6 +129,8 @@ export interface StoredCollection extends CollectionMeta {
   status: CollectionStatus;
   /** Id of the source package this was instantiated from (for re-sync/info). */
   sourceId?: string;
+  /** Static tournament structure, if the source package shipped one. */
+  tournament?: Tournament;
   createdAt: number;
   updatedAt: number;
 }

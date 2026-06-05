@@ -5,6 +5,11 @@ import type {
   StoredTeam,
 } from '@/types/collection';
 import type { ActivityEntry, StoredInventoryItem } from '@/types/inventory';
+import type {
+  StoredKnockoutPick,
+  StoredMatchResult,
+  StoredScenario,
+} from '@/types/scenario';
 import { LATEST_DB_VERSION, migrations } from './migrations';
 
 /** A key/value record in the `meta` table. */
@@ -36,6 +41,9 @@ export class PaniniDatabase extends Dexie {
   inventory!: Table<StoredInventoryItem, string>;
   activity!: Table<ActivityEntry, number>;
   meta!: Table<MetaRecord, string>;
+  scenarios!: Table<StoredScenario, string>;
+  matchResults!: Table<StoredMatchResult, string>;
+  knockoutPicks!: Table<StoredKnockoutPick, string>;
 
   constructor(name = 'panini-db') {
     super(name);
@@ -102,6 +110,9 @@ export class PaniniDatabase extends Dexie {
         this.stickers,
         this.inventory,
         this.activity,
+        this.scenarios,
+        this.matchResults,
+        this.knockoutPicks,
       ],
       async () => {
         await Promise.all([
@@ -110,6 +121,9 @@ export class PaniniDatabase extends Dexie {
           this.stickers.clear(),
           this.inventory.clear(),
           this.activity.clear(),
+          this.scenarios.clear(),
+          this.matchResults.clear(),
+          this.knockoutPicks.clear(),
         ]);
       }
     );

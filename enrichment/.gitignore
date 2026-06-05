@@ -1,0 +1,7 @@
+node_modules/
+dist/
+# Cache y artefactos generados son reproducibles; no se versionan.
+data/cache/
+data/checkpoints/
+data/generated/
+*.log

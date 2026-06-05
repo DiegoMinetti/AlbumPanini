@@ -78,6 +78,7 @@ export function packageToRows(
     coverImage: pkg.coverImage,
     status: 'active',
     sourceId: pkg.id,
+    tournament: pkg.tournament,
     createdAt: now,
     updatedAt: now,
   };

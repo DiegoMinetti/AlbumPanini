@@ -122,13 +122,32 @@ export async function duplicateCollection(
 export async function deleteCollection(id: string): Promise<void> {
   await db.transaction(
     'rw',
-    [db.collections, db.teams, db.stickers, db.inventory, db.activity],
+    [
+      db.collections,
+      db.teams,
+      db.stickers,
+      db.inventory,
+      db.activity,
+      db.scenarios,
+      db.matchResults,
+      db.knockoutPicks,
+    ],
     async () => {
       await db.collections.delete(id);
       await db.teams.where('collectionId').equals(id).delete();
       await db.stickers.where('collectionId').equals(id).delete();
       await db.inventory.where('collectionId').equals(id).delete();
       await db.activity.where('collectionId').equals(id).delete();
+
+      // Cascade tournament scenarios + their results/picks.
+      const scenarioIds = (
+        await db.scenarios.where('collectionId').equals(id).toArray()
+      ).map((s) => s.id);
+      await db.scenarios.where('collectionId').equals(id).delete();
+      for (const sid of scenarioIds) {
+        await db.matchResults.where('scenarioId').equals(sid).delete();
+        await db.knockoutPicks.where('scenarioId').equals(sid).delete();
+      }
     }
   );
 }

@@ -1,0 +1,28 @@
+{
+  "name": "panini-wc-2026-enrichment",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pipeline de enriquecimiento del catálogo Panini FIFA World Cup 2026 (Wikidata + Wikipedia)",
+  "packageManager": "pnpm@11.5.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "enrich": "tsx src/cli.ts enrich",
+    "report": "tsx src/cli.ts report",
+    "build-package": "tsx src/build-package.ts",
+    "build-fixture": "tsx src/build-fixture.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "p-limit": "^6.2.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0"
+  }
+}
