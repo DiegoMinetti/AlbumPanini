@@ -10,7 +10,7 @@ collection from a JSON package (World Cup, Champions League, Pokémon, Formula 1
 
 [![CI](https://github.com/DiegoMinetti/AlbumPanini/actions/workflows/ci.yml/badge.svg)](https://github.com/DiegoMinetti/AlbumPanini/actions/workflows/ci.yml)
 
-## Features
+## Features 
 
 - 📦 **Multiple collections** — create, rename, duplicate, archive, delete.
   Several active collections at once.
