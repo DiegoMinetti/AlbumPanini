@@ -51,7 +51,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="sticky bottom-0 z-40 border-t border-slate-200 bg-white/90 backdrop-blur pb-safe-bottom dark:border-slate-800 dark:bg-slate-950/90"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/90 backdrop-blur pb-safe-bottom dark:border-slate-800 dark:bg-slate-950/90"
       aria-label="Primary"
     >
       <ul className="mx-auto flex max-w-2xl items-stretch">
