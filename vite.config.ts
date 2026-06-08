@@ -11,7 +11,8 @@ import { fileURLToPath, URL } from 'node:url';
  * base is `'/'`. The repo name is injected by the deploy workflow through the
  * `VITE_BASE_PATH` env var; otherwise we fall back to root.
  */
-const basePath = process.env.VITE_BASE_PATH ?? '/';
+const rawBasePath = process.env.VITE_BASE_PATH ?? '/';
+const basePath = rawBasePath.endsWith('/') ? rawBasePath : `${rawBasePath}/`;
 
 export default defineConfig({
   base: basePath,

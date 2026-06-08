@@ -22,7 +22,8 @@ import { normalizeCode } from '@/utils/code';
 
 /** Resolve a path under the public collections folder, base-path aware. */
 function collectionsUrl(file: string): string {
-  const base = import.meta.env.BASE_URL ?? '/';
+  const rawBase = import.meta.env.BASE_URL ?? '/';
+  const base = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
   const cleaned = file.replace(/^\.?\//, '');
   return `${base}collections/${cleaned}`;
 }
