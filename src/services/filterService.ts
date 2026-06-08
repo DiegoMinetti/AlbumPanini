@@ -59,6 +59,21 @@ export function filterStickers(
   });
 }
 
+/**
+ * "Extra" stickers are foil/parallel variants that ship only in some country
+ * editions (e.g. shiny player parallels). They are NOT part of the standard
+ * 980-sticker base set, so by default they are hidden — toggling them on lets
+ * collectors of those editions track them too.
+ */
+export function isExtraSticker(sticker: StoredSticker): boolean {
+  return sticker.type === 'shiny';
+}
+
+/** Stickers in official album order (the `order` field encodes album layout). */
+export function sortByAlbumOrder(stickers: StoredSticker[]): StoredSticker[] {
+  return [...stickers].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+}
+
 /** Distinct, sorted list of categories present in a sticker set. */
 export function distinctCategories(stickers: StoredSticker[]): string[] {
   return [...new Set(stickers.map((s) => s.category || 'default'))].sort();

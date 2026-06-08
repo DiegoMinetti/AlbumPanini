@@ -5,6 +5,7 @@ import { useActiveCollection } from '@/hooks';
 const TITLE_BY_PATH: Record<string, string> = {
   '/': 'nav.dashboard',
   '/stickers': 'nav.stickers',
+  '/tournament': 'nav.tournament',
   '/stats': 'nav.statistics',
   '/exchange': 'nav.exchange',
   '/scan': 'nav.scan',

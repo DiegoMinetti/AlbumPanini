@@ -12,6 +12,8 @@ interface FilterBarProps {
   teams: StoredTeam[];
   categories: string[];
   rarities: string[];
+  includeExtras: boolean;
+  onIncludeExtrasChange: (include: boolean) => void;
 }
 
 export function FilterBar({
@@ -20,6 +22,8 @@ export function FilterBar({
   teams,
   categories,
   rarities,
+  includeExtras,
+  onIncludeExtrasChange,
 }: FilterBarProps) {
   const { t } = useTranslation();
 
@@ -98,6 +102,16 @@ export function FilterBar({
           ))}
         </select>
       </div>
+
+      <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+        <input
+          type="checkbox"
+          className="h-4 w-4"
+          checked={includeExtras}
+          onChange={(e) => onIncludeExtrasChange(e.target.checked)}
+        />
+        {t('stickers.includeExtras')}
+      </label>
     </div>
   );
 }

@@ -11,7 +11,8 @@
     "scan": "Escanear",
     "collections": "Colecciones",
     "backup": "Respaldo",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "tournament": "Copa"
   },
   "common": {
     "save": "Guardar",
@@ -38,7 +39,8 @@
     "missing": "Faltan",
     "duplicates": "Repetidas",
     "total": "Total",
-    "empty": "Todavía no hay nada aquí"
+    "empty": "Todavía no hay nada aquí",
+    "create": "Crear"
   },
   "onboarding": {
     "title": "Bienvenido",
@@ -72,7 +74,8 @@
     "list": "Lista",
     "count": "{{count}} figuritas",
     "quantity": "Cant. {{count}}",
-    "noResults": "Ninguna figurita coincide con los filtros."
+    "noResults": "Ninguna figurita coincide con los filtros.",
+    "includeExtras": "Incluir extras de otras ediciones"
   },
   "detail": {
     "position": "Posición",
@@ -181,5 +184,43 @@
     "renamed": "Renombrada",
     "duplicated": "Colección duplicada",
     "inventoryReset": "Inventario reiniciado"
+  },
+  "tournament": {
+    "title": "Torneo",
+    "groups": "Grupos",
+    "bracket": "Llaves",
+    "noTournament": "Esta colección no tiene un torneo asociado.",
+    "scenario": "Escenario",
+    "official": "Oficial",
+    "newScenario": "Nuevo escenario",
+    "deleteScenario": "Eliminar escenario",
+    "scenarioName": "Nombre del escenario",
+    "simulation": "Simulación",
+    "deleteScenarioConfirm": "¿Eliminar el escenario «{{name}}» y todos sus resultados?",
+    "group": "Grupo {{id}}",
+    "team": "Equipo",
+    "showMatches": "Ver partidos",
+    "hideMatches": "Ocultar partidos",
+    "pens": "Penales",
+    "col": {
+      "played": "PJ",
+      "won": "G",
+      "drawn": "E",
+      "lost": "P",
+      "goalDiff": "DG",
+      "points": "Pts"
+    },
+    "legend": {
+      "qualify": "Clasifica",
+      "bestThird": "Mejor 3.º"
+    },
+    "stage": {
+      "r32": "16avos de final",
+      "r16": "Octavos de final",
+      "qf": "Cuartos de final",
+      "sf": "Semifinales",
+      "third": "Tercer puesto",
+      "final": "Final"
+    }
   }
 }

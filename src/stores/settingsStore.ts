@@ -20,6 +20,7 @@ interface SettingsState extends Settings {
   setStickerView: (view: StickerView) => void;
   setActiveCollection: (id: string | null) => void;
   setShowImages: (show: boolean) => void;
+  setIncludeExtras: (include: boolean) => void;
   /** Replace the whole settings object (used after restoring a backup). */
   applySettings: (settings: Settings) => void;
 }
@@ -102,6 +103,7 @@ export const useSettingsStore = create<SettingsState>()(
       setStickerView: (stickerView) => set({ stickerView }),
       setActiveCollection: (activeCollectionId) => set({ activeCollectionId }),
       setShowImages: (showImages) => set({ showImages }),
+      setIncludeExtras: (includeExtras) => set({ includeExtras }),
       applySettings: (settings) => {
         set({ ...settings });
         applyThemeSideEffects(get());
@@ -118,6 +120,7 @@ export const useSettingsStore = create<SettingsState>()(
         stickerView: state.stickerView,
         activeCollectionId: state.activeCollectionId,
         showImages: state.showImages,
+        includeExtras: state.includeExtras,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) applyThemeSideEffects(state);

@@ -31,10 +31,13 @@ export async function goto(page: Page, hash = '/'): Promise<void> {
 
 /** Install the tiny demo collection via the Collections page. */
 export async function installDemo(page: Page): Promise<void> {
+  await installByName(page, 'Demo Mini');
+}
+
+/** Install a manifest collection by its display name via the Collections page. */
+export async function installByName(page: Page, name: string): Promise<void> {
   await goto(page, '/collections');
-  const installRow = page
-    .locator('.card', { hasText: 'Demo Mini' })
-    .first();
+  const installRow = page.locator('.card', { hasText: name }).first();
   await installRow.getByRole('button', { name: 'Install' }).click();
   // Once installed it shows up as the selected active collection.
   await page.getByText('Selected').first().waitFor();

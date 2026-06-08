@@ -22,6 +22,11 @@ export const settingsSchema = z.object({
   activeCollectionId: z.string().nullable().default(null),
   /** Show only owned-relevant info, hide images to save bandwidth, etc. */
   showImages: z.boolean().default(true),
+  /**
+   * Include "extra" stickers (foil/parallel variants that ship only in some
+   * country editions). Off by default so the count matches the standard album.
+   */
+  includeExtras: z.boolean().default(false),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 

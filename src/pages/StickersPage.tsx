@@ -8,6 +8,8 @@ import {
   distinctCategories,
   distinctRarities,
   filterStickers,
+  isExtraSticker,
+  sortByAlbumOrder,
   type StickerFilter,
 } from '@/services/filterService';
 import {
@@ -33,16 +35,32 @@ export function StickersPage() {
   const view = useSettingsStore((s) => s.stickerView);
   const setView = useSettingsStore((s) => s.setStickerView);
   const showImages = useSettingsStore((s) => s.showImages);
+  const includeExtras = useSettingsStore((s) => s.includeExtras);
+  const setIncludeExtras = useSettingsStore((s) => s.setIncludeExtras);
 
   const [filter, setFilter] = useState<StickerFilter>(DEFAULT_FILTER);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [selected, setSelected] = useState<StoredSticker | null>(null);
 
-  const categories = useMemo(() => distinctCategories(stickers), [stickers]);
-  const rarities = useMemo(() => distinctRarities(stickers), [stickers]);
+  // Album-ordered base set: optionally drop region-specific "extra" variants.
+  const baseStickers = useMemo(() => {
+    const visible = includeExtras
+      ? stickers
+      : stickers.filter((s) => !isExtraSticker(s));
+    return sortByAlbumOrder(visible);
+  }, [stickers, includeExtras]);
+
+  const categories = useMemo(
+    () => distinctCategories(baseStickers),
+    [baseStickers]
+  );
+  const rarities = useMemo(
+    () => distinctRarities(baseStickers),
+    [baseStickers]
+  );
   const filtered = useMemo(
-    () => filterStickers(stickers, inventory, filter),
-    [stickers, inventory, filter]
+    () => filterStickers(baseStickers, inventory, filter),
+    [baseStickers, inventory, filter]
   );
 
   if (loadingActive) return <Spinner />;
@@ -84,6 +102,8 @@ export function StickersPage() {
         teams={teams}
         categories={categories}
         rarities={rarities}
+        includeExtras={includeExtras}
+        onIncludeExtrasChange={setIncludeExtras}
       />
 
       {loading ? (

@@ -11,7 +11,8 @@
     "scan": "Scan",
     "collections": "Collections",
     "backup": "Backup",
-    "settings": "Settings"
+    "settings": "Settings",
+    "tournament": "Cup"
   },
   "common": {
     "save": "Save",
@@ -38,7 +39,8 @@
     "missing": "Missing",
     "duplicates": "Duplicates",
     "total": "Total",
-    "empty": "Nothing here yet"
+    "empty": "Nothing here yet",
+    "create": "Create"
   },
   "onboarding": {
     "title": "Welcome",
@@ -72,7 +74,8 @@
     "list": "List",
     "count": "{{count}} stickers",
     "quantity": "Qty {{count}}",
-    "noResults": "No stickers match your filters."
+    "noResults": "No stickers match your filters.",
+    "includeExtras": "Include extras from other editions"
   },
   "detail": {
     "position": "Position",
@@ -181,5 +184,43 @@
     "renamed": "Renamed",
     "duplicated": "Collection duplicated",
     "inventoryReset": "Inventory reset"
+  },
+  "tournament": {
+    "title": "Tournament",
+    "groups": "Groups",
+    "bracket": "Bracket",
+    "noTournament": "This collection has no tournament.",
+    "scenario": "Scenario",
+    "official": "Official",
+    "newScenario": "New scenario",
+    "deleteScenario": "Delete scenario",
+    "scenarioName": "Scenario name",
+    "simulation": "Simulation",
+    "deleteScenarioConfirm": "Delete the scenario \"{{name}}\" and all its results?",
+    "group": "Group {{id}}",
+    "team": "Team",
+    "showMatches": "Show matches",
+    "hideMatches": "Hide matches",
+    "pens": "Pens",
+    "col": {
+      "played": "P",
+      "won": "W",
+      "drawn": "D",
+      "lost": "L",
+      "goalDiff": "GD",
+      "points": "Pts"
+    },
+    "legend": {
+      "qualify": "Qualifies",
+      "bestThird": "Best 3rd"
+    },
+    "stage": {
+      "r32": "Round of 32",
+      "r16": "Round of 16",
+      "qf": "Quarter-finals",
+      "sf": "Semi-finals",
+      "third": "Third place",
+      "final": "Final"
+    }
   }
 }

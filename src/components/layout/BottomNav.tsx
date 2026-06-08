@@ -11,6 +11,7 @@ interface NavItem {
 const ITEMS: NavItem[] = [
   { to: '/', labelKey: 'nav.dashboard', icon: '🏠', end: true },
   { to: '/stickers', labelKey: 'nav.stickers', icon: '🗂️' },
+  { to: '/tournament', labelKey: 'nav.tournament', icon: '🏆' },
   { to: '/scan', labelKey: 'nav.scan', icon: '📷' },
   { to: '/exchange', labelKey: 'nav.exchange', icon: '🔁' },
   { to: '/stats', labelKey: 'nav.statistics', icon: '📊' },

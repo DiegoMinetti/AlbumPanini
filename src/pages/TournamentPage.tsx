@@ -1,0 +1,90 @@
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useActiveCollection } from '@/hooks';
+import { useCollectionData } from '@/hooks/useCollectionData';
+import { useTournament } from '@/hooks/useTournament';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { Spinner } from '@/components/feedback/Spinner';
+import { EmptyState } from '@/components/feedback/EmptyState';
+import { NoActiveCollection } from '@/components/collections/NoActiveCollection';
+import { ScenarioBar } from '@/components/tournament/ScenarioBar';
+import { GroupsView } from '@/components/tournament/GroupsView';
+import { BracketView } from '@/components/tournament/BracketView';
+
+type Tab = 'groups' | 'bracket';
+
+/**
+ * Tournament hub for the active collection: scenario switcher plus two views —
+ * the group stage (standings + fixtures) and the knockout bracket. Renders an
+ * empty state for collections that ship no tournament block.
+ */
+export function TournamentPage() {
+  const { t } = useTranslation();
+  const { active, loading: loadingActive } = useActiveCollection();
+  const { teams, loading: loadingTeams } = useCollectionData(
+    active?.id ?? null
+  );
+  const {
+    tournament,
+    scenarios,
+    activeScenario,
+    activeScenarioId,
+    standings,
+    resolver,
+    results,
+    loading: loadingTournament,
+  } = useTournament(active?.id ?? null);
+
+  const [tab, setTab] = useState<Tab>('groups');
+
+  const teamsById = useMemo(
+    () => new Map(teams.map((team) => [team.id, team])),
+    [teams]
+  );
+
+  if (loadingActive) return <Spinner />;
+  if (!active) return <NoActiveCollection />;
+  if (loadingTeams || loadingTournament) return <Spinner />;
+  if (!tournament || !standings || !resolver) {
+    return <EmptyState icon="🏆" title={t('tournament.noTournament')} />;
+  }
+  if (!activeScenarioId || !activeScenario) return <Spinner />;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <ScenarioBar
+        collectionId={active.id}
+        scenarios={scenarios}
+        activeScenario={activeScenario}
+      />
+
+      <SegmentedControl<Tab>
+        ariaLabel={t('tournament.title')}
+        options={[
+          { value: 'groups', label: t('tournament.groups') },
+          { value: 'bracket', label: t('tournament.bracket') },
+        ]}
+        value={tab}
+        onChange={setTab}
+      />
+
+      {tab === 'groups' ? (
+        <GroupsView
+          tournament={tournament}
+          standings={standings}
+          teamsById={teamsById}
+          results={results}
+          scenarioId={activeScenarioId}
+        />
+      ) : (
+        <BracketView
+          matches={tournament.matches}
+          resolver={resolver}
+          teamsById={teamsById}
+          results={results}
+          scenarioId={activeScenarioId}
+        />
+      )}
+    </div>
+  );
+}

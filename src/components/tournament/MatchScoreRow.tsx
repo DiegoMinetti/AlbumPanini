@@ -1,4 +1,4 @@
-import type { StoredMatchResult } from '@/types/scenario';
+import type { IndexedMatchResult } from '@/services/tournamentService';
 import type { StoredTeam } from '@/types/collection';
 
 interface MatchScoreRowProps {
@@ -8,7 +8,7 @@ interface MatchScoreRowProps {
   /** Fallback labels shown when a team is not yet resolved (e.g. "1A"). */
   homeLabel?: string;
   awayLabel?: string;
-  result?: StoredMatchResult;
+  result?: IndexedMatchResult;
   onScore: (homeGoals: number | null, awayGoals: number | null) => void;
 }
 
