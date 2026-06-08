@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@/i18n';
 import { StickerCard } from './StickerCard';
@@ -57,5 +57,50 @@ describe('StickerCard', () => {
 
     expect(screen.queryByLabelText('increment')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('decrement')).not.toBeInTheDocument();
+  });
+
+  it('shows fallback avatar when player has no photo', () => {
+    render(
+      <StickerCard
+        sticker={base}
+        quantity={1}
+        view="grid"
+        showImage
+        teamColors={{ primaryColor: '#75AADB', secondaryColor: '#FFFFFF' }}
+        editable={false}
+        onIncrement={vi.fn()}
+        onDecrement={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('img', { name: 'Messi' })).toBeInTheDocument();
+  });
+
+  it('normalizes http urls and falls back when image fails to load', () => {
+    render(
+      <StickerCard
+        sticker={sticker({
+          id: 'ARG-10',
+          code: 'ARG 10',
+          name: 'Maradona',
+          image: 'http://commons.wikimedia.org/wiki/Special:FilePath/Test.jpg',
+        })}
+        quantity={1}
+        view="grid"
+        showImage
+        editable={false}
+        onIncrement={vi.fn()}
+        onDecrement={vi.fn()}
+      />
+    );
+
+    const img = screen.getByRole('img', { name: 'Maradona' });
+    expect(img).toHaveAttribute(
+      'src',
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Test.jpg'
+    );
+
+    fireEvent.error(img);
+    expect(screen.getByRole('img', { name: 'Maradona' })).toBeInTheDocument();
   });
 });

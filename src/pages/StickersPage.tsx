@@ -75,6 +75,19 @@ export function StickersPage() {
         : [],
     [grouped, filtered, teams, active?.tournament?.groups]
   );
+  const teamColorsById = useMemo(
+    () =>
+      new Map(
+        teams.map((team) => [
+          team.id,
+          {
+            primaryColor: team.primaryColor,
+            secondaryColor: team.secondaryColor,
+          },
+        ])
+      ),
+    [teams]
+  );
   // While searching, force every section open so matches are never hidden.
   const forceExpand = filter.search.trim().length > 0;
 
@@ -203,6 +216,7 @@ export function StickersPage() {
         <StickerGroups
           sections={sections}
           inventory={inventory}
+          teamColorsById={teamColorsById}
           view={view}
           showImages={showImages}
           editable={editMode}
@@ -217,6 +231,7 @@ export function StickersPage() {
         <StickerGrid
           stickers={filtered}
           inventory={inventory}
+          teamColorsById={teamColorsById}
           view={view}
           showImages={showImages}
           editable={editMode}

@@ -43,6 +43,15 @@ describe('settingsStore', () => {
     });
     expect(useSettingsStore.getState().stickerView).toBe('list');
   });
+
+  it('tracks launches and donation link state', () => {
+    useSettingsStore.getState().registerAppLaunch();
+    useSettingsStore.getState().registerAppLaunch();
+    expect(useSettingsStore.getState().appLaunchCount).toBe(2);
+
+    useSettingsStore.getState().markDonationLinkOpened();
+    expect(useSettingsStore.getState().donationLinkOpened).toBe(true);
+  });
 });
 
 describe('resolveDark', () => {

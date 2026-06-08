@@ -15,6 +15,7 @@ import { StickerGrid } from './StickerGrid';
 interface StickerGroupsProps {
   sections: StickerSection[];
   inventory: Map<string, number>;
+  teamColorsById?: Map<string, { primaryColor?: string; secondaryColor?: string }>;
   view: 'grid' | 'list';
   showImages: boolean;
   editable: boolean;
@@ -83,6 +84,7 @@ function GroupHeader({
 export function StickerGroups({
   sections,
   inventory,
+  teamColorsById,
   view,
   showImages,
   editable,
@@ -115,6 +117,7 @@ export function StickerGroups({
     <StickerGrid
       stickers={stickers}
       inventory={inventory}
+      teamColorsById={teamColorsById}
       view={view}
       showImages={showImages}
       editable={editable}

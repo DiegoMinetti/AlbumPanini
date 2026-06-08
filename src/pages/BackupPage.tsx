@@ -36,6 +36,8 @@ export function BackupPage() {
         showImages: settings.showImages,
         stickerGrouped: settings.stickerGrouped,
         editMode: settings.editMode,
+        appLaunchCount: settings.appLaunchCount,
+        donationLinkOpened: settings.donationLinkOpened,
       });
       downloadBlob(blob, backupFilename());
       toast.success(t('backup.exported'));

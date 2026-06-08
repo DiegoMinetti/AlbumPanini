@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { StoredSticker } from '@/types/collection';
 import { QuantityStepper } from './QuantityStepper';
@@ -8,11 +8,55 @@ interface StickerCardProps {
   quantity: number;
   view: 'grid' | 'list';
   showImage: boolean;
+  teamColors?: { primaryColor?: string; secondaryColor?: string };
   /** When false the quantity stepper is hidden (read-only view). */
   editable: boolean;
   onIncrement: (stickerId: string) => void;
   onDecrement: (stickerId: string) => void;
   onSelect?: (sticker: StoredSticker) => void;
+}
+
+function normalizeStickerImageSrc(src?: string): string | null {
+  if (!src) return null;
+  if (src.startsWith('http://')) return `https://${src.slice(7)}`;
+  return src;
+}
+
+function StickerFallbackImage({
+  label,
+  view,
+  teamColors,
+}: {
+  label: string;
+  view: 'grid' | 'list';
+  teamColors?: { primaryColor?: string; secondaryColor?: string };
+}) {
+  const primary = teamColors?.primaryColor ?? '#9ca3af';
+  const secondary = teamColors?.secondaryColor ?? '#6b7280';
+
+  return (
+    <div
+      role="img"
+      aria-label={label}
+      className={`${view === 'grid' ? 'h-24 w-full' : 'h-14 w-14'} relative overflow-hidden rounded-lg`}
+      style={{
+        background:
+          'linear-gradient(155deg, #e2e8f0 0%, #cbd5e1 45%, #94a3b8 100%)',
+      }}
+    >
+      <div
+        className="absolute inset-x-0 top-0 h-1.5"
+        style={{ backgroundColor: primary }}
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-1.5"
+        style={{ backgroundColor: secondary }}
+      />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="h-8 w-8 rounded-full bg-slate-100/80" />
+      </div>
+    </div>
+  );
 }
 
 function statusRing(quantity: number): string {
@@ -26,6 +70,7 @@ function StickerCardComponent({
   quantity,
   view,
   showImage,
+  teamColors,
   editable,
   onIncrement,
   onDecrement,
@@ -35,6 +80,19 @@ function StickerCardComponent({
   const owned = quantity > 0;
   const dupes = Math.max(0, quantity - 1);
   const select = onSelect ? () => onSelect(sticker) : undefined;
+  const [imageError, setImageError] = useState(false);
+
+  const imageSrc = useMemo(
+    () => normalizeStickerImageSrc(sticker.image),
+    [sticker.image]
+  );
+
+  useEffect(() => {
+    setImageError(false);
+  }, [imageSrc, sticker.uid]);
+
+  const showPhoto = showImage && !!imageSrc && !imageError;
+  const showFallback = showImage && !showPhoto;
 
   return (
     <div
@@ -43,14 +101,25 @@ function StickerCardComponent({
       data-sticker-id={sticker.id}
       data-quantity={quantity}
     >
-      {showImage && sticker.image ? (
+      {showPhoto ? (
         <img
-          src={sticker.image}
+          src={imageSrc ?? undefined}
           alt={sticker.name}
           loading="lazy"
           onClick={select}
-          className={`${view === 'grid' ? 'h-24 w-full' : 'h-14 w-14'} rounded-lg object-cover ${select ? 'cursor-pointer' : ''}`}
+          onError={() => setImageError(true)}
+          className={`${view === 'grid' ? 'h-24 w-full' : 'h-14 w-14'} rounded-lg object-cover object-center ${select ? 'cursor-pointer' : ''}`}
         />
+      ) : null}
+
+      {showFallback ? (
+        <div onClick={select} className={select ? 'cursor-pointer' : ''}>
+          <StickerFallbackImage
+            label={sticker.name}
+            view={view}
+            teamColors={teamColors}
+          />
+        </div>
       ) : null}
 
       <button

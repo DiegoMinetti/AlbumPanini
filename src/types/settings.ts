@@ -32,6 +32,10 @@ export const settingsSchema = z.object({
    * read-only, preventing accidental changes while consulting. On by default.
    */
   editMode: z.boolean().default(true),
+  /** Number of app launches recorded (used for non-invasive donation prompt). */
+  appLaunchCount: z.number().int().nonnegative().default(0),
+  /** True once the Mercado Pago link was opened by the user. */
+  donationLinkOpened: z.boolean().default(false),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 

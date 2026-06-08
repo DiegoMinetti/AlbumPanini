@@ -72,4 +72,65 @@
     @apply inline-flex min-h-[36px] items-center rounded-full px-3 text-xs
       font-medium ring-1 ring-inset transition-colors;
   }
+
+  .donation-fab {
+    @apply relative inline-flex h-12 w-12 items-center justify-center rounded-full
+      bg-emerald-500 text-white shadow-lg ring-1 ring-emerald-300/70 transition
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
+  }
+
+  .donation-fab--blink {
+    animation: donationBlink 1s ease-in-out 5;
+  }
+
+  .donation-fab--idle {
+    @apply opacity-45 hover:opacity-90;
+  }
+
+  .donation-fab-ring {
+    @apply pointer-events-none absolute inset-0 rounded-full border-2 border-emerald-300;
+    animation: donationRing 1.8s ease-out infinite;
+  }
+
+  .donation-nav-blink {
+    animation: donationNavBlink 0.5s ease-in-out 3;
+  }
+}
+
+@keyframes donationBlink {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 0.75;
+  }
+}
+
+@keyframes donationRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+@keyframes donationNavBlink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.55;
+    transform: scale(1.08);
+  }
 }

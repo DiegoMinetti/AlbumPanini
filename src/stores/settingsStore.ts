@@ -22,6 +22,8 @@ interface SettingsState extends Settings {
   setShowImages: (show: boolean) => void;
   setStickerGrouped: (grouped: boolean) => void;
   setEditMode: (editMode: boolean) => void;
+  registerAppLaunch: () => void;
+  markDonationLinkOpened: () => void;
   /** Replace the whole settings object (used after restoring a backup). */
   applySettings: (settings: Settings) => void;
 }
@@ -106,6 +108,9 @@ export const useSettingsStore = create<SettingsState>()(
       setShowImages: (showImages) => set({ showImages }),
       setStickerGrouped: (stickerGrouped) => set({ stickerGrouped }),
       setEditMode: (editMode) => set({ editMode }),
+      registerAppLaunch: () =>
+        set({ appLaunchCount: get().appLaunchCount + 1 }),
+      markDonationLinkOpened: () => set({ donationLinkOpened: true }),
       applySettings: (settings) => {
         set({ ...settings });
         applyThemeSideEffects(get());
@@ -124,6 +129,8 @@ export const useSettingsStore = create<SettingsState>()(
         showImages: state.showImages,
         stickerGrouped: state.stickerGrouped,
         editMode: state.editMode,
+        appLaunchCount: state.appLaunchCount,
+        donationLinkOpened: state.donationLinkOpened,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) applyThemeSideEffects(state);

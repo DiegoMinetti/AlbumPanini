@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -15,6 +16,7 @@ const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? '1.0.0';
 
 export function SettingsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const theme = useSettingsStore((s) => s.theme);
   const setTheme = useSettingsStore((s) => s.setTheme);
   const language = useSettingsStore((s) => s.language);
@@ -85,6 +87,18 @@ export function SettingsPage() {
           disabled={!active}
         >
           {t('settings.resetInventory')}
+        </button>
+      </section>
+
+      <section className="card flex flex-col gap-3">
+        <h2 className="text-base font-semibold">{t('settings.support')}</h2>
+        <p className="text-sm text-slate-500">{t('settings.supportHint')}</p>
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={() => navigate('/donations')}
+        >
+          {t('settings.openDonations')}
         </button>
       </section>
 

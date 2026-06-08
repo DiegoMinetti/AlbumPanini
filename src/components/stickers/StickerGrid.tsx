@@ -4,6 +4,7 @@ import { StickerCard } from './StickerCard';
 interface StickerGridProps {
   stickers: StoredSticker[];
   inventory: Map<string, number>;
+  teamColorsById?: Map<string, { primaryColor?: string; secondaryColor?: string }>;
   view: 'grid' | 'list';
   showImages: boolean;
   editable: boolean;
@@ -15,6 +16,7 @@ interface StickerGridProps {
 export function StickerGrid({
   stickers,
   inventory,
+  teamColorsById,
   view,
   showImages,
   editable,
@@ -36,6 +38,9 @@ export function StickerGrid({
           key={sticker.uid}
           sticker={sticker}
           quantity={inventory.get(sticker.id) ?? 0}
+          teamColors={
+            sticker.teamId ? teamColorsById?.get(sticker.teamId) : undefined
+          }
           view={view}
           showImage={showImages}
           editable={editable}

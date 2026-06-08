@@ -9,6 +9,7 @@ import { ScanPage } from '@/pages/ScanPage';
 import { CollectionsPage } from '@/pages/CollectionsPage';
 import { BackupPage } from '@/pages/BackupPage';
 import { SettingsPage } from '@/pages/SettingsPage';
+import { DonationsPage } from '@/pages/DonationsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
 /**
@@ -29,6 +30,7 @@ export const router = createHashRouter([
       { path: 'collections', element: <CollectionsPage /> },
       { path: 'backup', element: <BackupPage /> },
       { path: 'settings', element: <SettingsPage /> },
+      { path: 'donations', element: <DonationsPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
