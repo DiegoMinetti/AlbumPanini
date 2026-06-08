@@ -76,6 +76,11 @@
     "quantity": "Qty {{count}}",
     "noResults": "No stickers match your filters.",
     "includeExtras": "Include extras from other editions",
+    "edit": {
+      "lock": "Disable editing",
+      "unlock": "Enable editing",
+      "readonly": "Read-only mode: editing disabled"
+    },
     "groups": {
       "toggle": "Group",
       "flat": "Ungroup",

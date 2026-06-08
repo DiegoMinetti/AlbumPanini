@@ -27,6 +27,11 @@ export const settingsSchema = z.object({
    * group) instead of one flat grid. Off by default.
    */
   stickerGrouped: z.boolean().default(false),
+  /**
+   * Allow editing sticker quantities from the browser. When off the view is
+   * read-only, preventing accidental changes while consulting. On by default.
+   */
+  editMode: z.boolean().default(true),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 

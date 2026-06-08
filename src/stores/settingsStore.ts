@@ -21,6 +21,7 @@ interface SettingsState extends Settings {
   setActiveCollection: (id: string | null) => void;
   setShowImages: (show: boolean) => void;
   setStickerGrouped: (grouped: boolean) => void;
+  setEditMode: (editMode: boolean) => void;
   /** Replace the whole settings object (used after restoring a backup). */
   applySettings: (settings: Settings) => void;
 }
@@ -104,6 +105,7 @@ export const useSettingsStore = create<SettingsState>()(
       setActiveCollection: (activeCollectionId) => set({ activeCollectionId }),
       setShowImages: (showImages) => set({ showImages }),
       setStickerGrouped: (stickerGrouped) => set({ stickerGrouped }),
+      setEditMode: (editMode) => set({ editMode }),
       applySettings: (settings) => {
         set({ ...settings });
         applyThemeSideEffects(get());
@@ -121,6 +123,7 @@ export const useSettingsStore = create<SettingsState>()(
         activeCollectionId: state.activeCollectionId,
         showImages: state.showImages,
         stickerGrouped: state.stickerGrouped,
+        editMode: state.editMode,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) applyThemeSideEffects(state);

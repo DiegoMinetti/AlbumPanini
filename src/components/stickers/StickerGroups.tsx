@@ -17,6 +17,7 @@ interface StickerGroupsProps {
   inventory: Map<string, number>;
   view: 'grid' | 'list';
   showImages: boolean;
+  editable: boolean;
   /** Keys of currently collapsed sections/countries. */
   collapsed: Set<string>;
   onToggle: (key: string) => void;
@@ -84,6 +85,7 @@ export function StickerGroups({
   inventory,
   view,
   showImages,
+  editable,
   collapsed,
   onToggle,
   forceExpand = false,
@@ -115,6 +117,7 @@ export function StickerGroups({
       inventory={inventory}
       view={view}
       showImages={showImages}
+      editable={editable}
       onIncrement={onIncrement}
       onDecrement={onDecrement}
       onSelect={onSelect}

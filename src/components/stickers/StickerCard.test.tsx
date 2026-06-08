@@ -15,6 +15,7 @@ describe('StickerCard', () => {
         quantity={3}
         view="grid"
         showImage={false}
+        editable
         onIncrement={vi.fn()}
         onDecrement={vi.fn()}
       />
@@ -32,11 +33,29 @@ describe('StickerCard', () => {
         quantity={0}
         view="list"
         showImage={false}
+        editable
         onIncrement={onInc}
         onDecrement={vi.fn()}
       />
     );
     await userEvent.click(screen.getByLabelText('increment'));
     expect(onInc).toHaveBeenCalledWith('ARG-1');
+  });
+
+  it('hides quantity controls in read-only mode', () => {
+    render(
+      <StickerCard
+        sticker={base}
+        quantity={1}
+        view="grid"
+        showImage={false}
+        editable={false}
+        onIncrement={vi.fn()}
+        onDecrement={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByLabelText('increment')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('decrement')).not.toBeInTheDocument();
   });
 });

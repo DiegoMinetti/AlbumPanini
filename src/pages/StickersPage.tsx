@@ -40,6 +40,8 @@ export function StickersPage() {
   const showImages = useSettingsStore((s) => s.showImages);
   const grouped = useSettingsStore((s) => s.stickerGrouped);
   const setGrouped = useSettingsStore((s) => s.setStickerGrouped);
+  const editMode = useSettingsStore((s) => s.editMode);
+  const setEditMode = useSettingsStore((s) => s.setEditMode);
 
   const [filter, setFilter] = useState<StickerFilter>(DEFAULT_FILTER);
   const [bulkOpen, setBulkOpen] = useState(false);
@@ -100,10 +102,28 @@ export function StickersPage() {
         <div className="flex items-center gap-1.5">
           <button
             type="button"
+            className={`px-3 ${editMode ? 'btn-primary' : 'btn-secondary'}`}
+            aria-pressed={editMode}
+            aria-label={
+              editMode ? t('stickers.edit.lock') : t('stickers.edit.unlock')
+            }
+            title={
+              editMode ? t('stickers.edit.lock') : t('stickers.edit.unlock')
+            }
+            onClick={() => setEditMode(!editMode)}
+          >
+            <Icon name={editMode ? 'lock_open' : 'lock'} size={20} />
+          </button>
+          <button
+            type="button"
             className="btn-secondary px-3"
+            disabled={!editMode}
             aria-label={t('bulk.title')}
-            title={t('bulk.title')}
-            onClick={() => setBulkOpen(true)}
+            title={editMode ? t('bulk.title') : t('stickers.edit.readonly')}
+            onClick={() => {
+              if (!editMode) return;
+              setBulkOpen(true);
+            }}
           >
             <Icon name="playlist_add" size={20} />
           </button>
@@ -185,6 +205,7 @@ export function StickersPage() {
           inventory={inventory}
           view={view}
           showImages={showImages}
+          editable={editMode}
           collapsed={collapsed}
           onToggle={toggleGroup}
           forceExpand={forceExpand}
@@ -198,6 +219,7 @@ export function StickersPage() {
           inventory={inventory}
           view={view}
           showImages={showImages}
+          editable={editMode}
           onIncrement={(id) => void incrementSticker(collectionId, id)}
           onDecrement={(id) => void decrementSticker(collectionId, id)}
           onSelect={setSelected}

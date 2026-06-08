@@ -76,6 +76,11 @@
     "quantity": "Cant. {{count}}",
     "noResults": "Ninguna figurita coincide con los filtros.",
     "includeExtras": "Incluir extras de otras ediciones",
+    "edit": {
+      "lock": "Desactivar edición",
+      "unlock": "Activar edición",
+      "readonly": "Modo consulta: edición deshabilitada"
+    },
     "groups": {
       "toggle": "Agrupar",
       "flat": "Sin agrupar",

@@ -6,6 +6,7 @@ interface StickerGridProps {
   inventory: Map<string, number>;
   view: 'grid' | 'list';
   showImages: boolean;
+  editable: boolean;
   onIncrement: (stickerId: string) => void;
   onDecrement: (stickerId: string) => void;
   onSelect?: (sticker: StoredSticker) => void;
@@ -16,6 +17,7 @@ export function StickerGrid({
   inventory,
   view,
   showImages,
+  editable,
   onIncrement,
   onDecrement,
   onSelect,
@@ -36,6 +38,7 @@ export function StickerGrid({
           quantity={inventory.get(sticker.id) ?? 0}
           view={view}
           showImage={showImages}
+          editable={editable}
           onIncrement={onIncrement}
           onDecrement={onDecrement}
           onSelect={onSelect}

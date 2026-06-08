@@ -8,6 +8,8 @@ interface StickerCardProps {
   quantity: number;
   view: 'grid' | 'list';
   showImage: boolean;
+  /** When false the quantity stepper is hidden (read-only view). */
+  editable: boolean;
   onIncrement: (stickerId: string) => void;
   onDecrement: (stickerId: string) => void;
   onSelect?: (sticker: StoredSticker) => void;
@@ -24,6 +26,7 @@ function StickerCardComponent({
   quantity,
   view,
   showImage,
+  editable,
   onIncrement,
   onDecrement,
   onSelect,
@@ -72,14 +75,16 @@ function StickerCardComponent({
         </p>
       </button>
 
-      <div className={view === 'grid' ? 'mt-1' : ''}>
-        <QuantityStepper
-          quantity={quantity}
-          size={view === 'grid' ? 'sm' : 'md'}
-          onIncrement={() => onIncrement(sticker.id)}
-          onDecrement={() => onDecrement(sticker.id)}
-        />
-      </div>
+      {editable ? (
+        <div className={view === 'grid' ? 'mt-1' : ''}>
+          <QuantityStepper
+            quantity={quantity}
+            size={view === 'grid' ? 'sm' : 'md'}
+            onIncrement={() => onIncrement(sticker.id)}
+            onDecrement={() => onDecrement(sticker.id)}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
