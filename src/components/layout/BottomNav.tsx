@@ -1,20 +1,21 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Icon, type IconName } from '@/components/ui/Icon';
 
 interface NavItem {
   to: string;
   labelKey: string;
-  icon: string;
+  icon: IconName;
   end?: boolean;
 }
 
 const ITEMS: NavItem[] = [
-  { to: '/', labelKey: 'nav.dashboard', icon: '🏠', end: true },
-  { to: '/stickers', labelKey: 'nav.stickers', icon: '🗂️' },
-  { to: '/tournament', labelKey: 'nav.tournament', icon: '🏆' },
-  { to: '/scan', labelKey: 'nav.scan', icon: '📷' },
-  { to: '/exchange', labelKey: 'nav.exchange', icon: '🔁' },
-  { to: '/stats', labelKey: 'nav.statistics', icon: '📊' },
+  { to: '/', labelKey: 'nav.dashboard', icon: 'home', end: true },
+  { to: '/stickers', labelKey: 'nav.stickers', icon: 'grid_view' },
+  { to: '/tournament', labelKey: 'nav.tournament', icon: 'trophy' },
+  { to: '/scan', labelKey: 'nav.scan', icon: 'photo_camera' },
+  { to: '/exchange', labelKey: 'nav.exchange', icon: 'swap_horiz' },
+  { to: '/stats', labelKey: 'nav.statistics', icon: 'bar_chart' },
 ];
 
 export function BottomNav() {
@@ -38,9 +39,7 @@ export function BottomNav() {
                 }`
               }
             >
-              <span aria-hidden="true" className="text-xl leading-none">
-                {item.icon}
-              </span>
+              <Icon name={item.icon} size={24} />
               <span>{t(item.labelKey)}</span>
             </NavLink>
           </li>

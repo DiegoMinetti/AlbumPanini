@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActiveCollection } from '@/hooks';
+import { Icon } from '@/components/ui/Icon';
 
 const TITLE_BY_PATH: Record<string, string> = {
   '/': 'nav.dashboard',
@@ -37,9 +38,7 @@ export function TopBar() {
             aria-label={t('nav.collections')}
             title={t('nav.collections')}
           >
-            <span aria-hidden="true" className="text-xl">
-              🗃️
-            </span>
+            <Icon name="collections" size={22} />
           </Link>
           <Link
             to="/backup"
@@ -47,9 +46,7 @@ export function TopBar() {
             aria-label={t('nav.backup')}
             title={t('nav.backup')}
           >
-            <span aria-hidden="true" className="text-xl">
-              💾
-            </span>
+            <Icon name="save" size={22} />
           </Link>
           <Link
             to="/settings"
@@ -57,9 +54,7 @@ export function TopBar() {
             aria-label={t('nav.settings')}
             title={t('nav.settings')}
           >
-            <span aria-hidden="true" className="text-xl">
-              ⚙️
-            </span>
+            <Icon name="settings" size={22} />
           </Link>
         </nav>
       </div>

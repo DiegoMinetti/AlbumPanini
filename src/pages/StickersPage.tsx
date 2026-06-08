@@ -22,6 +22,7 @@ import { StickerGrid } from '@/components/stickers/StickerGrid';
 import { StickerGroups } from '@/components/stickers/StickerGroups';
 import { StickerDetailModal } from '@/components/stickers/StickerDetailModal';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { Icon } from '@/components/ui/Icon';
 import { Spinner } from '@/components/feedback/Spinner';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { NoActiveCollection } from '@/components/collections/NoActiveCollection';
@@ -96,28 +97,44 @@ export function StickersPage() {
         <p className="text-sm text-slate-500">
           {t('stickers.count', { count: filtered.length })}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
-            className="btn-secondary"
+            className="btn-secondary px-3"
+            aria-label={t('bulk.title')}
+            title={t('bulk.title')}
             onClick={() => setBulkOpen(true)}
           >
-            {t('bulk.title')}
+            <Icon name="playlist_add" size={20} />
           </button>
           <button
             type="button"
-            className="btn-secondary"
+            className={`px-3 ${grouped ? 'btn-primary' : 'btn-secondary'}`}
             aria-pressed={grouped}
+            aria-label={
+              grouped ? t('stickers.groups.flat') : t('stickers.groups.toggle')
+            }
+            title={
+              grouped ? t('stickers.groups.flat') : t('stickers.groups.toggle')
+            }
             onClick={() => setGrouped(!grouped)}
           >
-            {grouped ? t('stickers.groups.flat') : t('stickers.groups.toggle')}
+            <Icon name="layers" size={20} />
           </button>
-          <div className="w-28">
+          <div className="w-[5.5rem]">
             <SegmentedControl
               ariaLabel={t('stickers.view')}
               options={[
-                { value: 'grid', label: t('stickers.grid') },
-                { value: 'list', label: t('stickers.list') },
+                {
+                  value: 'grid',
+                  label: <Icon name="grid_view" size={20} />,
+                  ariaLabel: t('stickers.grid'),
+                },
+                {
+                  value: 'list',
+                  label: <Icon name="view_list" size={20} />,
+                  ariaLabel: t('stickers.list'),
+                },
               ]}
               value={view}
               onChange={setView}
@@ -127,19 +144,21 @@ export function StickersPage() {
       </div>
 
       {grouped && !forceExpand ? (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
-            className="btn-secondary text-xs"
+            className="btn-secondary gap-1 px-3 text-xs"
             onClick={expandAll}
           >
+            <Icon name="unfold_more" size={16} />
             {t('stickers.groups.expandAll')}
           </button>
           <button
             type="button"
-            className="btn-secondary text-xs"
+            className="btn-secondary gap-1 px-3 text-xs"
             onClick={collapseAll}
           >
+            <Icon name="unfold_less" size={16} />
             {t('stickers.groups.collapseAll')}
           </button>
         </div>
@@ -156,7 +175,10 @@ export function StickersPage() {
       {loading ? (
         <Spinner />
       ) : filtered.length === 0 ? (
-        <EmptyState icon="🔍" title={t('stickers.noResults')} />
+        <EmptyState
+          icon={<Icon name="search" size={36} className="text-slate-400" />}
+          title={t('stickers.noResults')}
+        />
       ) : grouped ? (
         <StickerGroups
           sections={sections}

@@ -9,6 +9,7 @@ import {
   type StickerGroup,
   type StickerSection,
 } from '@/services/filterService';
+import { Icon } from '@/components/ui/Icon';
 import { StickerGrid } from './StickerGrid';
 
 interface StickerGroupsProps {
@@ -54,12 +55,11 @@ function GroupHeader({
         nested ? 'px-3 py-2' : 'px-4 py-3'
       }`}
     >
-      <span
-        aria-hidden
-        className={`text-slate-400 transition-transform ${open ? 'rotate-90' : ''}`}
-      >
-        ▶
-      </span>
+      <Icon
+        name="chevron_right"
+        size={20}
+        className={`shrink-0 text-slate-400 transition-transform ${open ? 'rotate-90' : ''}`}
+      />
       {flag ? <span className="text-xl leading-none">{flag}</span> : null}
       <span
         className={`min-w-0 flex-1 truncate ${nested ? 'font-medium' : 'font-semibold'}`}

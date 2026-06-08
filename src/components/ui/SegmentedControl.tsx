@@ -1,6 +1,10 @@
+import type { ReactNode } from 'react';
+
 export interface SegmentOption<T extends string> {
   value: T;
-  label: string;
+  label: ReactNode;
+  /** Accessible name, required when `label` is an icon rather than text. */
+  ariaLabel?: string;
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -30,8 +34,10 @@ export function SegmentedControl<T extends string>({
             type="button"
             role="tab"
             aria-selected={active}
+            aria-label={opt.ariaLabel}
+            title={opt.ariaLabel}
             onClick={() => onChange(opt.value)}
-            className={`min-h-tap flex-1 rounded-lg px-2 text-sm font-semibold transition-colors ${
+            className={`flex min-h-tap flex-1 items-center justify-center rounded-lg px-2 text-sm font-semibold transition-colors ${
               active
                 ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-900 dark:text-brand-300'
                 : 'text-slate-600 dark:text-slate-300'
