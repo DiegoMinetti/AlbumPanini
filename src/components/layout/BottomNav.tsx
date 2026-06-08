@@ -14,9 +14,7 @@ const ITEMS: NavItem[] = [
   { to: '/', labelKey: 'nav.dashboard', icon: 'home', end: true },
   { to: '/stickers', labelKey: 'nav.stickers', icon: 'grid_view' },
   { to: '/tournament', labelKey: 'nav.tournament', icon: 'trophy' },
-  { to: '/scan', labelKey: 'nav.scan', icon: 'photo_camera' },
   { to: '/exchange', labelKey: 'nav.exchange', icon: 'swap_horiz' },
-  { to: '/stats', labelKey: 'nav.statistics', icon: 'bar_chart' },
   { to: '/donations', labelKey: 'nav.donations', icon: 'volunteer_activism' },
 ];
 
