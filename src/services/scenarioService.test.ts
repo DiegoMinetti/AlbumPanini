@@ -75,7 +75,13 @@ describe('setScore', () => {
       awayPens: 5,
     });
     const [row] = await getResults(s.id);
-    expect(row).toMatchObject({ homeGoals: 0, awayGoals: 2, homePens: 4, awayPens: 5, played: true });
+    expect(row).toMatchObject({
+      homeGoals: 0,
+      awayGoals: 2,
+      homePens: 4,
+      awayPens: 5,
+      played: true,
+    });
   });
 
   it('clears a result when both goals are null', async () => {

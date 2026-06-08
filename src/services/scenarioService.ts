@@ -18,7 +18,7 @@ import { generateId, makeUid } from '@/utils/ids';
 const OFFICIAL_NAME = 'Oficial';
 
 export async function listScenarios(
-  collectionId: string,
+  collectionId: string
 ): Promise<StoredScenario[]> {
   const rows = await db.scenarios
     .where('collectionId')
@@ -32,16 +32,18 @@ export async function listScenarios(
 }
 
 export async function getScenario(
-  id: string,
+  id: string
 ): Promise<StoredScenario | undefined> {
   return db.scenarios.get(id);
 }
 
 /** Ensure the official scenario exists, creating it if needed. Returns it. */
 export async function ensureOfficialScenario(
-  collectionId: string,
+  collectionId: string
 ): Promise<StoredScenario> {
-  const existing = (await listScenarios(collectionId)).find((s) => s.isOfficial);
+  const existing = (await listScenarios(collectionId)).find(
+    (s) => s.isOfficial
+  );
   if (existing) return existing;
   const now = Date.now();
   const scenario: StoredScenario = {
@@ -60,7 +62,7 @@ export async function ensureOfficialScenario(
 export async function createScenario(
   collectionId: string,
   name: string,
-  copyFromId?: string,
+  copyFromId?: string
 ): Promise<StoredScenario> {
   const now = Date.now();
   const scenario: StoredScenario = {
@@ -118,18 +120,18 @@ export async function deleteScenario(id: string): Promise<void> {
       await db.scenarios.delete(id);
       await db.matchResults.where('scenarioId').equals(id).delete();
       await db.knockoutPicks.where('scenarioId').equals(id).delete();
-    },
+    }
   );
 }
 
 export async function getResults(
-  scenarioId: string,
+  scenarioId: string
 ): Promise<StoredMatchResult[]> {
   return db.matchResults.where('scenarioId').equals(scenarioId).toArray();
 }
 
 export async function getPicks(
-  scenarioId: string,
+  scenarioId: string
 ): Promise<StoredKnockoutPick[]> {
   return db.knockoutPicks.where('scenarioId').equals(scenarioId).toArray();
 }
@@ -146,7 +148,7 @@ export async function setScore(
     awayGoals: number | null;
     homePens?: number | null;
     awayPens?: number | null;
-  },
+  }
 ): Promise<void> {
   const uid = makeUid(scenarioId, matchId);
   const now = Date.now();
@@ -176,7 +178,7 @@ export async function setScore(
 export async function setKnockoutPick(
   scenarioId: string,
   slot: string,
-  teamId: string | null,
+  teamId: string | null
 ): Promise<void> {
   const uid = makeUid(scenarioId, slot);
   const now = Date.now();

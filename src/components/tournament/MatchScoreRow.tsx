@@ -23,7 +23,9 @@ function TeamSide({
 }) {
   const content = team ? (
     <>
-      {team.flag ? <span className="text-lg leading-none">{team.flag}</span> : null}
+      {team.flag ? (
+        <span className="text-lg leading-none">{team.flag}</span>
+      ) : null}
       <span className="truncate text-sm font-medium">{team.name}</span>
     </>
   ) : (
@@ -73,7 +75,9 @@ export function MatchScoreRow({
           aria-label={`${home?.name ?? homeLabel ?? 'home'} goals`}
           disabled={!editable}
           value={homeGoals}
-          onChange={(e) => onScore(parse(e.target.value), parse(String(awayGoals)))}
+          onChange={(e) =>
+            onScore(parse(e.target.value), parse(String(awayGoals)))
+          }
           className="h-9 w-10 rounded-md border border-slate-300 bg-white text-center text-sm font-bold tabular-nums disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800"
         />
         <span className="text-slate-400">-</span>
@@ -84,7 +88,9 @@ export function MatchScoreRow({
           aria-label={`${away?.name ?? awayLabel ?? 'away'} goals`}
           disabled={!editable}
           value={awayGoals}
-          onChange={(e) => onScore(parse(String(homeGoals)), parse(e.target.value))}
+          onChange={(e) =>
+            onScore(parse(String(homeGoals)), parse(e.target.value))
+          }
           className="h-9 w-10 rounded-md border border-slate-300 bg-white text-center text-sm font-bold tabular-nums disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800"
         />
       </div>

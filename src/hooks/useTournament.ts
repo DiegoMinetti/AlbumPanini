@@ -46,7 +46,7 @@ const EMPTY_STANDINGS: AllStandings = {
 export function useTournament(collectionId: string | null): TournamentData {
   const collection = useLiveQuery(
     async () => (collectionId ? db.collections.get(collectionId) : undefined),
-    [collectionId],
+    [collectionId]
   );
   const tournament = collection?.tournament ?? null;
 
@@ -55,7 +55,7 @@ export function useTournament(collectionId: string | null): TournamentData {
       collectionId
         ? db.scenarios.where('collectionId').equals(collectionId).toArray()
         : [],
-    [collectionId],
+    [collectionId]
   );
 
   // Ensure the official scenario exists as soon as a tournament is present.
@@ -66,7 +66,7 @@ export function useTournament(collectionId: string | null): TournamentData {
   }, [collectionId, tournament]);
 
   const storedActiveId = useScenarioStore((s) =>
-    collectionId ? s.activeByCollection[collectionId] : undefined,
+    collectionId ? s.activeByCollection[collectionId] : undefined
   );
   const setActiveScenario = useScenarioStore((s) => s.setActiveScenario);
 
@@ -106,20 +106,20 @@ export function useTournament(collectionId: string | null): TournamentData {
       activeScenarioId
         ? db.matchResults.where('scenarioId').equals(activeScenarioId).toArray()
         : [],
-    [activeScenarioId],
+    [activeScenarioId]
   );
   const pickRows = useLiveQuery<StoredKnockoutPick[]>(
     async () =>
       activeScenarioId
-        ? db.knockoutPicks.where('scenarioId').equals(activeScenarioId).toArray()
+        ? db.knockoutPicks
+            .where('scenarioId')
+            .equals(activeScenarioId)
+            .toArray()
         : [],
-    [activeScenarioId],
+    [activeScenarioId]
   );
 
-  const results = useMemo(
-    () => indexResults(resultRows ?? []),
-    [resultRows],
-  );
+  const results = useMemo(() => indexResults(resultRows ?? []), [resultRows]);
   const picks = useMemo(() => indexPicks(pickRows ?? []), [pickRows]);
 
   const standings = useMemo(() => {
@@ -128,18 +128,13 @@ export function useTournament(collectionId: string | null): TournamentData {
       tournament.groups,
       tournament.matches,
       results,
-      tournament.qualifiers.bestThirds,
+      tournament.qualifiers.bestThirds
     );
   }, [tournament, results]);
 
   const resolver = useMemo(() => {
     if (!tournament) return null;
-    return createBracketResolver(
-      tournament.matches,
-      standings,
-      results,
-      picks,
-    );
+    return createBracketResolver(tournament.matches, standings, results, picks);
   }, [tournament, standings, results, picks]);
 
   return {

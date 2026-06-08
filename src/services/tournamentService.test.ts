@@ -15,19 +15,61 @@ const group: TournamentGroup = {
 
 // Standard 4-team round robin for group A (matches 1..6).
 const groupMatches: TournamentMatch[] = [
-  { id: 'm1', matchNumber: 1, stage: 'group', group: 'A', homeTeamId: 'T1', awayTeamId: 'T2' },
-  { id: 'm2', matchNumber: 2, stage: 'group', group: 'A', homeTeamId: 'T3', awayTeamId: 'T4' },
-  { id: 'm3', matchNumber: 3, stage: 'group', group: 'A', homeTeamId: 'T1', awayTeamId: 'T3' },
-  { id: 'm4', matchNumber: 4, stage: 'group', group: 'A', homeTeamId: 'T2', awayTeamId: 'T4' },
-  { id: 'm5', matchNumber: 5, stage: 'group', group: 'A', homeTeamId: 'T1', awayTeamId: 'T4' },
-  { id: 'm6', matchNumber: 6, stage: 'group', group: 'A', homeTeamId: 'T2', awayTeamId: 'T3' },
+  {
+    id: 'm1',
+    matchNumber: 1,
+    stage: 'group',
+    group: 'A',
+    homeTeamId: 'T1',
+    awayTeamId: 'T2',
+  },
+  {
+    id: 'm2',
+    matchNumber: 2,
+    stage: 'group',
+    group: 'A',
+    homeTeamId: 'T3',
+    awayTeamId: 'T4',
+  },
+  {
+    id: 'm3',
+    matchNumber: 3,
+    stage: 'group',
+    group: 'A',
+    homeTeamId: 'T1',
+    awayTeamId: 'T3',
+  },
+  {
+    id: 'm4',
+    matchNumber: 4,
+    stage: 'group',
+    group: 'A',
+    homeTeamId: 'T2',
+    awayTeamId: 'T4',
+  },
+  {
+    id: 'm5',
+    matchNumber: 5,
+    stage: 'group',
+    group: 'A',
+    homeTeamId: 'T1',
+    awayTeamId: 'T4',
+  },
+  {
+    id: 'm6',
+    matchNumber: 6,
+    stage: 'group',
+    group: 'A',
+    homeTeamId: 'T2',
+    awayTeamId: 'T3',
+  },
 ];
 
 function result(
   matchId: string,
   homeGoals: number,
   awayGoals: number,
-  pens?: [number, number],
+  pens?: [number, number]
 ): StoredMatchResult {
   return {
     uid: `s::${matchId}`,
@@ -99,9 +141,27 @@ describe('winnerOf', () => {
 
 describe('createBracketResolver', () => {
   const knockout: TournamentMatch[] = [
-    { id: 'm73', matchNumber: 73, stage: 'r32', homeSlot: '1A', awaySlot: '2A' },
-    { id: 'm74', matchNumber: 74, stage: 'r32', homeSlot: 'T1', awaySlot: 'T2' },
-    { id: 'm89', matchNumber: 89, stage: 'r16', homeSlot: 'W73', awaySlot: 'W74' },
+    {
+      id: 'm73',
+      matchNumber: 73,
+      stage: 'r32',
+      homeSlot: '1A',
+      awaySlot: '2A',
+    },
+    {
+      id: 'm74',
+      matchNumber: 74,
+      stage: 'r32',
+      homeSlot: 'T1',
+      awaySlot: 'T2',
+    },
+    {
+      id: 'm89',
+      matchNumber: 89,
+      stage: 'r16',
+      homeSlot: 'W73',
+      awaySlot: 'W74',
+    },
   ];
   const matches = [...groupMatches, ...knockout];
 
@@ -115,7 +175,12 @@ describe('createBracketResolver', () => {
       result('m6', 0, 0),
     ]);
     const standings = computeAllStandings([group], matches, results, 8);
-    const resolver = createBracketResolver(matches, standings, results, new Map());
+    const resolver = createBracketResolver(
+      matches,
+      standings,
+      results,
+      new Map()
+    );
     expect(resolver.resolveSlot('1A')).toBe('T1');
     expect(resolver.resolveSlot('2A')).toBe('T2');
   });
@@ -125,7 +190,10 @@ describe('createBracketResolver', () => {
     const standings = computeAllStandings([group], matches, results, 8);
     const m73 = matches.find((m) => m.matchNumber === 73)!;
     // Without standings, 1A is undefined, so feed a manual pick for 1A.
-    const picks = new Map([['1A', 'X'], ['2A', 'Y']]);
+    const picks = new Map([
+      ['1A', 'X'],
+      ['2A', 'Y'],
+    ]);
     const resolver = createBracketResolver(matches, standings, results, picks);
     expect(resolver.resolveMatch(m73)).toEqual({
       homeTeamId: 'X',
@@ -137,7 +205,12 @@ describe('createBracketResolver', () => {
   it('lets a manual pick override the slot', () => {
     const standings = computeAllStandings([group], matches, new Map(), 8);
     const picks = new Map([['W73', 'OVERRIDE']]);
-    const resolver = createBracketResolver(matches, standings, new Map(), picks);
+    const resolver = createBracketResolver(
+      matches,
+      standings,
+      new Map(),
+      picks
+    );
     expect(resolver.resolveSlot('W73')).toBe('OVERRIDE');
   });
 });

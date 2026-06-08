@@ -77,13 +77,13 @@ function compareBase(a: StandingRow, b: StandingRow): number {
 export function computeGroupStandings(
   group: TournamentGroup,
   matches: TournamentMatch[],
-  results: Map<string, IndexedMatchResult>,
+  results: Map<string, IndexedMatchResult>
 ): StandingRow[] {
   const rows = new Map<string, StandingRow>();
   for (const teamId of group.teamIds) rows.set(teamId, emptyRow(teamId));
 
   const groupMatches = matches.filter(
-    (m) => m.stage === 'group' && m.group === group.id,
+    (m) => m.stage === 'group' && m.group === group.id
   );
 
   for (const m of groupMatches) {
@@ -116,7 +116,7 @@ function headToHead(
   teamB: string,
   _rows: Map<string, StandingRow>,
   groupMatches: TournamentMatch[],
-  results: Map<string, IndexedMatchResult>,
+  results: Map<string, IndexedMatchResult>
 ): number {
   const a = emptyRow(teamA);
   const b = emptyRow(teamB);
@@ -148,7 +148,7 @@ export function computeAllStandings(
   groups: TournamentGroup[],
   matches: TournamentMatch[],
   results: Map<string, IndexedMatchResult>,
-  bestThirdsCount: number,
+  bestThirdsCount: number
 ): AllStandings {
   const byGroup = new Map<string, StandingRow[]>();
   const thirds: StandingRow[] = [];
@@ -169,7 +169,7 @@ export function computeAllStandings(
 export function winnerOf(
   homeTeamId: string | undefined,
   awayTeamId: string | undefined,
-  result: IndexedMatchResult | undefined,
+  result: IndexedMatchResult | undefined
 ): { winner?: string; loser?: string } {
   if (!homeTeamId || !awayTeamId || !result || !result.played) return {};
   const { homeGoals, awayGoals, homePens, awayPens } = result;
@@ -187,9 +187,10 @@ export interface BracketResolver {
   /** Resolve a slot (`"1A"`, `"2B"`, `"T3"`, `"W73"`, `"L101"`) to a teamId. */
   resolveSlot: (slot?: string) => string | undefined;
   /** Resolve both sides of a knockout match. */
-  resolveMatch: (
-    match: TournamentMatch,
-  ) => { homeTeamId?: string; awayTeamId?: string };
+  resolveMatch: (match: TournamentMatch) => {
+    homeTeamId?: string;
+    awayTeamId?: string;
+  };
 }
 
 /**
@@ -202,10 +203,10 @@ export function createBracketResolver(
   matches: TournamentMatch[],
   standings: AllStandings,
   results: Map<string, IndexedMatchResult>,
-  picks: Map<string, string>,
+  picks: Map<string, string>
 ): BracketResolver {
   const matchByNumber = new Map<number, TournamentMatch>(
-    matches.map((m) => [m.matchNumber, m]),
+    matches.map((m) => [m.matchNumber, m])
   );
   const cache = new Map<string, string | undefined>();
   const inProgress = new Set<string>();
@@ -259,7 +260,7 @@ export function createBracketResolver(
 
 /** Build the lookup maps the resolver needs from raw stored rows. */
 export function indexResults(
-  rows: StoredMatchResult[],
+  rows: StoredMatchResult[]
 ): Map<string, IndexedMatchResult> {
   return new Map(rows.map((r) => [r.matchId, r]));
 }

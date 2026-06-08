@@ -71,6 +71,6 @@ export const useScenarioStore = create<ScenarioState>()(
       partialize: (state) => ({
         activeByCollection: state.activeByCollection,
       }),
-    },
-  ),
+    }
+  )
 );

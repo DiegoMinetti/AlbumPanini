@@ -187,7 +187,16 @@ export async function restoreBackup(
 
   await db.transaction(
     'rw',
-    [db.collections, db.teams, db.stickers, db.inventory, db.activity],
+    [
+      db.collections,
+      db.teams,
+      db.stickers,
+      db.inventory,
+      db.activity,
+      db.scenarios,
+      db.matchResults,
+      db.knockoutPicks,
+    ],
     async () => {
       if (mode === 'replace') {
         await db.clearAllData();
