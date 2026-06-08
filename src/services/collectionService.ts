@@ -46,6 +46,14 @@ export async function renameCollection(
   await db.collections.update(id, { name: trimmed, updatedAt: Date.now() });
 }
 
+/** Toggle whether this collection counts region-specific "extra" stickers. */
+export async function setCollectionIncludeExtras(
+  id: string,
+  includeExtras: boolean
+): Promise<void> {
+  await db.collections.update(id, { includeExtras, updatedAt: Date.now() });
+}
+
 export async function setCollectionStatus(
   id: string,
   status: CollectionStatus

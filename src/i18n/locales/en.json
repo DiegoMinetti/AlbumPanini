@@ -75,7 +75,17 @@
     "count": "{{count}} stickers",
     "quantity": "Qty {{count}}",
     "noResults": "No stickers match your filters.",
-    "includeExtras": "Include extras from other editions"
+    "includeExtras": "Include extras from other editions",
+    "groups": {
+      "toggle": "Group",
+      "flat": "Ungroup",
+      "expandAll": "Expand all",
+      "collapseAll": "Collapse all",
+      "intro": "Intro (00)",
+      "wfc": "FIFA World Cup",
+      "special": "Specials",
+      "group": "Group {{id}}"
+    }
   },
   "detail": {
     "position": "Position",
@@ -139,6 +149,7 @@
     "renamePrompt": "New name",
     "duplicatePrompt": "Name for the copy",
     "includeProgress": "Include my progress",
+    "includeExtrasHint": "Affects counts and percentages for this collection.",
     "deleteConfirm": "Delete this collection and all its data? This cannot be undone.",
     "version": "v{{version}}"
   },

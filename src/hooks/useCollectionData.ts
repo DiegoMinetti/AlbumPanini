@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db';
 import type { StoredSticker, StoredTeam } from '@/types/collection';
 import { computeStatistics } from '@/services/statsService';
+import { isExtraSticker } from '@/services/filterService';
 import type { FullStatistics } from '@/types/stats';
 
 export interface CollectionData {
@@ -36,13 +37,29 @@ const EMPTY_STATS: FullStatistics = {
  * change (dexie-react-hooks) and memoizes the stats derivation.
  */
 export function useCollectionData(collectionId: string | null): CollectionData {
-  const stickers = useLiveQuery<StoredSticker[]>(
+  // Per-collection "include extras" toggle: when off, region-specific extra
+  // variants are dropped at the source so every consumer (dashboard, stats,
+  // exchange, tournament, sticker browser) reflects the same base-set counts.
+  const includeExtras = useLiveQuery<boolean>(
+    async () =>
+      collectionId
+        ? ((await db.collections.get(collectionId))?.includeExtras ?? false)
+        : false,
+    [collectionId]
+  );
+  const allStickers = useLiveQuery<StoredSticker[]>(
     async () =>
       collectionId
         ? db.stickers.where('collectionId').equals(collectionId).toArray()
         : [],
     [collectionId]
   );
+  const stickers = useMemo(() => {
+    if (!allStickers) return allStickers;
+    return includeExtras
+      ? allStickers
+      : allStickers.filter((s) => !isExtraSticker(s));
+  }, [allStickers, includeExtras]);
   const teams = useLiveQuery<StoredTeam[]>(
     async () =>
       collectionId

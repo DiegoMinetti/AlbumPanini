@@ -131,6 +131,13 @@ export interface StoredCollection extends CollectionMeta {
   sourceId?: string;
   /** Static tournament structure, if the source package shipped one. */
   tournament?: Tournament;
+  /**
+   * Include "extra" stickers (foil/parallel variants that ship only in some
+   * country editions) when counting this collection. Per-collection because
+   * different albums have different extras. Off (undefined) by default so the
+   * count matches the standard album.
+   */
+  includeExtras?: boolean;
   createdAt: number;
   updatedAt: number;
 }

@@ -23,10 +23,10 @@ export const settingsSchema = z.object({
   /** Show only owned-relevant info, hide images to save bandwidth, etc. */
   showImages: z.boolean().default(true),
   /**
-   * Include "extra" stickers (foil/parallel variants that ship only in some
-   * country editions). Off by default so the count matches the standard album.
+   * Render the sticker browser as collapsible sections (by country / special
+   * group) instead of one flat grid. Off by default.
    */
-  includeExtras: z.boolean().default(false),
+  stickerGrouped: z.boolean().default(false),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 

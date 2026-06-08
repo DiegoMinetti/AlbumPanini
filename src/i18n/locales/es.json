@@ -75,7 +75,17 @@
     "count": "{{count}} figuritas",
     "quantity": "Cant. {{count}}",
     "noResults": "Ninguna figurita coincide con los filtros.",
-    "includeExtras": "Incluir extras de otras ediciones"
+    "includeExtras": "Incluir extras de otras ediciones",
+    "groups": {
+      "toggle": "Agrupar",
+      "flat": "Sin agrupar",
+      "expandAll": "Expandir todo",
+      "collapseAll": "Colapsar todo",
+      "intro": "Inicio (00)",
+      "wfc": "FIFA World Cup",
+      "special": "Especiales",
+      "group": "Grupo {{id}}"
+    }
   },
   "detail": {
     "position": "Posición",
@@ -139,6 +149,7 @@
     "renamePrompt": "Nuevo nombre",
     "duplicatePrompt": "Nombre de la copia",
     "includeProgress": "Incluir mi progreso",
+    "includeExtrasHint": "Afecta los conteos y porcentajes de esta colección.",
     "deleteConfirm": "¿Eliminar esta colección y todos sus datos? No se puede deshacer.",
     "version": "v{{version}}"
   },

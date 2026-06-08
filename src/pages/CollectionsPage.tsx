@@ -13,6 +13,7 @@ import {
   deleteCollection,
   duplicateCollection,
   renameCollection,
+  setCollectionIncludeExtras,
   unarchiveCollection,
 } from '@/services/collectionService';
 import { Spinner } from '@/components/feedback/Spinner';
@@ -85,6 +86,9 @@ export function CollectionsPage() {
               }
               onArchive={() => void archiveCollection(c.id)}
               onDelete={() => setDialog({ type: 'delete', collection: c })}
+              onToggleExtras={(v) =>
+                void setCollectionIncludeExtras(c.id, v)
+              }
             />
           ))
         )}
@@ -108,6 +112,9 @@ export function CollectionsPage() {
               }
               onArchive={() => void unarchiveCollection(c.id)}
               onDelete={() => setDialog({ type: 'delete', collection: c })}
+              onToggleExtras={(v) =>
+                void setCollectionIncludeExtras(c.id, v)
+              }
             />
           ))}
         </CollectionGroup>
@@ -228,6 +235,7 @@ interface CollectionRowProps {
   onDuplicate: () => void;
   onArchive: () => void;
   onDelete: () => void;
+  onToggleExtras: (include: boolean) => void;
 }
 
 function CollectionRow({
@@ -239,6 +247,7 @@ function CollectionRow({
   onDuplicate,
   onArchive,
   onDelete,
+  onToggleExtras,
 }: CollectionRowProps) {
   const { t } = useTranslation();
   return (
@@ -282,6 +291,22 @@ function CollectionRow({
           {t('common.delete')}
         </button>
       </div>
+      <label className="flex items-start gap-2 border-t border-slate-200 pt-3 text-sm text-slate-600 dark:border-slate-700 dark:text-slate-300">
+        <input
+          type="checkbox"
+          className="mt-0.5 h-4 w-4"
+          checked={collection.includeExtras ?? false}
+          onChange={(e) => onToggleExtras(e.target.checked)}
+        />
+        <span>
+          <span className="font-medium text-slate-800 dark:text-slate-100">
+            {t('stickers.includeExtras')}
+          </span>
+          <span className="mt-0.5 block text-xs text-slate-500">
+            {t('collections.includeExtrasHint')}
+          </span>
+        </span>
+      </label>
     </div>
   );
 }
