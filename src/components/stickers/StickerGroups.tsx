@@ -15,7 +15,10 @@ import { StickerGrid } from './StickerGrid';
 interface StickerGroupsProps {
   sections: StickerSection[];
   inventory: Map<string, number>;
-  teamColorsById?: Map<string, { primaryColor?: string; secondaryColor?: string }>;
+  teamColorsById?: Map<
+    string,
+    { primaryColor?: string; secondaryColor?: string }
+  >;
   view: 'grid' | 'list';
   showImages: boolean;
   editable: boolean;

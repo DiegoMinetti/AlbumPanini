@@ -11,7 +11,9 @@ const DONATION_NAME = 'Diego Matias Minetti';
 export function DonationsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const markDonationLinkOpened = useSettingsStore((s) => s.markDonationLinkOpened);
+  const markDonationLinkOpened = useSettingsStore(
+    (s) => s.markDonationLinkOpened
+  );
 
   const copyText = async (value: string) => {
     try {
@@ -58,7 +60,11 @@ export function DonationsPage() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <button type="button" className="btn-primary" onClick={openMercadoPago}>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={openMercadoPago}
+          >
             {t('donations.openMp')}
           </button>
           <button
@@ -89,7 +95,9 @@ function DataRow({
     <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/80 px-3 py-2 dark:bg-slate-900/60">
       <div className="min-w-0">
         <p className="text-xs text-slate-500">{label}</p>
-        <p className="truncate font-medium text-slate-900 dark:text-slate-100">{value}</p>
+        <p className="truncate font-medium text-slate-900 dark:text-slate-100">
+          {value}
+        </p>
       </div>
       {onCopy && copyLabel ? (
         <button type="button" className="btn-ghost" onClick={onCopy}>

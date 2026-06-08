@@ -4,7 +4,10 @@ import { StickerCard } from './StickerCard';
 interface StickerGridProps {
   stickers: StoredSticker[];
   inventory: Map<string, number>;
-  teamColorsById?: Map<string, { primaryColor?: string; secondaryColor?: string }>;
+  teamColorsById?: Map<
+    string,
+    { primaryColor?: string; secondaryColor?: string }
+  >;
   view: 'grid' | 'list';
   showImages: boolean;
   editable: boolean;
