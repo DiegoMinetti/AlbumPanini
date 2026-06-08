@@ -23,7 +23,7 @@ export interface StandingRow {
 }
 
 /** A match score, only meaningful when `played` is true. */
-type Result = Pick<
+export type IndexedMatchResult = Pick<
   StoredMatchResult,
   'homeGoals' | 'awayGoals' | 'homePens' | 'awayPens' | 'played'
 >;
@@ -77,7 +77,7 @@ function compareBase(a: StandingRow, b: StandingRow): number {
 export function computeGroupStandings(
   group: TournamentGroup,
   matches: TournamentMatch[],
-  results: Map<string, Result>,
+  results: Map<string, IndexedMatchResult>,
 ): StandingRow[] {
   const rows = new Map<string, StandingRow>();
   for (const teamId of group.teamIds) rows.set(teamId, emptyRow(teamId));
@@ -116,7 +116,7 @@ function headToHead(
   teamB: string,
   _rows: Map<string, StandingRow>,
   groupMatches: TournamentMatch[],
-  results: Map<string, Result>,
+  results: Map<string, IndexedMatchResult>,
 ): number {
   const a = emptyRow(teamA);
   const b = emptyRow(teamB);
@@ -147,7 +147,7 @@ export interface AllStandings {
 export function computeAllStandings(
   groups: TournamentGroup[],
   matches: TournamentMatch[],
-  results: Map<string, Result>,
+  results: Map<string, IndexedMatchResult>,
   bestThirdsCount: number,
 ): AllStandings {
   const byGroup = new Map<string, StandingRow[]>();
@@ -169,7 +169,7 @@ export function computeAllStandings(
 export function winnerOf(
   homeTeamId: string | undefined,
   awayTeamId: string | undefined,
-  result: Result | undefined,
+  result: IndexedMatchResult | undefined,
 ): { winner?: string; loser?: string } {
   if (!homeTeamId || !awayTeamId || !result || !result.played) return {};
   const { homeGoals, awayGoals, homePens, awayPens } = result;
@@ -201,7 +201,7 @@ export interface BracketResolver {
 export function createBracketResolver(
   matches: TournamentMatch[],
   standings: AllStandings,
-  results: Map<string, Result>,
+  results: Map<string, IndexedMatchResult>,
   picks: Map<string, string>,
 ): BracketResolver {
   const matchByNumber = new Map<number, TournamentMatch>(
@@ -260,7 +260,7 @@ export function createBracketResolver(
 /** Build the lookup maps the resolver needs from raw stored rows. */
 export function indexResults(
   rows: StoredMatchResult[],
-): Map<string, Result> {
+): Map<string, IndexedMatchResult> {
   return new Map(rows.map((r) => [r.matchId, r]));
 }
 

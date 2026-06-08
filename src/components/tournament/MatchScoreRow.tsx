@@ -1,9 +1,7 @@
-import type { StoredTeam } from '@/types/collection';
-import type { TournamentMatch } from '@/types/tournament';
 import type { StoredMatchResult } from '@/types/scenario';
+import type { StoredTeam } from '@/types/collection';
 
 interface MatchScoreRowProps {
-  match: TournamentMatch;
   /** Resolved teams (may be undefined for unresolved knockout slots). */
   home?: StoredTeam;
   away?: StoredTeam;
@@ -50,7 +48,6 @@ function TeamSide({
  * knockout match.
  */
 export function MatchScoreRow({
-  match,
   home,
   away,
   homeLabel,

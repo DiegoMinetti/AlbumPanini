@@ -8,6 +8,7 @@ import {
   createBracketResolver,
   indexPicks,
   indexResults,
+  type IndexedMatchResult,
   type AllStandings,
   type BracketResolver,
 } from '@/services/tournamentService';
@@ -23,7 +24,7 @@ export interface TournamentData {
   scenarios: StoredScenario[];
   activeScenarioId: string | null;
   activeScenario: StoredScenario | null;
-  results: Map<string, StoredMatchResult>;
+  results: Map<string, IndexedMatchResult>;
   picks: Map<string, string>;
   standings: AllStandings | null;
   resolver: BracketResolver | null;
