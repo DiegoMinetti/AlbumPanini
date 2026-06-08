@@ -35,6 +35,7 @@ export function BackupPage() {
         activeCollectionId: settings.activeCollectionId,
         showImages: settings.showImages,
         stickerGrouped: settings.stickerGrouped,
+        editMode: settings.editMode,
       });
       downloadBlob(blob, backupFilename());
       toast.success(t('backup.exported'));
