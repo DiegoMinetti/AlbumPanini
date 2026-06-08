@@ -86,9 +86,7 @@ export function CollectionsPage() {
               }
               onArchive={() => void archiveCollection(c.id)}
               onDelete={() => setDialog({ type: 'delete', collection: c })}
-              onToggleExtras={(v) =>
-                void setCollectionIncludeExtras(c.id, v)
-              }
+              onToggleExtras={(v) => void setCollectionIncludeExtras(c.id, v)}
             />
           ))
         )}
@@ -112,9 +110,7 @@ export function CollectionsPage() {
               }
               onArchive={() => void unarchiveCollection(c.id)}
               onDelete={() => setDialog({ type: 'delete', collection: c })}
-              onToggleExtras={(v) =>
-                void setCollectionIncludeExtras(c.id, v)
-              }
+              onToggleExtras={(v) => void setCollectionIncludeExtras(c.id, v)}
             />
           ))}
         </CollectionGroup>
