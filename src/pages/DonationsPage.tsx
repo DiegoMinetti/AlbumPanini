@@ -1,19 +1,19 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { toast } from '@/stores/uiStore';
-import { useSettingsStore } from '@/stores/settingsStore';
+// import { useSettingsStore } from '@/stores/settingsStore';
 
-const MP_URL = 'https://www.mercadopago.com.ar/';
+// const MP_URL = 'https://www.mercadopago.com.ar/';
 const DONATION_ALIAS = 'diegominettimp';
 const DONATION_CVU = '0000003100042227394195';
 const DONATION_NAME = 'Diego Matias Minetti';
 
 export function DonationsPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const markDonationLinkOpened = useSettingsStore(
-    (s) => s.markDonationLinkOpened
-  );
+  // const navigate = useNavigate();
+  // const markDonationLinkOpened = useSettingsStore(
+  //   (s) => s.markDonationLinkOpened
+  // );
 
   const copyText = async (value: string) => {
     try {
@@ -24,10 +24,10 @@ export function DonationsPage() {
     }
   };
 
-  const openMercadoPago = () => {
-    markDonationLinkOpened();
-    window.open(MP_URL, '_blank', 'noopener,noreferrer');
-  };
+  // const openMercadoPago = () => {
+  //   markDonationLinkOpened();
+  //   window.open(MP_URL, '_blank', 'noopener,noreferrer');
+  // };
 
   return (
     <div className="flex flex-col gap-5">
@@ -59,7 +59,7 @@ export function DonationsPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {/* <div className="flex flex-wrap gap-2">
           <button
             type="button"
             className="btn-primary"
@@ -74,7 +74,7 @@ export function DonationsPage() {
           >
             {t('common.back')}
           </button>
-        </div>
+        </div> */}
       </section>
     </div>
   );
