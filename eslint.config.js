@@ -7,7 +7,17 @@ import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'dev-dist', 'coverage', 'playwright-report', 'test-results'],
+    // `docs/` contiene snippets de referencia (M3 examples) que no son parte
+    // del bundle — ver `docs/components/README.md`. Los excluimos del linter
+    // para que no rompan el CI por detalles cosméticos.
+    ignores: [
+      'dist',
+      'dev-dist',
+      'coverage',
+      'playwright-report',
+      'test-results',
+      'docs',
+    ],
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

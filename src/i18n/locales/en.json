@@ -61,6 +61,7 @@
   "stickers": {
     "title": "Stickers",
     "filters": "Filters",
+    "moreFilters": "More filters",
     "filter": {
       "all": "All",
       "missing": "Missing",
@@ -68,6 +69,7 @@
       "duplicates": "Duplicates"
     },
     "team": "Team",
+    "teamAll": "All teams",
     "category": "Category",
     "categoryAll": "All categories",
     "rarity": "Rarity",
@@ -79,6 +81,11 @@
     "quantity": "Qty {{count}}",
     "noResults": "No stickers match your filters.",
     "includeExtras": "Include extras from other editions",
+    "filtersPanel": {
+      "subtitle": "Filter by team, category or rarity.",
+      "hint": "Changes are applied when you close the panel.",
+      "clearAll": "Clear all filters"
+    },
     "categoryOptions": {
       "default": "Other",
       "player": "Player",

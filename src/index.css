@@ -39,6 +39,9 @@
 
     --md-sys-color-outline: #94a3b8; /* slate-400 */
     --md-sys-color-outline-variant: #cbd5e1; /* slate-300 */
+
+    /* Donate (heart) blink — pleasant tender red */
+    --donation-blink-color: #f43f5e; /* rose-500 */
   }
 
   .dark {
@@ -74,6 +77,9 @@
 
     --md-sys-color-outline: #64748b;
     --md-sys-color-outline-variant: #334155;
+
+    /* Donate (heart) blink — pleasant tender red (dark theme) */
+    --donation-blink-color: #fb7185; /* rose-400 */
   }
 
   html,
@@ -150,8 +156,10 @@
   }
 
   .input {
-    @apply min-h-tap w-full rounded-lg border border-outline-variant bg-surface
-      px-3 text-sm text-on-surface placeholder:text-on-surface-variant
+    /* M3 outlined text field: fill transparente, borde y focus ring M3. */
+    @apply min-h-tap w-full appearance-none rounded-lg border border-outline-variant
+      bg-transparent px-3 text-sm text-on-surface
+      placeholder:text-on-surface-variant
       focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary;
   }
 
@@ -260,10 +268,12 @@
   100% {
     opacity: 1;
     transform: scale(1);
+    color: var(--donation-blink-color);
   }
 
   50% {
-    opacity: 0.55;
+    opacity: 0.85;
     transform: scale(1.08);
+    color: var(--donation-blink-color);
   }
 }

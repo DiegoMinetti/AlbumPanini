@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActiveCollection } from '@/hooks';
@@ -15,15 +16,48 @@ const TITLE_BY_PATH: Record<string, string> = {
   '/settings': 'nav.settings',
 };
 
+/**
+ * Publica la altura real del TopBar (incluyendo safe-area-top) en la CSS
+ * custom property `--app-topbar-h` del `<html>`. Los toolbars internos que
+ * necesiten quedar inmediatamente debajo del TopBar usan
+ * `top: var(--app-topbar-h, 0px)` en su posición sticky.
+ */
+function useTopbarHeightVar(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const apply = () => {
+      const h = el.getBoundingClientRect().height;
+      document.documentElement.style.setProperty(
+        '--app-topbar-h',
+        `${Math.round(h)}px`
+      );
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    window.addEventListener('orientationchange', apply);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('orientationchange', apply);
+    };
+  }, [ref]);
+}
+
 export function TopBar() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const { active } = useActiveCollection();
+  const headerRef = useRef<HTMLElement | null>(null);
+  useTopbarHeightVar(headerRef);
 
   const titleKey = TITLE_BY_PATH[pathname] ?? 'app.name';
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur pt-safe-top dark:border-slate-800 dark:bg-slate-950/90">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur pt-safe-top dark:border-slate-800 dark:bg-slate-950/90"
+    >
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-3">
         <div className="min-w-0">
           <h1 className="truncate text-lg font-bold">{t(titleKey)}</h1>

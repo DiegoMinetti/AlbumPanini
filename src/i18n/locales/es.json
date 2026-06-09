@@ -61,6 +61,7 @@
   "stickers": {
     "title": "Figuritas",
     "filters": "Filtros",
+    "moreFilters": "Más filtros",
     "filter": {
       "all": "Todas",
       "missing": "Faltan",
@@ -68,6 +69,7 @@
       "duplicates": "Repetidas"
     },
     "team": "Equipo",
+    "teamAll": "Todos los equipos",
     "category": "Categoría",
     "categoryAll": "Todas las categorías",
     "rarity": "Rareza",
@@ -79,6 +81,11 @@
     "quantity": "Cant. {{count}}",
     "noResults": "Ninguna figurita coincide con los filtros.",
     "includeExtras": "Incluir extras de otras ediciones",
+    "filtersPanel": {
+      "subtitle": "Filtrá por equipo, categoría o rareza.",
+      "hint": "Los cambios se aplican al cerrar el panel.",
+      "clearAll": "Limpiar todos los filtros"
+    },
     "categoryOptions": {
       "default": "Otras",
       "player": "Jugador",
