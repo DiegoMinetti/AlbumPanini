@@ -312,6 +312,22 @@
       transition-all duration-motion-medium2 ease-emphasized;
   }
 
+  /* ===== M3 — NavigationBar / NavigationRail indicator =====
+     Misma mecánica que `.segmented-indicator` (un único pill que se desliza
+     entre ítems) pero aplicado a la nav principal.
+       - `--horizontal` (BottomNav): se mueve en X, alto fijo = contenedor - 8px.
+       - vertical  (NavigationRail): se mueve en Y, ancho fijo = contenedor - 8px. */
+  .nav-segmented-indicator {
+    @apply pointer-events-none absolute top-1 bottom-1 rounded-2xl
+      bg-secondary-container shadow-elev-1
+      transition-all duration-motion-medium2 ease-emphasized z-0;
+  }
+  .nav-segmented-indicator--vertical {
+    @apply pointer-events-none absolute left-3 rounded-2xl
+      bg-secondary-container shadow-elev-1
+      transition-all duration-motion-medium2 ease-emphasized z-0;
+  }
+
   /* ===== M3 — Drag handle (modal bottom sheet) ===== */
   .drag-handle {
     @apply mx-auto mb-2 block h-1 w-8 rounded-full bg-outline-variant;

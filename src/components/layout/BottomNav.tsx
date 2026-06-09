@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Icon, type IconName } from '@/components/ui/Icon';
 
@@ -25,7 +25,10 @@ const ITEMS: NavItem[] = [
  *  - Altura fija 80dp con safe-area-inset-bottom.
  *  - Surface-container translúcida + backdrop-blur (M3 "translucent surface").
  *  - Cada item: 64dp contenedor con icono arriba y label abajo.
- *  - Activo: pastilla secondary-container con `on-secondary-container`.
+ *  - **Indicador flotante (M3 SegmentedButton pattern):** un único pill
+ *    `.nav-segmented-indicator` se desliza con `transform: translateX` +
+ *    `width` entre los items activos, idéntico al efecto burbuja de
+ *    `FilterChips` (Todas / Tengo / Faltan / Repetidas).
  *  - State layer al 8%/12% (hover/press).
  *  - Indicador de blink aleatorio en el ítem de Donaciones.
  *
@@ -34,9 +37,55 @@ const ITEMS: NavItem[] = [
  */
 export function BottomNav() {
   const { t } = useTranslation();
+  const location = useLocation();
+  const listRef = useRef<HTMLUListElement | null>(null);
+  const [indicator, setIndicator] = useState<{ x: number; w: number }>({
+    x: 0,
+    w: 0,
+  });
   const [donationBlink, setDonationBlink] = useState(false);
   const nextBlinkTimeoutRef = useRef<number | null>(null);
   const stopBlinkTimeoutRef = useRef<number | null>(null);
+
+  // Encuentra qué item está activo según la ruta actual.
+  // Para '/' se respeta `end` para no matchear otras rutas que empiecen con '/'.
+  const activeTo = ITEMS.find((item) => {
+    if (item.end) return location.pathname === item.to;
+    return (
+      location.pathname === item.to ||
+      location.pathname.startsWith(item.to + '/')
+    );
+  })?.to;
+
+  // Recalcular posición/tamaño del indicator al montar y al cambiar la selección
+  // o al cambiar el tamaño de la ventana (rotación, resize).
+  useLayoutEffect(() => {
+    const root = listRef.current;
+    if (!root || !activeTo) return;
+    const active = root.querySelector<HTMLElement>(
+      `[data-nav-item="${activeTo}"]`
+    );
+    if (!active) return;
+    const rootRect = root.getBoundingClientRect();
+    const aRect = active.getBoundingClientRect();
+    setIndicator({ x: aRect.left - rootRect.left, w: aRect.width });
+  }, [activeTo]);
+
+  useEffect(() => {
+    const onResize = () => {
+      const root = listRef.current;
+      if (!root || !activeTo) return;
+      const active = root.querySelector<HTMLElement>(
+        `[data-nav-item="${activeTo}"]`
+      );
+      if (!active) return;
+      const rootRect = root.getBoundingClientRect();
+      const aRect = active.getBoundingClientRect();
+      setIndicator({ x: aRect.left - rootRect.left, w: aRect.width });
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [activeTo]);
 
   useEffect(() => {
     const scheduleRandomBlink = () => {
@@ -68,37 +117,50 @@ export function BottomNav() {
       aria-label="Primary"
     >
       <ul
-        className="mx-auto flex h-[64px] w-full max-w-2xl items-stretch px-2
+        ref={listRef}
+        className="relative mx-auto flex h-[64px] w-full max-w-2xl items-stretch px-2
           pt-1.5"
       >
-        {ITEMS.map((item) => (
-          <li key={item.to} className="flex flex-1 items-stretch">
-            <NavLink
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `has-state-layer group relative flex flex-1 flex-col items-center
-                  justify-center gap-0.5 overflow-hidden rounded-2xl
-                  transition-all duration-motion-short2 ease-standard
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                    isActive
-                      ? 'nav-item-active-pill font-semibold'
-                      : 'text-on-surface-variant hover:bg-surface-container-high'
-                  } ${
-                    item.to === '/donations' && donationBlink
-                      ? 'donation-nav-blink'
-                      : ''
-                  }`
-              }
-            >
-              <Icon name={item.icon} size={24} />
-              <span className="text-label-sm leading-none">
-                {t(item.labelKey)}
-              </span>
-              <span aria-hidden className="state-layer" />
-            </NavLink>
-          </li>
-        ))}
+        <span
+          aria-hidden
+          className="nav-segmented-indicator"
+          style={{
+            transform: `translateX(${indicator.x}px)`,
+            width: `${indicator.w}px`,
+          }}
+        />
+        {ITEMS.map((item) => {
+          const isActive = item.to === activeTo;
+          return (
+            <li key={item.to} className="flex flex-1 items-stretch">
+              <NavLink
+                to={item.to}
+                end={item.end}
+                data-nav-item={item.to}
+                className={() =>
+                  `has-state-layer group relative z-10 flex flex-1 flex-col items-center
+                    justify-center gap-0.5 overflow-hidden rounded-2xl
+                    transition-colors duration-motion-short2 ease-standard
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      isActive
+                        ? 'text-on-secondary-container font-semibold'
+                        : 'text-on-surface-variant hover:text-on-surface'
+                    } ${
+                      item.to === '/donations' && donationBlink
+                        ? 'donation-nav-blink'
+                        : ''
+                    }`
+                }
+              >
+                <Icon name={item.icon} size={24} />
+                <span className="text-label-sm leading-none">
+                  {t(item.labelKey)}
+                </span>
+                <span aria-hidden className="state-layer" />
+              </NavLink>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );
