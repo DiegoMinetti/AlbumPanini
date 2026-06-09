@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { primeSettings, goto, installDemo } from './helpers';
+import { primeSettings, goto, installDemo, dismissTransientUi } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await primeSettings(page);
@@ -37,19 +37,20 @@ test('bulk import adds inventory by code', async ({ page }) => {
   await goto(page, '/stickers');
   // FAB plays a 200ms scale-in animation on mount; wait for the element to
   // be attached and the animation to settle so Playwright's stability check
-  // doesn't race with it.
+  // doesn't race with it. The first click also races with the
+  // "Collection installed" toast (rendered after `installDemo`) and the
+  // PWA offline-ready prompt — both sit at `z-50 bottom-20` and overlap
+  // the FAB. `dismissTransientUi` clears them, but it only runs in
+  // `installByName`, so we still call it again here for the PWA prompt
+  // that appears asynchronously once the service worker registers.
   const fab = page.getByTestId('fab');
   await fab.waitFor({ state: 'visible' });
-  // The build produces a service worker; the first load surfaces a transient
-  // "App ready to work offline" prompt at the bottom of the screen that
-  // overlaps the FAB. Dismiss it before clicking — the bulk-import dialog
-  // isn't open yet, so the first "Close" button on the page belongs to the
-  // PWA prompt.
-  const pwaClose = page.getByRole('button', { name: 'Close' }).first();
-  if (await pwaClose.isVisible().catch(() => false)) {
-    await pwaClose.click();
-  }
-  await fab.click();
+  await dismissTransientUi(page);
+  // `force: true` is a safety net: a stale toast or PWA prompt that races in
+  // between `dismissTransientUi` and this click would otherwise block the
+  // FAB (`z-30 bottom-24`) from receiving the event under the overlays
+  // (`z-50 bottom-20`).
+  await fab.click({ force: true });
   await page.getByTestId('bulk-input').fill('ARG 1\nARG 1\nBRA 12\nZZZ 9');
   await page.getByRole('button', { name: 'Import', exact: true }).click();
   await expect(page.getByTestId('bulk-report')).toContainText('2');

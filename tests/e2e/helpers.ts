@@ -47,4 +47,42 @@ export async function installByName(page: Page, name: string): Promise<void> {
   await installRow.getByRole('button', { name: 'Install' }).click();
   // Once installed it shows up as the selected active collection.
   await page.getByText('Selected').first().waitFor();
+  // The "Collection installed" toast and the PWA offline-ready prompt both
+  // sit at `z-50 bottom-20` and overlap the FAB (`z-30 bottom-24`) for up
+  // to ~3.5s. Clear them so the next interaction (FAB click, etc.) is
+  // safe and not intercepted by either overlay.
+  await dismissTransientUi(page);
+}
+
+/**
+ * Clear anything floating above the app that could intercept clicks on
+ * bottom-anchored controls (FAB, bottom-nav). This includes:
+ *  - Toasts (notifications region at `z-50 bottom-20`)
+ *  - PWA update/offline-ready prompt (also at `z-50 bottom-20`)
+ *
+ * Both overlays share the same z-index and anchor, so the later-rendered
+ * one can intercept clicks on the earlier one. We use `force: true` to
+ * dispatch the click at the target's own coordinates and bypass the
+ * actionability check.
+ */
+export async function dismissTransientUi(page: Page): Promise<void> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    // The PWA prompt's Close button is a `btn-ghost` — match by class+text
+    // to avoid clashing with the bulk-import dialog's "Close" button (which
+    // lives inside `role="dialog"` and isn't a transient overlay).
+    const pwaClose = page
+      .locator('button.btn-ghost', { hasText: 'Close' })
+      .first();
+    if (await pwaClose.isVisible().catch(() => false)) {
+      await pwaClose.click({ force: true }).catch(() => {});
+      continue;
+    }
+    // Toasts are <button role="alert"> — clicking dismisses them.
+    const toast = page.locator('[role="alert"]').first();
+    if (await toast.isVisible().catch(() => false)) {
+      await toast.click({ force: true }).catch(() => {});
+      continue;
+    }
+    return;
+  }
 }
