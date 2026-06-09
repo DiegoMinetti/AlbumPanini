@@ -51,11 +51,7 @@ export function Fab({
       aria-label={ariaLabel}
       data-testid="fab"
       className={[
-        // z-50 keeps the primary action above transient notifications
-        // (PWA update prompt, toasts — all at z-50 but earlier in the DOM).
-        // Modals are also z-50 but rendered after the FAB in StickersPage,
-        // so they still paint on top of the FAB when open.
-        'group fixed z-50 inline-flex items-center justify-center gap-2 overflow-hidden',
+        'group fixed z-30 inline-flex items-center justify-center gap-2 overflow-hidden',
         'rounded-full transition-all duration-motion-medium2 ease-emphasized',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
         isExtended ? 'h-14 rounded-2xl px-5 text-sm font-medium' : 'h-14 w-14',
