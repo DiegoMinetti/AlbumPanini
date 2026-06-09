@@ -307,7 +307,7 @@
 
   /* ===== M3 — SegmentedButton indicator ===== */
   .segmented-indicator {
-    @apply pointer-events-none absolute top-1 bottom-1 rounded-md
+    @apply pointer-events-none absolute left-0 top-1 bottom-1 rounded-md
       bg-secondary-container shadow-elev-1
       transition-all duration-motion-medium2 ease-emphasized;
   }
@@ -318,7 +318,7 @@
        - `--horizontal` (BottomNav): se mueve en X, alto fijo = contenedor - 8px.
        - vertical  (NavigationRail): se mueve en Y, ancho fijo = contenedor - 8px. */
   .nav-segmented-indicator {
-    @apply pointer-events-none absolute top-1 bottom-1 rounded-2xl
+    @apply pointer-events-none absolute left-0 top-1 bottom-1 rounded-2xl
       bg-secondary-container shadow-elev-1
       transition-all duration-motion-medium2 ease-emphasized z-0;
   }

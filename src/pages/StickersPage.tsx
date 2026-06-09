@@ -160,14 +160,18 @@ export function StickersPage() {
           del TopBar (cuya altura publica esa CSS var con un ResizeObserver).
         - `-mx-4` cancela el `px-4` del <main> para que el fondo cubra todo
           el ancho; `px-4` interior restaura el padding.
-        - Reutiliza la utility `app-bar-surface` (definida en index.css) —
-          misma surface-translucent + backdrop-blur + surface-tint que el
-          TopBar, dando la sensación nativa de "M3 docked toolbar" sobre
-          el contenido scrolleable de abajo.
+        - `-mt-4` cancela el `pt-4` del <main> para que el header arranque
+          FLUSH bajo el TopBar (top=64) en lugar de 16px más abajo (top=80),
+          eliminando el "salto" visible al volverse sticky.
+        - Fondo opaco `bg-surface-container` (NO `app-bar-surface`) para
+          evitar el bug conocido de iOS Safari donde un `backdrop-filter`
+          en un ancestro puede romper el `position: fixed` del BottomNav
+          durante el scroll.
       */}
       <header
-        className="app-bar-surface sticky top-[var(--app-topbar-h,0px)] z-30
-          -mx-4 border-b border-outline-variant/40 px-4 pb-2 pt-2
+        className="sticky top-[var(--app-topbar-h,0px)] z-30
+          -mx-4 -mt-4 border-b border-outline-variant/40
+          bg-surface-container px-4 pb-2 pt-2
           shadow-elev-1 transition-shadow
           duration-motion-medium2 ease-emphasized"
         data-testid="stickers-toolbar"

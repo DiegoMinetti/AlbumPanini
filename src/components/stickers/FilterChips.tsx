@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { OwnershipFilter } from '@/services/filterService';
 import { haptics } from '@/utils/haptics';
@@ -20,6 +20,14 @@ const ORDER: OwnershipFilter[] = ['all', 'owned', 'missing', 'duplicates'];
  * selección la lleva el indicator, no el botón. Cada botón tiene su
  * propio state layer M3 al hover/press.
  *
+ * Comportamiento responsive:
+ *   - En pantallas anchas los 4 segmentos muestran label + count sin
+ *     truncarse.
+ *   - En pantallas estrechas (<360px) los segmentos usan `flex-1` para
+ *     repartirse el ancho disponible y `truncate` para acortar el label
+ *     si hiciera falta — NUNCA se permite scroll horizontal sobre la
+ *     barra de filtros (rompería la sensación de toolbar sticky).
+ *
  * El botón para abrir los filtros avanzados (icono "tune" con badge) se
  * renderiza como icono aparte desde `FilterBar`, no como chip, para que
  * la fila de ownership quede visualmente limpia.
@@ -33,7 +41,9 @@ export function FilterChips({ value, onChange, counts }: FilterChipsProps) {
   });
 
   // Recalcular posición/tamaño del indicator al montar y al cambiar la selección.
-  useLayoutEffect(() => {
+  // Devuelve true si encontró el botón activo (para no resetear el indicator
+  // a {0,0} cuando el contenedor aún no se montó, p.ej. en el primer render).
+  const updateIndicator = useCallback(() => {
     const root = containerRef.current;
     if (!root) return;
     const active = root.querySelector<HTMLElement>(
@@ -45,6 +55,25 @@ export function FilterChips({ value, onChange, counts }: FilterChipsProps) {
     setIndicator({ x: aRect.left - rootRect.left, w: aRect.width });
   }, [value]);
 
+  useLayoutEffect(() => {
+    updateIndicator();
+  }, [updateIndicator]);
+
+  // Mantener el indicator alineado cuando cambia el ancho del contenedor
+  // (rotación, resize de ventana, fuentes dinámicas, etc.). Sin esto el
+  // pill queda desfasado al primer resize hasta que cambie `value`.
+  useEffect(() => {
+    const root = containerRef.current;
+    if (!root) return;
+    const ro = new ResizeObserver(() => updateIndicator());
+    ro.observe(root);
+    window.addEventListener('resize', updateIndicator);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateIndicator);
+    };
+  }, [updateIndicator]);
+
   const handleChange = (next: OwnershipFilter) => {
     if (next !== value) haptics.selection();
     onChange(next);
@@ -55,8 +84,8 @@ export function FilterChips({ value, onChange, counts }: FilterChipsProps) {
       ref={containerRef}
       role="tablist"
       aria-label={t('stickers.filters')}
-      className="relative inline-flex w-full items-center gap-1 overflow-x-auto
-        rounded-lg bg-surface-container p-1"
+      className="relative flex w-full items-center gap-1 rounded-lg
+        bg-surface-container p-1"
     >
       <span
         aria-hidden
@@ -77,18 +106,24 @@ export function FilterChips({ value, onChange, counts }: FilterChipsProps) {
             aria-selected={active}
             onClick={() => handleChange(filter)}
             className={[
-              'group relative z-10 flex min-h-[36px] shrink-0 items-center justify-center gap-1',
-              'overflow-hidden rounded-md px-2.5 text-label-md whitespace-nowrap',
-              'transition-colors duration-motion-short3 ease-standard',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+              'group relative z-10 flex min-h-[36px] min-w-0 flex-1 items-center',
+              'justify-center gap-1 overflow-hidden rounded-md px-1.5',
+              'text-label-md transition-colors duration-motion-short3',
+              'ease-standard focus-visible:outline-none focus-visible:ring-2',
+              'focus-visible:ring-primary',
               active
                 ? 'text-on-secondary-container'
                 : 'text-on-surface-variant hover:text-on-surface',
             ].join(' ')}
           >
-            <span>{t(`stickers.filter.${filter}`)}</span>
+            <span className="min-w-0 truncate">
+              {t(`stickers.filter.${filter}`)}
+            </span>
             {counts?.[filter] !== undefined ? (
-              <span className="opacity-70 tabular-nums">
+              <span
+                className="shrink-0 opacity-70 tabular-nums"
+                aria-label={`${counts[filter]}`}
+              >
                 ({counts[filter]})
               </span>
             ) : null}
