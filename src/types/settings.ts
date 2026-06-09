@@ -36,6 +36,11 @@ export const settingsSchema = z.object({
   appLaunchCount: z.number().int().nonnegative().default(0),
   /** True once the Mercado Pago link was opened by the user. */
   donationLinkOpened: z.boolean().default(false),
+  /**
+   * True once the default collection (FIFA World Cup 2026) has been seeded on
+   * first launch. Prevents re-seeding if the user later removes it on purpose.
+   */
+  defaultCollectionSeeded: z.boolean().default(false),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 

@@ -189,6 +189,8 @@
     "support": "Apoyar el proyecto",
     "supportHint": "Si te sirve la app, podés colaborar con una transferencia.",
     "openDonations": "Ver datos para transferir",
+    "collectionsHint": "Gestioná tus álbumes e instalá nuevas colecciones.",
+    "openCollections": "Administrar colecciones",
     "version": "Versión",
     "dbVersion": "Versión de la base de datos",
     "resetInventory": "Reiniciar inventario",

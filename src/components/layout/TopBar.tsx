@@ -33,14 +33,6 @@ export function TopBar() {
         </div>
         <nav className="flex items-center gap-1">
           <Link
-            to="/collections"
-            className="btn-ghost px-2"
-            aria-label={t('nav.collections')}
-            title={t('nav.collections')}
-          >
-            <Icon name="collections" size={22} />
-          </Link>
-          <Link
             to="/backup"
             className="btn-ghost px-2"
             aria-label={t('nav.backup')}

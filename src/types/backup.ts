@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { collectionMetaSchema, stickerSchema, teamSchema } from './collection';
+import { tournamentSchema } from './tournament';
 import { inventoryItemSchema } from './inventory';
 import { settingsSchema } from './settings';
 
@@ -7,11 +8,41 @@ import { settingsSchema } from './settings';
  * Current backup format version. Bump whenever the on-disk backup shape
  * changes; `restoreService` migrates older versions up to this one.
  */
-export const BACKUP_VERSION = 1;
+export const BACKUP_VERSION = 2;
 
 /** File extension / magic used by the export feature. */
 export const BACKUP_EXTENSION = '.albumbackup';
 export const BACKUP_MAGIC = 'PANINI-BACKUP';
+
+/** A match result inside a backed-up scenario (uid/scenarioId reconstructed). */
+export const backupMatchResultSchema = z.object({
+  matchId: z.string(),
+  homeGoals: z.number(),
+  awayGoals: z.number(),
+  homePens: z.number().optional(),
+  awayPens: z.number().optional(),
+  played: z.boolean(),
+  updatedAt: z.number(),
+});
+
+/** A knockout pick inside a backed-up scenario (uid/scenarioId reconstructed). */
+export const backupKnockoutPickSchema = z.object({
+  slot: z.string(),
+  teamId: z.string(),
+  updatedAt: z.number(),
+});
+
+/** A backed-up tournament scenario with its results + picks. */
+export const backupScenarioSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  isOfficial: z.boolean().default(false),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  results: z.array(backupMatchResultSchema).default([]),
+  picks: z.array(backupKnockoutPickSchema).default([]),
+});
+export type BackupScenario = z.infer<typeof backupScenarioSchema>;
 
 /** A self-contained snapshot of one collection (meta + teams + stickers). */
 export const backupCollectionSchema = collectionMetaSchema.extend({
@@ -22,6 +53,13 @@ export const backupCollectionSchema = collectionMetaSchema.extend({
   teams: z.array(teamSchema).default([]),
   stickers: z.array(stickerSchema).default([]),
   inventory: z.array(inventoryItemSchema).default([]),
+  scenarios: z.array(backupScenarioSchema).default([]),
+  /**
+   * Static tournament structure (groups + bracket). Optional because backups
+   * written before this field existed omit it; the restore self-heals those by
+   * re-hydrating from the bundled package. See `restoreBackup`.
+   */
+  tournament: tournamentSchema.optional(),
 });
 export type BackupCollection = z.infer<typeof backupCollectionSchema>;
 
@@ -44,5 +82,6 @@ export interface RestoreSummary {
   teams: number;
   stickers: number;
   inventoryItems: number;
+  scenarios: number;
   migratedFrom?: number;
 }

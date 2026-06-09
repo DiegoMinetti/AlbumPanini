@@ -189,6 +189,8 @@
     "support": "Support the project",
     "supportHint": "If this app helps you, you can support it with a transfer.",
     "openDonations": "View transfer details",
+    "collectionsHint": "Manage your albums and install new collections.",
+    "openCollections": "Manage collections",
     "version": "Version",
     "dbVersion": "Database version",
     "resetInventory": "Reset inventory",

@@ -9,11 +9,17 @@ import {
   type RestoreSummary,
 } from '@/types/backup';
 import type {
+  CollectionManifestEntry,
   StoredCollection,
   StoredSticker,
   StoredTeam,
 } from '@/types/collection';
 import type { StoredInventoryItem } from '@/types/inventory';
+import type {
+  StoredKnockoutPick,
+  StoredMatchResult,
+  StoredScenario,
+} from '@/types/scenario';
 import {
   DEFAULT_SETTINGS,
   settingsSchema,
@@ -22,6 +28,7 @@ import {
 import { gunzipJson, gzipJson } from '@/utils/compression';
 import { makeUid } from '@/utils/ids';
 import { normalizeCode } from '@/utils/code';
+import { fetchManifest, fetchPackage } from './collectionLoader';
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? '1.0.0';
 
@@ -29,16 +36,30 @@ const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? '1.0.0';
 export async function createBackupPayload(
   settings: Settings
 ): Promise<BackupPayload> {
-  const [collections, teams, stickers, inventory] = await Promise.all([
+  const [
+    collections,
+    teams,
+    stickers,
+    inventory,
+    scenarios,
+    matchResults,
+    knockoutPicks,
+  ] = await Promise.all([
     db.collections.toArray(),
     db.teams.toArray(),
     db.stickers.toArray(),
     db.inventory.toArray(),
+    db.scenarios.toArray(),
+    db.matchResults.toArray(),
+    db.knockoutPicks.toArray(),
   ]);
 
   const teamsByCol = groupBy(teams, (t) => t.collectionId);
   const stickersByCol = groupBy(stickers, (s) => s.collectionId);
   const invByCol = groupBy(inventory, (i) => i.collectionId);
+  const scenariosByCol = groupBy(scenarios, (s) => s.collectionId);
+  const resultsByScenario = groupBy(matchResults, (r) => r.scenarioId);
+  const picksByScenario = groupBy(knockoutPicks, (p) => p.scenarioId);
 
   const backupCollections: BackupCollection[] = collections.map((c) => ({
     id: c.id,
@@ -49,6 +70,7 @@ export async function createBackupPayload(
     coverImage: c.coverImage,
     status: c.status,
     sourceId: c.sourceId,
+    tournament: c.tournament,
     createdAt: c.createdAt,
     updatedAt: c.updatedAt,
     teams: (teamsByCol.get(c.id) ?? []).map(stripTeam),
@@ -56,6 +78,15 @@ export async function createBackupPayload(
     inventory: (invByCol.get(c.id) ?? [])
       .filter((i) => i.quantity > 0)
       .map((i) => ({ stickerId: i.stickerId, quantity: i.quantity })),
+    scenarios: (scenariosByCol.get(c.id) ?? []).map((s) => ({
+      id: s.id,
+      name: s.name,
+      isOfficial: s.isOfficial,
+      createdAt: s.createdAt,
+      updatedAt: s.updatedAt,
+      results: (resultsByScenario.get(s.id) ?? []).map(stripMatchResult),
+      picks: (picksByScenario.get(s.id) ?? []).map(stripKnockoutPick),
+    })),
   }));
 
   return {
@@ -149,6 +180,9 @@ export async function restoreBackup(
   const teams: StoredTeam[] = [];
   const stickers: StoredSticker[] = [];
   const inventory: StoredInventoryItem[] = [];
+  const scenarios: StoredScenario[] = [];
+  const matchResults: StoredMatchResult[] = [];
+  const knockoutPicks: StoredKnockoutPick[] = [];
 
   for (const c of payload.collections) {
     collections.push({
@@ -160,6 +194,7 @@ export async function restoreBackup(
       coverImage: c.coverImage,
       status: c.status,
       sourceId: c.sourceId,
+      tournament: c.tournament,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
     });
@@ -183,7 +218,44 @@ export async function restoreBackup(
         updatedAt: c.updatedAt,
       });
     }
+    for (const s of c.scenarios) {
+      scenarios.push({
+        id: s.id,
+        collectionId: c.id,
+        name: s.name,
+        isOfficial: s.isOfficial,
+        createdAt: s.createdAt,
+        updatedAt: s.updatedAt,
+      });
+      for (const r of s.results) {
+        matchResults.push({
+          uid: makeUid(s.id, r.matchId),
+          scenarioId: s.id,
+          matchId: r.matchId,
+          homeGoals: r.homeGoals,
+          awayGoals: r.awayGoals,
+          homePens: r.homePens,
+          awayPens: r.awayPens,
+          played: r.played,
+          updatedAt: r.updatedAt,
+        });
+      }
+      for (const p of s.picks) {
+        knockoutPicks.push({
+          uid: makeUid(s.id, p.slot),
+          scenarioId: s.id,
+          slot: p.slot,
+          teamId: p.teamId,
+          updatedAt: p.updatedAt,
+        });
+      }
+    }
   }
+
+  // Self-heal old backups: re-attach any missing tournament structure from the
+  // bundled package before writing, so restoring a pre-tournament backup does
+  // not leave the Copa view empty. Best-effort; never blocks the restore.
+  await hydrateMissingTournaments(collections);
 
   await db.transaction(
     'rw',
@@ -202,16 +274,27 @@ export async function restoreBackup(
         await db.clearAllData();
       } else {
         // Merge: clear only the collections being restored, then re-add.
+        // Teams/stickers/inventory are always fully present in a backup, so we
+        // replace them wholesale. Scenarios are additive: we only touch the
+        // ones the backup actually carries (by scenario id), leaving any
+        // existing tournament data untouched when the backup has none.
         for (const c of collections) {
           await db.teams.where('collectionId').equals(c.id).delete();
           await db.stickers.where('collectionId').equals(c.id).delete();
           await db.inventory.where('collectionId').equals(c.id).delete();
+        }
+        for (const s of scenarios) {
+          await db.matchResults.where('scenarioId').equals(s.id).delete();
+          await db.knockoutPicks.where('scenarioId').equals(s.id).delete();
         }
       }
       await db.collections.bulkPut(collections);
       await db.teams.bulkPut(teams);
       await db.stickers.bulkPut(stickers);
       await db.inventory.bulkPut(inventory);
+      await db.scenarios.bulkPut(scenarios);
+      await db.matchResults.bulkPut(matchResults);
+      await db.knockoutPicks.bulkPut(knockoutPicks);
     }
   );
 
@@ -226,6 +309,7 @@ export async function restoreBackup(
       teams: teams.length,
       stickers: stickers.length,
       inventoryItems: inventory.length,
+      scenarios: scenarios.length,
       migratedFrom: options.migratedFrom,
     },
     settings,
@@ -233,6 +317,40 @@ export async function restoreBackup(
 }
 
 // --- helpers ----------------------------------------------------------------
+
+/**
+ * Repair collections restored from an old backup that predates the exported
+ * `tournament` structure. For each collection still missing its tournament, we
+ * look up the matching bundled package (by `sourceId`, falling back to `id`)
+ * and copy its tournament across. This is best-effort: if the manifest/package
+ * can't be fetched (offline, removed package, or a user-made collection with no
+ * source), the collection is left as-is and the restore proceeds.
+ */
+async function hydrateMissingTournaments(
+  collections: StoredCollection[]
+): Promise<void> {
+  const needsHydration = collections.filter((c) => !c.tournament);
+  if (needsHydration.length === 0) return;
+
+  let manifest: CollectionManifestEntry[];
+  try {
+    manifest = await fetchManifest();
+  } catch {
+    return;
+  }
+
+  for (const c of needsHydration) {
+    const packageId = c.sourceId ?? c.id;
+    const entry = manifest.find((m) => m.id === packageId);
+    if (!entry) continue;
+    try {
+      const pkg = await fetchPackage(entry);
+      if (pkg.tournament) c.tournament = pkg.tournament;
+    } catch {
+      // Leave this collection without a tournament; don't abort the restore.
+    }
+  }
+}
 
 function groupBy<T, K>(items: T[], keyOf: (item: T) => K): Map<K, T[]> {
   const map = new Map<K, T[]>();
@@ -253,4 +371,14 @@ function stripTeam(t: StoredTeam) {
 function stripSticker(s: StoredSticker) {
   const { uid: _uid, collectionId: _cid, normalizedCode: _nc, ...sticker } = s;
   return sticker;
+}
+
+function stripMatchResult(r: StoredMatchResult) {
+  const { uid: _uid, scenarioId: _sid, ...result } = r;
+  return result;
+}
+
+function stripKnockoutPick(p: StoredKnockoutPick) {
+  const { uid: _uid, scenarioId: _sid, ...pick } = p;
+  return pick;
 }

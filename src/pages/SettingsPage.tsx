@@ -79,6 +79,20 @@ export function SettingsPage() {
       </section>
 
       <section className="card flex flex-col gap-3">
+        <h2 className="text-base font-semibold">{t('nav.collections')}</h2>
+        <p className="text-sm text-slate-500">
+          {t('settings.collectionsHint')}
+        </p>
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={() => navigate('/collections')}
+        >
+          {t('settings.openCollections')}
+        </button>
+      </section>
+
+      <section className="card flex flex-col gap-3">
         <h2 className="text-base font-semibold">{t('settings.data')}</h2>
         <button
           type="button"

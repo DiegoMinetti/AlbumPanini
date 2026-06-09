@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useCollections } from '@/hooks/useCollections';
 import { useManifest } from '@/hooks/useManifest';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -32,6 +33,7 @@ type DialogState =
 
 export function CollectionsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const collections = useCollections();
   const manifest = useManifest();
   const activeId = useSettingsStore((s) => s.activeCollectionId);
@@ -201,6 +203,14 @@ export function CollectionsPage() {
           closeDialog();
         }}
       />
+
+      <button
+        type="button"
+        className="btn-secondary mt-2 w-full"
+        onClick={() => navigate('/settings')}
+      >
+        {t('common.back')}
+      </button>
     </div>
   );
 }

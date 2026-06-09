@@ -24,6 +24,7 @@ interface SettingsState extends Settings {
   setEditMode: (editMode: boolean) => void;
   registerAppLaunch: () => void;
   markDonationLinkOpened: () => void;
+  markDefaultCollectionSeeded: () => void;
   /** Replace the whole settings object (used after restoring a backup). */
   applySettings: (settings: Settings) => void;
 }
@@ -111,6 +112,8 @@ export const useSettingsStore = create<SettingsState>()(
       registerAppLaunch: () =>
         set({ appLaunchCount: get().appLaunchCount + 1 }),
       markDonationLinkOpened: () => set({ donationLinkOpened: true }),
+      markDefaultCollectionSeeded: () =>
+        set({ defaultCollectionSeeded: true }),
       applySettings: (settings) => {
         set({ ...settings });
         applyThemeSideEffects(get());
@@ -131,6 +134,7 @@ export const useSettingsStore = create<SettingsState>()(
         editMode: state.editMode,
         appLaunchCount: state.appLaunchCount,
         donationLinkOpened: state.donationLinkOpened,
+        defaultCollectionSeeded: state.defaultCollectionSeeded,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) applyThemeSideEffects(state);

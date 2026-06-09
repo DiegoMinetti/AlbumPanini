@@ -144,3 +144,26 @@ export async function installPackage(
 export async function isInstalled(collectionId: string): Promise<boolean> {
   return (await db.collections.get(collectionId)) !== undefined;
 }
+
+/**
+ * Id of the collection auto-installed on first launch so the app opens with a
+ * usable album instead of an empty onboarding screen.
+ */
+export const DEFAULT_COLLECTION_ID = 'worldcup-2026';
+
+/**
+ * Install the default collection (FIFA World Cup 2026) if it is not already
+ * present. Returns the installed collection, or null if it was already there or
+ * the manifest does not list it. Throws on network/parse failure so the caller
+ * can retry on the next launch.
+ */
+export async function seedDefaultCollection(
+  signal?: AbortSignal
+): Promise<StoredCollection | null> {
+  if (await isInstalled(DEFAULT_COLLECTION_ID)) return null;
+  const manifest = await fetchManifest(signal);
+  const entry = manifest.find((e) => e.id === DEFAULT_COLLECTION_ID);
+  if (!entry) return null;
+  const pkg = await fetchPackage(entry, signal);
+  return installPackage(pkg);
+}

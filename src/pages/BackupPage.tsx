@@ -38,6 +38,7 @@ export function BackupPage() {
         editMode: settings.editMode,
         appLaunchCount: settings.appLaunchCount,
         donationLinkOpened: settings.donationLinkOpened,
+        defaultCollectionSeeded: settings.defaultCollectionSeeded,
       });
       downloadBlob(blob, backupFilename());
       toast.success(t('backup.exported'));
