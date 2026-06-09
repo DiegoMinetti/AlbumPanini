@@ -112,8 +112,7 @@ export const useSettingsStore = create<SettingsState>()(
       registerAppLaunch: () =>
         set({ appLaunchCount: get().appLaunchCount + 1 }),
       markDonationLinkOpened: () => set({ donationLinkOpened: true }),
-      markDefaultCollectionSeeded: () =>
-        set({ defaultCollectionSeeded: true }),
+      markDefaultCollectionSeeded: () => set({ defaultCollectionSeeded: true }),
       applySettings: (settings) => {
         set({ ...settings });
         applyThemeSideEffects(get());
