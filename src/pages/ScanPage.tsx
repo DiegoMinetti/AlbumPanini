@@ -102,7 +102,9 @@ export function ScanPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-body-md text-on-surface-variant">{t('scan.ocrHint')}</p>
+      <p className="text-body-md text-on-surface-variant">
+        {t('scan.ocrHint')}
+      </p>
 
       <section className="card flex flex-col gap-3">
         <div className="aspect-video w-full overflow-hidden rounded-xl bg-inverse-surface">

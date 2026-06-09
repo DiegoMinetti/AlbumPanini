@@ -61,8 +61,10 @@ export function BracketView({
         if (!list) return null;
         return (
           <section key={stage} className="card flex flex-col gap-1 p-4">
-            <h2 className="mb-1 text-label-md font-bold uppercase
-              tracking-wide text-primary">
+            <h2
+              className="mb-1 text-label-md font-bold uppercase
+              tracking-wide text-primary"
+            >
               {t(`tournament.stage.${stage}`)}
             </h2>
             <div className="divide-y divide-outline-variant/40">

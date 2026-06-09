@@ -121,12 +121,17 @@
      con un tinte apenas perceptible del primary en el fondo). */
   body {
     background-color: var(--md-sys-color-surface);
-    background-image: radial-gradient(
+    background-image:
+      radial-gradient(
         ellipse 80% 60% at 50% 0%,
         color-mix(in srgb, var(--md-sys-color-primary) 4%, transparent),
         transparent 70%
       ),
-      linear-gradient(180deg, var(--md-sys-color-surface) 0%, var(--md-sys-color-surface) 100%);
+      linear-gradient(
+        180deg,
+        var(--md-sys-color-surface) 0%,
+        var(--md-sys-color-surface) 100%
+      );
     color: var(--md-sys-color-on-surface);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -350,7 +355,8 @@
   .app-bar-surface--scrolled {
     background-color: var(--md-sys-color-surface-tint-translucent);
     box-shadow:
-      0 1px 0 0 color-mix(in srgb, var(--md-sys-color-outline-variant) 60%, transparent),
+      0 1px 0 0
+        color-mix(in srgb, var(--md-sys-color-outline-variant) 60%, transparent),
       0 2px 6px 0 rgba(0, 0, 0, 0.06);
   }
 

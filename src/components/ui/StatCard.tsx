@@ -33,9 +33,7 @@ export function StatCard({
         <span className="text-label-md uppercase tracking-wide text-on-surface-variant">
           {label}
         </span>
-        {icon ? (
-          <span className="text-on-surface-variant">{icon}</span>
-        ) : null}
+        {icon ? <span className="text-on-surface-variant">{icon}</span> : null}
       </div>
       <span
         className={`text-headline-sm font-semibold tabular-nums ${ACCENTS[accent]}`}

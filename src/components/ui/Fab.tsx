@@ -69,7 +69,9 @@ export function Fab({
         'group fixed z-30 inline-flex items-center justify-center gap-2 overflow-hidden',
         'rounded-2xl transition-all duration-motion-medium2 ease-emphasized',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-        isExtended ? 'h-14 rounded-2xl px-5 text-label-lg font-medium' : 'h-14 w-14',
+        isExtended
+          ? 'h-14 rounded-2xl px-5 text-label-lg font-medium'
+          : 'h-14 w-14',
         VARIANT_CLS[variant],
         // 96dp desde el borde inferior (equivale a bottom-24) en todos
         // los viewports, + safe-area-inset-bottom para iOS / Android.

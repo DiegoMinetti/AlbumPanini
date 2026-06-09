@@ -168,9 +168,11 @@ export function KnockoutMatchRow({
       </div>
 
       {editable && drawn ? (
-        <div className="mt-1 flex items-center justify-center gap-1.5 rounded-md
+        <div
+          className="mt-1 flex items-center justify-center gap-1.5 rounded-md
           bg-tertiary-container/60 px-2 py-1
-          text-on-tertiary-container">
+          text-on-tertiary-container"
+        >
           <span className="text-label-sm font-semibold uppercase tracking-wide">
             {t('tournament.pens')}
           </span>
