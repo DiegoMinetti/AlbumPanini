@@ -1,11 +1,16 @@
 import { useTranslation } from 'react-i18next';
 import type { StoredSticker } from '@/types/collection';
 import { Modal } from '@/components/ui/Modal';
+import { QuantityStepper } from './QuantityStepper';
+import { haptics } from '@/utils/haptics';
+import { toast } from '@/stores/uiStore';
 
 interface StickerDetailModalProps {
   sticker: StoredSticker | null;
   quantity: number;
   onClose: () => void;
+  onIncrement: (id: string) => void;
+  onDecrement: (id: string) => void;
 }
 
 /** Reads a string field from the generic `meta` bag, if present. */
@@ -20,14 +25,15 @@ function metaStr(
 }
 
 /**
- * Detail sheet for a sticker. For enriched player stickers it surfaces the bio
- * carried in `meta` (club, position, age, height, nationality, links). Falls
- * back gracefully for non-player stickers with no metadata.
+ * Detail sheet for a sticker (M3 bottom sheet). Shows bio data from `meta`,
+ * the inventory stepper, and shortcut actions.
  */
 export function StickerDetailModal({
   sticker,
   quantity,
   onClose,
+  onIncrement,
+  onDecrement,
 }: StickerDetailModalProps) {
   const { t } = useTranslation();
   if (!sticker) return null;
@@ -51,49 +57,115 @@ export function StickerDetailModal({
   const rows = allRows.filter(([, v]) => v !== null);
 
   return (
-    <Modal open={!!sticker} onClose={onClose} title={sticker.name}>
-      <div className="flex flex-col gap-4">
+    <Modal
+      open={!!sticker}
+      onClose={onClose}
+      title={sticker.name}
+      subtitle={
+        <div className="flex items-center gap-2 text-on-surface-variant">
+          <span className="rounded bg-surface-container px-1.5 py-0.5 text-xs font-bold uppercase">
+            {sticker.code}
+          </span>
+          {flag ? <span className="text-lg">{flag}</span> : null}
+        </div>
+      }
+    >
+      <div className="flex flex-col gap-4 pb-2">
         {sticker.image ? (
           <img
             src={sticker.image}
             alt={sticker.name}
-            className="mx-auto h-48 w-auto rounded-xl object-cover"
+            className="mx-auto h-48 w-auto rounded-md object-cover"
           />
         ) : null}
 
-        <div className="flex items-center gap-2">
-          <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-xs font-bold uppercase text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            {sticker.code}
-          </span>
-          {flag ? <span className="text-xl">{flag}</span> : null}
-          <span className="text-xs text-slate-500">
-            {t('stickers.quantity', { count: quantity })}
-          </span>
-        </div>
+        {/* Inventario */}
+        <section
+          className="flex items-center justify-between rounded-md bg-surface-container-low p-3"
+          aria-label="inventory"
+        >
+          <div>
+            <p className="text-xs uppercase tracking-wide text-on-surface-variant">
+              Cantidad
+            </p>
+            <p className="text-2xl font-semibold tabular-nums">{quantity}</p>
+          </div>
+          <QuantityStepper
+            quantity={quantity}
+            size="md"
+            onIncrement={() => {
+              haptics.tick();
+              onIncrement(sticker.id);
+            }}
+            onDecrement={() => {
+              haptics.tick();
+              onDecrement(sticker.id);
+            }}
+          />
+        </section>
 
         {rows.length > 0 ? (
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-            {rows.map(([label, value]) => (
-              <div key={label} className="flex flex-col">
-                <dt className="text-xs uppercase text-slate-400">{label}</dt>
-                <dd className="font-medium">{value}</dd>
-              </div>
-            ))}
-          </dl>
+          <section
+            className="rounded-md bg-surface-container-low p-3"
+            aria-label="details"
+          >
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+              Datos
+            </h3>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+              {rows.map(([label, value]) => (
+                <div key={label} className="flex flex-col">
+                  <dt className="text-xs uppercase text-on-surface-variant">
+                    {label}
+                  </dt>
+                  <dd className="font-medium text-on-surface">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         ) : (
-          <p className="text-sm text-slate-500">{t('detail.noData')}</p>
+          <p className="text-sm text-on-surface-variant">{t('detail.noData')}</p>
         )}
 
-        {wiki ? (
-          <a
-            href={wiki}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+        {/* Acciones */}
+        <section
+          className="flex flex-wrap items-center gap-2"
+          aria-label="actions"
+        >
+          <button
+            type="button"
+            className="btn-tonal"
+            onClick={() => {
+              onIncrement(sticker.id);
+              haptics.success();
+              toast.success(t('toast.added'));
+            }}
           >
-            {t('detail.wikipedia')} ↗
-          </a>
-        ) : null}
+            {t('common.owned')}
+          </button>
+          <button
+            type="button"
+            className="btn-outlined"
+            onClick={() => {
+              haptics.tick();
+              /* Llamamos al reset: si quantity actual es 0, no hay nada que hacer */
+              if (quantity > 0) onDecrement(sticker.id);
+              toast.info(t('common.remove'));
+            }}
+          >
+            {t('stickers.filter.missing')}
+          </button>
+          {wiki ? (
+            <a
+              href={wiki}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-ghost"
+            >
+              {t('detail.wikipedia')} ↗
+            </a>
+          ) : null}
+        </section>
       </div>
     </Modal>
   );

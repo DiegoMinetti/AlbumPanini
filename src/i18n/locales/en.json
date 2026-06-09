@@ -69,7 +69,9 @@
     },
     "team": "Team",
     "category": "Category",
+    "categoryAll": "All categories",
     "rarity": "Rarity",
+    "rarityAll": "All rarities",
     "view": "View",
     "grid": "Grid",
     "list": "List",
@@ -77,6 +79,26 @@
     "quantity": "Qty {{count}}",
     "noResults": "No stickers match your filters.",
     "includeExtras": "Include extras from other editions",
+    "categoryOptions": {
+      "default": "Other",
+      "player": "Player",
+      "badge": "Badge",
+      "team-emblem": "Team emblem",
+      "team-photo": "Team photo",
+      "stadium": "Stadium",
+      "logo": "Logo",
+      "legend": "Legend",
+      "creature": "Creature",
+      "special": "Specials"
+    },
+    "rarityOptions": {
+      "common": "Common",
+      "uncommon": "Uncommon",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary",
+      "special": "Special"
+    },
     "edit": {
       "lock": "Disable editing",
       "unlock": "Enable editing",

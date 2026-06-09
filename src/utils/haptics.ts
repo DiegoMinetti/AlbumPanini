@@ -21,8 +21,12 @@ function vibrate(pattern: number | number[]): void {
 
 export const haptics = {
   light: () => vibrate(10),
+  /** Soft click — used by the quantity stepper. */
+  tick: () => vibrate(5),
   medium: () => vibrate(20),
   success: () => vibrate([15, 40, 15]),
   warning: () => vibrate([30, 50, 30]),
   error: () => vibrate([50, 60, 50]),
+  /** M3 selection feedback — used by chips, segments, FAB. */
+  selection: () => vibrate(8),
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '@/components/ui/Modal';
 import { addByCodes, type BulkApplyReport } from '@/services/inventoryService';
@@ -22,6 +22,9 @@ export function BulkImportModal({
   const [report, setReport] = useState<BulkApplyReport | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Live preview of detected codes for the in-modal counter chip.
+  const detectedCount = useMemo(() => extractCodes(text).length, [text]);
+
   const handleImport = async () => {
     const codes = extractCodes(text);
     if (codes.length === 0) return;
@@ -38,6 +41,7 @@ export function BulkImportModal({
       );
       setText('');
     } catch {
+      haptics.error();
       toast.error(t('toast.error'));
     } finally {
       setBusy(false);
@@ -57,7 +61,7 @@ export function BulkImportModal({
       title={t('bulk.title')}
       footer={
         <>
-          <button type="button" className="btn-secondary" onClick={handleClose}>
+          <button type="button" className="btn-outlined" onClick={handleClose}>
             {t('common.close')}
           </button>
           <button
@@ -65,42 +69,66 @@ export function BulkImportModal({
             className="btn-primary"
             onClick={() => void handleImport()}
             disabled={busy || text.trim().length === 0}
+            aria-label={t('bulk.import')}
           >
             {t('bulk.import')}
           </button>
         </>
       }
     >
-      <p className="mb-2 text-sm text-slate-500">{t('bulk.description')}</p>
-      <textarea
-        className="input min-h-[140px] resize-y py-2"
-        placeholder={t('bulk.placeholder')}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        aria-label={t('bulk.title')}
-        data-testid="bulk-input"
-      />
+      <div className="flex flex-col gap-3">
+        <p className="text-sm text-on-surface-variant">
+          {t('bulk.description')}
+        </p>
 
-      {report ? (
-        <div className="mt-3 text-sm" data-testid="bulk-report">
-          <p className="font-semibold text-emerald-600">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium uppercase tracking-wide text-on-surface-variant">
+            Códigos
+          </span>
+          <span
+            className="rounded-full bg-primary-container px-2.5 py-0.5 text-xs font-semibold tabular-nums text-on-primary-container"
+            aria-live="polite"
+          >
             {t('bulk.result', {
-              copies: report.addedCopies,
-              matched: report.matchedCount,
+              copies: detectedCount,
+              matched: detectedCount,
             })}
-          </p>
-          {report.unmatched.length > 0 ? (
-            <details className="mt-2">
-              <summary className="cursor-pointer text-amber-600">
-                {t('bulk.unmatched', { count: report.unmatched.length })}
-              </summary>
-              <p className="mt-1 break-words text-xs text-slate-500">
-                {report.unmatched.join(', ')}
-              </p>
-            </details>
-          ) : null}
+          </span>
         </div>
-      ) : null}
+
+        <textarea
+          className="input min-h-[140px] resize-y py-2 font-mono"
+          placeholder={t('bulk.placeholder')}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          aria-label={t('bulk.title')}
+          data-testid="bulk-input"
+        />
+
+        {report ? (
+          <div
+            className="rounded-md bg-secondary-container p-3"
+            data-testid="bulk-report"
+          >
+            <p className="font-semibold text-on-secondary-container">
+              {t('bulk.result', {
+                copies: report.addedCopies,
+                matched: report.matchedCount,
+              })}
+            </p>
+            {report.unmatched.length > 0 ? (
+              <details className="mt-2">
+                <summary className="cursor-pointer text-sm font-medium text-on-secondary-container">
+                  {t('bulk.unmatched', { count: report.unmatched.length })}
+                </summary>
+                <p className="mt-1 break-words text-xs text-on-secondary-container/80">
+                  {report.unmatched.join(', ')}
+                </p>
+              </details>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     </Modal>
   );
 }

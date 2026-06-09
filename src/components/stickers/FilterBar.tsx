@@ -5,8 +5,9 @@ import {
   type OwnershipFilter,
   type StickerFilter,
 } from '@/services/filterService';
-import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Icon } from '@/components/ui/Icon';
+import { FilterChips } from './FilterChips';
+import { SearchBar } from './SearchBar';
 
 interface FilterBarProps {
   filter: StickerFilter;
@@ -14,6 +15,8 @@ interface FilterBarProps {
   teams: StoredTeam[];
   categories: string[];
   rarities: string[];
+  /** Optional per-filter counts for the chip badges. */
+  counts?: Partial<Record<OwnershipFilter, number>>;
 }
 
 export function FilterBar({
@@ -22,16 +25,10 @@ export function FilterBar({
   teams,
   categories,
   rarities,
+  counts,
 }: FilterBarProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-
-  const ownershipOptions: { value: OwnershipFilter; label: string }[] = [
-    { value: 'all', label: t('stickers.filter.all') },
-    { value: 'missing', label: t('stickers.filter.missing') },
-    { value: 'owned', label: t('stickers.filter.owned') },
-    { value: 'duplicates', label: t('stickers.filter.duplicates') },
-  ];
 
   // Count of active dropdown filters so the toggle can show a badge.
   const activeCount =
@@ -42,27 +39,31 @@ export function FilterBar({
   const clearAdvanced = () =>
     onChange({ ...filter, teamId: null, category: null, rarity: null });
 
+  /**
+   * Translate a category/rarity raw value (e.g. "player", "rare") to the
+   * localized label. Falls back to the raw value so that custom collection
+   * categories not covered by the canonical set still render something
+   * sensible instead of an empty string.
+   */
+  const translateValue = (prefix: 'categoryOptions' | 'rarityOptions', value: string) =>
+    t(`stickers.${prefix}.${value}`, { defaultValue: value });
+
   return (
     <div className="flex flex-col gap-3" data-testid="filter-bar">
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Icon
-            name="search"
-            size={20}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-          <input
-            type="search"
-            className="input pl-10"
-            placeholder={t('common.search')}
+          <SearchBar
             value={filter.search}
-            onChange={(e) => onChange({ ...filter, search: e.target.value })}
-            aria-label={t('common.search')}
+            onChange={(v) => onChange({ ...filter, search: v })}
           />
         </div>
         <button
           type="button"
-          className="btn-secondary relative px-3"
+          className="has-state-layer relative grid h-12 w-12 shrink-0 place-items-center
+            overflow-hidden rounded-full bg-surface-container text-on-surface
+            transition-colors duration-motion-short2 ease-standard
+            hover:bg-surface-container-high
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-expanded={open}
           aria-label={t('stickers.filters')}
           title={t('stickers.filters')}
@@ -70,18 +71,22 @@ export function FilterBar({
         >
           <Icon name="tune" size={20} />
           {activeCount > 0 ? (
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-brand-600 px-1 text-[11px] font-bold text-white">
+            <span
+              className="absolute right-1 top-1 grid h-5 min-w-[1.25rem] place-items-center
+                rounded-full bg-primary px-1 text-[11px] font-bold text-on-primary"
+              aria-label={`${activeCount} active`}
+            >
               {activeCount}
             </span>
           ) : null}
+          <span aria-hidden className="state-layer" />
         </button>
       </div>
 
-      <SegmentedControl
-        ariaLabel={t('stickers.filters')}
-        options={ownershipOptions}
+      <FilterChips
         value={filter.ownership}
         onChange={(ownership) => onChange({ ...filter, ownership })}
+        counts={counts}
       />
 
       {open ? (
@@ -112,10 +117,10 @@ export function FilterBar({
                 onChange({ ...filter, category: e.target.value || null })
               }
             >
-              <option value="">{t('stickers.category')}</option>
+              <option value="">{t('stickers.categoryAll')}</option>
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
-                  {cat}
+                  {translateValue('categoryOptions', cat)}
                 </option>
               ))}
             </select>
@@ -128,10 +133,10 @@ export function FilterBar({
                 onChange({ ...filter, rarity: e.target.value || null })
               }
             >
-              <option value="">{t('stickers.rarity')}</option>
+              <option value="">{t('stickers.rarityAll')}</option>
               {rarities.map((rarity) => (
                 <option key={rarity} value={rarity}>
-                  {rarity}
+                  {translateValue('rarityOptions', rarity)}
                 </option>
               ))}
             </select>
@@ -140,7 +145,7 @@ export function FilterBar({
           {activeCount > 0 ? (
             <button
               type="button"
-              className="btn-ghost self-end gap-1 px-3 text-xs"
+              className="btn-ghost gap-1 self-end px-3 text-xs"
               onClick={clearAdvanced}
             >
               <Icon name="close" size={16} />

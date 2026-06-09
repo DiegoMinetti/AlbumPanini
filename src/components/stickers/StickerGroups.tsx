@@ -32,7 +32,7 @@ interface StickerGroupsProps {
   onSelect?: (sticker: StoredSticker) => void;
 }
 
-/** Collapsible header bar shared by sections and country sub-groups. */
+/** Collapsible header bar shared by sections and country sub-groups (M3). */
 function GroupHeader({
   open,
   onToggle,
@@ -51,36 +51,61 @@ function GroupHeader({
   nested?: boolean;
 }) {
   const complete = total > 0 && owned === total;
+  const progress = total > 0 ? (owned / total) * 100 : 0;
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-expanded={open}
-      className={`flex w-full items-center gap-3 text-left ${
-        nested ? 'px-3 py-2' : 'px-4 py-3'
-      }`}
+    <div
+      className={
+        nested
+          ? 'px-3 py-1 transition-shadow duration-motion-short2'
+          : 'px-4 py-2 transition-shadow duration-motion-short2'
+      }
     >
-      <Icon
-        name="chevron_right"
-        size={20}
-        className={`shrink-0 text-slate-400 transition-transform ${open ? 'rotate-90' : ''}`}
-      />
-      {flag ? <span className="text-xl leading-none">{flag}</span> : null}
-      <span
-        className={`min-w-0 flex-1 truncate ${nested ? 'font-medium' : 'font-semibold'}`}
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex w-full items-center gap-3 text-left
+          rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
-        {label}
-      </span>
-      <span
-        className={`rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums ${
-          complete
-            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
-        }`}
+        <Icon
+          name="chevron_right"
+          size={20}
+          className={`shrink-0 text-on-surface-variant transition-transform duration-motion-medium2 ease-emphasized ${
+            open ? 'rotate-90' : ''
+          }`}
+        />
+        {flag ? <span className="text-xl leading-none">{flag}</span> : null}
+        <span
+          className={`min-w-0 flex-1 truncate ${
+            nested ? 'text-sm font-medium' : 'text-base font-semibold'
+          } text-on-surface`}
+        >
+          {label}
+        </span>
+        <span
+          className={`rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums ${
+            complete
+              ? 'bg-secondary-container text-on-secondary-container'
+              : 'bg-surface-container text-on-surface-variant'
+          }`}
+        >
+          {owned}/{total}
+        </span>
+      </button>
+      {/* M3 linear progress */}
+      <div
+        className="mt-2 h-1 overflow-hidden rounded-full bg-surface-container-high"
+        role="progressbar"
+        aria-valuenow={Math.round(progress)}
+        aria-valuemin={0}
+        aria-valuemax={100}
       >
-        {owned}/{total}
-      </span>
-    </button>
+        <div
+          className="h-full rounded-full bg-primary transition-all duration-motion-medium3 ease-emphasized"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -136,7 +161,7 @@ export function StickerGroups({
     return (
       <section
         key={country.key}
-        className="overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200 dark:bg-slate-800/40 dark:ring-slate-700"
+        className="overflow-hidden rounded-md bg-surface-container-low"
       >
         <GroupHeader
           open={open}
@@ -164,7 +189,7 @@ export function StickerGroups({
         return (
           <section
             key={section.key}
-            className="overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800"
+            className="overflow-hidden rounded-md bg-surface-container-low shadow-elev-1"
           >
             <GroupHeader
               open={open}

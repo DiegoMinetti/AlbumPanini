@@ -69,7 +69,9 @@
     },
     "team": "Equipo",
     "category": "Categoría",
+    "categoryAll": "Todas las categorías",
     "rarity": "Rareza",
+    "rarityAll": "Todas las rarezas",
     "view": "Vista",
     "grid": "Cuadrícula",
     "list": "Lista",
@@ -77,6 +79,26 @@
     "quantity": "Cant. {{count}}",
     "noResults": "Ninguna figurita coincide con los filtros.",
     "includeExtras": "Incluir extras de otras ediciones",
+    "categoryOptions": {
+      "default": "Otras",
+      "player": "Jugador",
+      "badge": "Escudo",
+      "team-emblem": "Escudo de selección",
+      "team-photo": "Foto de selección",
+      "stadium": "Estadio",
+      "logo": "Logo",
+      "legend": "Leyenda",
+      "creature": "Criatura",
+      "special": "Especiales"
+    },
+    "rarityOptions": {
+      "common": "Común",
+      "uncommon": "Poco común",
+      "rare": "Rara",
+      "epic": "Épica",
+      "legendary": "Legendaria",
+      "special": "Especial"
+    },
     "edit": {
       "lock": "Desactivar edición",
       "unlock": "Activar edición",

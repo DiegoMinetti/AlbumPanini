@@ -1,19 +1,13 @@
-import {
-  useLayoutEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
-import { haptics } from '@/utils/haptics';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
 export interface SegmentOption<T extends string> {
   value: T;
   label: ReactNode;
-  /** Accessible name, required when `label` is an icon rather than text. */
+  icon?: ReactNode;
   ariaLabel?: string;
 }
 
-interface SegmentedControlProps<T extends string> {
+interface SegmentedButtonProps<T extends string> {
   options: SegmentOption<T>[];
   value: T;
   onChange: (value: T) => void;
@@ -21,21 +15,24 @@ interface SegmentedControlProps<T extends string> {
 }
 
 /**
- * M3 Segmented Control: indicator animado que se desliza entre segmentos.
- * Conserva la API original (`SegmentOption`, `value`, `onChange`) para que
- * los consumidores existentes (FilterBar, StickersPage) sigan funcionando.
+ * SegmentedButton M3 con indicator animado.
+ *
+ * Mantiene la API del `SegmentedControl` actual (role="tablist") pero agrega:
+ *   - Indicator (slider) que se anima entre segmentos.
+ *   - State layer M3.
+ *   - Iconos opcionales.
+ *
+ * Implementación: un único indicator absoluto cuyo `transform: translateX()`
+ * se actualiza con `useLayoutEffect` midiendo el botón activo.
  */
-export function SegmentedControl<T extends string>({
+export function SegmentedButton<T extends string>({
   options,
   value,
   onChange,
   ariaLabel,
-}: SegmentedControlProps<T>) {
+}: SegmentedButtonProps<T>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [indicator, setIndicator] = useState<{ x: number; w: number }>({
-    x: 0,
-    w: 0,
-  });
+  const [indicator, setIndicator] = useState<{ x: number; w: number }>({ x: 0, w: 0 });
 
   // Recalcular indicator en mount y cuando cambia el value.
   useLayoutEffect(() => {
@@ -50,11 +47,6 @@ export function SegmentedControl<T extends string>({
     setIndicator({ x: aRect.left - rootRect.left, w: aRect.width });
   }, [value, options.length]);
 
-  const handleChange = (next: T) => {
-    if (next !== value) haptics.selection();
-    onChange(next);
-  };
-
   return (
     <div
       ref={containerRef}
@@ -62,9 +54,10 @@ export function SegmentedControl<T extends string>({
       aria-label={ariaLabel}
       className="relative inline-flex w-full gap-1 rounded-lg bg-surface-container p-1"
     >
+      {/* Indicator */}
       <span
         aria-hidden
-        className="segmented-indicator"
+        className="pointer-events-none absolute top-1 bottom-1 rounded-md bg-secondary-container shadow-elev-1 transition-all duration-motion-medium2 ease-emphasized"
         style={{
           transform: `translateX(${indicator.x}px)`,
           width: `${indicator.w}px`,
@@ -81,18 +74,18 @@ export function SegmentedControl<T extends string>({
             aria-selected={active}
             aria-label={opt.ariaLabel}
             title={opt.ariaLabel}
-            onClick={() => handleChange(opt.value)}
-            className={`group relative z-10 flex min-h-tap flex-1 items-center justify-center gap-1.5
-              overflow-hidden rounded-md px-2 text-sm font-medium
-              transition-colors duration-motion-short3 ease-standard
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
-              ${
-                active
-                  ? 'text-on-secondary-container'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
+            onClick={() => onChange(opt.value)}
+            className={[
+              'group relative z-10 flex min-h-tap flex-1 items-center justify-center gap-1.5 overflow-hidden rounded-md px-2',
+              'text-label-lg transition-colors duration-motion-short3 ease-standard',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+              active
+                ? 'text-on-secondary-container'
+                : 'text-on-surface-variant hover:text-on-surface',
+            ].join(' ')}
           >
-            {opt.label}
+            {opt.icon ? <span className="grid place-items-center">{opt.icon}</span> : null}
+            <span className="font-medium">{opt.label}</span>
             <span aria-hidden className="state-layer" />
           </button>
         );
