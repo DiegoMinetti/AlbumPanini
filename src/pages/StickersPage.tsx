@@ -155,20 +155,21 @@ export function StickersPage() {
   return (
     <div className="flex flex-col gap-3">
       {/*
-        Sticky top toolbar (M3 top app bar / search bar pattern).
+        Sticky top toolbar (M3 "docked top app bar" / docked search pattern).
         - `top-[var(--app-topbar-h,0px)]` lo posiciona inmediatamente debajo
           del TopBar (cuya altura publica esa CSS var con un ResizeObserver).
         - `-mx-4` cancela el `px-4` del <main> para que el fondo cubra todo
           el ancho; `px-4` interior restaura el padding.
-        - `bg-surface/55` + `backdrop-blur-lg` da el efecto de transparencia
-          que el usuario pidió (M3 translucent app bar sobre contenido).
+        - Reutiliza la utility `app-bar-surface` (definida en index.css) —
+          misma surface-translucent + backdrop-blur + surface-tint que el
+          TopBar, dando la sensación nativa de "M3 docked toolbar" sobre
+          el contenido scrolleable de abajo.
       */}
       <header
-        className="sticky top-[var(--app-topbar-h,0px)] z-30 -mx-4
-          border-b border-outline-variant/40
-          bg-surface/55 px-4 pb-2 pt-2 shadow-elev-1
-          backdrop-blur-lg supports-[backdrop-filter]:bg-surface/45
-          transition-[background-color,backdrop-filter] duration-motion-medium2 ease-emphasized"
+        className="app-bar-surface sticky top-[var(--app-topbar-h,0px)] z-30
+          -mx-4 border-b border-outline-variant/40 px-4 pb-2 pt-2
+          shadow-elev-1 transition-shadow
+          duration-motion-medium2 ease-emphasized"
         data-testid="stickers-toolbar"
       >
         <FilterBar

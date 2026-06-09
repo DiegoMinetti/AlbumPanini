@@ -67,12 +67,11 @@ export async function installByName(page: Page, name: string): Promise<void> {
  */
 export async function dismissTransientUi(page: Page): Promise<void> {
   for (let attempt = 0; attempt < 5; attempt++) {
-    // The PWA prompt's Close button is a `btn-ghost` — match by class+text
-    // to avoid clashing with the bulk-import dialog's "Close" button (which
-    // lives inside `role="dialog"` and isn't a transient overlay).
-    const pwaClose = page
-      .locator('button.btn-ghost', { hasText: 'Close' })
-      .first();
+    // The PWA prompt's Close button carries `data-testid="pwa-close"` —
+    // match by that to avoid clashing with the bulk-import dialog's
+    // "Close" button (which lives inside `role="dialog"` and isn't a
+    // transient overlay).
+    const pwaClose = page.getByTestId('pwa-close');
     if (await pwaClose.isVisible().catch(() => false)) {
       await pwaClose.click({ force: true }).catch(() => {});
       continue;

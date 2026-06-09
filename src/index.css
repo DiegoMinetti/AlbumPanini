@@ -40,8 +40,26 @@
     --md-sys-color-outline: #94a3b8; /* slate-400 */
     --md-sys-color-outline-variant: #cbd5e1; /* slate-300 */
 
+    /* M3 — Surface tint (applied to top app bar / nav bar / sheets when scrolled).
+       Light: 0 (no tint). Dark: small primary tint per M3 spec. */
+    --md-sys-color-surface-tint: #2563eb; /* brand-600 */
+
+    /* M3 — Inverse surface (used by toasts/snackbars for high-emphasis). */
+    --md-sys-color-inverse-surface: #1e293b; /* slate-800 */
+    --md-sys-color-inverse-on-surface: #f1f5f9; /* slate-100 */
+
     /* Donate (heart) blink — pleasant tender red */
     --donation-blink-color: #f43f5e; /* rose-500 */
+
+    /* M3 — translucent surfaces (alpha applied on top of surface for app bars).
+       Mantienen contraste WCAG AA sobre contenido debajo gracias al backdrop-blur. */
+    --md-sys-color-surface-translucent: rgba(255, 255, 255, 0.78);
+    --md-sys-color-surface-container-translucent: rgba(255, 255, 255, 0.86);
+    --md-sys-color-surface-tint-translucent: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 4%,
+      var(--md-sys-color-surface-translucent)
+    );
   }
 
   .dark {
@@ -78,8 +96,19 @@
     --md-sys-color-outline: #64748b;
     --md-sys-color-outline-variant: #334155;
 
-    /* Donate (heart) blink — pleasant tender red (dark theme) */
+    --md-sys-color-surface-tint: #60a5fa;
+    --md-sys-color-inverse-surface: #e2e8f0;
+    --md-sys-color-inverse-on-surface: #0f172a;
+
     --donation-blink-color: #fb7185; /* rose-400 */
+
+    --md-sys-color-surface-translucent: rgba(15, 23, 42, 0.72);
+    --md-sys-color-surface-container-translucent: rgba(15, 23, 42, 0.84);
+    --md-sys-color-surface-tint-translucent: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 8%,
+      var(--md-sys-color-surface-translucent)
+    );
   }
 
   html,
@@ -88,16 +117,65 @@
     height: 100%;
   }
 
+  /* Native-like background: gradient sutil de M3 "background" (no blanco puro,
+     con un tinte apenas perceptible del primary en el fondo). */
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
-    @apply dark:bg-slate-950 dark:text-slate-100;
+    background-color: var(--md-sys-color-surface);
+    background-image: radial-gradient(
+        ellipse 80% 60% at 50% 0%,
+        color-mix(in srgb, var(--md-sys-color-primary) 4%, transparent),
+        transparent 70%
+      ),
+      linear-gradient(180deg, var(--md-sys-color-surface) 0%, var(--md-sys-color-surface) 100%);
+    color: var(--md-sys-color-on-surface);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Native-feel: bloquea el "rubber band" en iOS y la cadena de scrolls. */
     overscroll-behavior-y: none;
+    /* Smooth scrolling por defecto (respeta prefers-reduced-motion abajo). */
+    scroll-behavior: smooth;
   }
 
-  /* M3 — Global focus ring */
+  /* M3 — Global focus ring (mobile-first, alto contraste). */
   *:focus-visible {
     outline: 2px solid var(--md-sys-color-primary);
     outline-offset: 2px;
+    border-radius: inherit;
+  }
+
+  /* Native app feel: scrollbar sutil tipo iOS (en webkit) — sin "tragaplanetas". */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface-variant) 30%,
+      transparent
+    );
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface-variant) 50%,
+      transparent
+    );
+  }
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(
+        in srgb,
+        var(--md-sys-color-on-surface-variant) 30%,
+        transparent
+      )
+      transparent;
   }
 
   /* Respect users who prefer reduced motion (minimal animations policy). */
@@ -106,7 +184,9 @@
     *::before,
     *::after {
       animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
     }
   }
 }
@@ -235,6 +315,50 @@
   /* ===== M3 — Drag handle (modal bottom sheet) ===== */
   .drag-handle {
     @apply mx-auto mb-2 block h-1 w-8 rounded-full bg-outline-variant;
+  }
+
+  /* ===== M3 — Translucent surfaces (top app bar, navigation bar) =====
+     `app-bar-surface`:  top app bar translúcida con surface-tint al scrollear.
+     `nav-bar-surface`:  navigation bar inferior con tinte más opaco
+                         (más contenido "pesado" cerca del pulgar).
+     Soporte cross-device: en pantallas anchas (md+) la nav bar se vuelve
+     una *rail* lateral (NavigationRail) y se aplica `nav-rail-surface`. */
+  .app-bar-surface {
+    background-color: var(--md-sys-color-surface-translucent);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    @supports not (backdrop-filter: blur(1px)) {
+      background-color: var(--md-sys-color-surface-container);
+    }
+  }
+  .app-bar-surface--scrolled {
+    background-color: var(--md-sys-color-surface-tint-translucent);
+    box-shadow:
+      0 1px 0 0 color-mix(in srgb, var(--md-sys-color-outline-variant) 60%, transparent),
+      0 2px 6px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  .nav-bar-surface {
+    background-color: var(--md-sys-color-surface-container-translucent);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
+    backdrop-filter: saturate(180%) blur(24px);
+    @supports not (backdrop-filter: blur(1px)) {
+      background-color: var(--md-sys-color-surface-container);
+    }
+  }
+
+  .nav-rail-surface {
+    background-color: var(--md-sys-color-surface-container-translucent);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
+    backdrop-filter: saturate(180%) blur(24px);
+  }
+
+  /* ===== M3 — NavigationBar item (active pill) =====
+     Cuando está activo, el icono+label se encierran en una "pastilla"
+     secondary-container (M3 NavigationBar). */
+  .nav-item-active-pill {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
   }
 }
 

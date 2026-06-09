@@ -5,6 +5,7 @@ import { addByCodes, type BulkApplyReport } from '@/services/inventoryService';
 import { extractCodes } from '@/utils/code';
 import { toast } from '@/stores/uiStore';
 import { haptics } from '@/utils/haptics';
+import { Icon } from '@/components/ui/Icon';
 
 interface BulkImportModalProps {
   open: boolean;
@@ -12,6 +13,15 @@ interface BulkImportModalProps {
   collectionId: string;
 }
 
+/**
+ * Bulk import sheet (M3 bottom sheet) — pega varios códigos de figuritas
+ * separados por coma/salto de línea y los aplica al inventario en bloque.
+ *
+ * M3 styling: el sheet viene dado por `Modal` (drag handle, M3 surface,
+ * M3 buttons). Contador "live" de códigos detectados como M3 chip
+ * (primary-container) con type scale label-md. Reporte final en
+ * secondary-container (M3 supporting container) para distinguir del input.
+ */
 export function BulkImportModal({
   open,
   onClose,
@@ -71,28 +81,32 @@ export function BulkImportModal({
             disabled={busy || text.trim().length === 0}
             aria-label={t('bulk.import')}
           >
+            {busy ? (
+              <Icon name="refresh" size={16} className="animate-spin" />
+            ) : (
+              <Icon name="playlist_add" size={16} />
+            )}
             {t('bulk.import')}
           </button>
         </>
       }
     >
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-on-surface-variant">
+        <p className="text-body-md text-on-surface-variant">
           {t('bulk.description')}
         </p>
 
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium uppercase tracking-wide text-on-surface-variant">
+          <span className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
             Códigos
           </span>
           <span
-            className="rounded-full bg-primary-container px-2.5 py-0.5 text-xs font-semibold tabular-nums text-on-primary-container"
+            className="rounded-full bg-primary-container px-2.5 py-0.5
+              text-label-md font-semibold tabular-nums text-on-primary-container"
             aria-live="polite"
+            data-testid="bulk-detected-chip"
           >
-            {t('bulk.result', {
-              copies: detectedCount,
-              matched: detectedCount,
-            })}
+            {detectedCount}
           </span>
         </div>
 
@@ -110,7 +124,7 @@ export function BulkImportModal({
             className="rounded-md bg-secondary-container p-3"
             data-testid="bulk-report"
           >
-            <p className="font-semibold text-on-secondary-container">
+            <p className="text-title-sm font-semibold text-on-secondary-container">
               {t('bulk.result', {
                 copies: report.addedCopies,
                 matched: report.matchedCount,
@@ -118,10 +132,10 @@ export function BulkImportModal({
             </p>
             {report.unmatched.length > 0 ? (
               <details className="mt-2">
-                <summary className="cursor-pointer text-sm font-medium text-on-secondary-container">
+                <summary className="cursor-pointer text-body-md font-medium text-on-secondary-container">
                   {t('bulk.unmatched', { count: report.unmatched.length })}
                 </summary>
-                <p className="mt-1 break-words text-xs text-on-secondary-container/80">
+                <p className="mt-1 break-words text-body-sm text-on-secondary-container/80">
                   {report.unmatched.join(', ')}
                 </p>
               </details>

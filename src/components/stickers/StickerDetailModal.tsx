@@ -27,6 +27,10 @@ function metaStr(
 /**
  * Detail sheet for a sticker (M3 bottom sheet). Shows bio data from `meta`,
  * the inventory stepper, and shortcut actions.
+ *
+ * M3 tokens: surface-container-low for grouped sections, M3 type scale
+ * (headline-sm for the count, label-md uppercase for captions, body-md for
+ * detail labels, body-sm for the no-data fallback).
  */
 export function StickerDetailModal({
   sticker,
@@ -63,7 +67,7 @@ export function StickerDetailModal({
       title={sticker.name}
       subtitle={
         <div className="flex items-center gap-2 text-on-surface-variant">
-          <span className="rounded bg-surface-container px-1.5 py-0.5 text-xs font-bold uppercase">
+          <span className="rounded-md bg-surface-container px-1.5 py-0.5 text-label-sm font-bold uppercase text-on-surface-variant">
             {sticker.code}
           </span>
           {flag ? <span className="text-lg">{flag}</span> : null}
@@ -81,14 +85,17 @@ export function StickerDetailModal({
 
         {/* Inventario */}
         <section
-          className="flex items-center justify-between rounded-md bg-surface-container-low p-3"
+          className="flex items-center justify-between rounded-md
+            bg-surface-container-low p-3"
           aria-label="inventory"
         >
           <div>
-            <p className="text-xs uppercase tracking-wide text-on-surface-variant">
-              Cantidad
+            <p className="text-label-md uppercase tracking-wide text-on-surface-variant">
+              {t('stickers.quantity', { count: quantity })}
             </p>
-            <p className="text-2xl font-semibold tabular-nums">{quantity}</p>
+            <p className="text-headline-sm font-semibold text-on-surface tabular-nums">
+              {quantity}
+            </p>
           </div>
           <QuantityStepper
             quantity={quantity}
@@ -109,13 +116,13 @@ export function StickerDetailModal({
             className="rounded-md bg-surface-container-low p-3"
             aria-label="details"
           >
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-              Datos
+            <h3 className="mb-2 text-label-md font-semibold uppercase tracking-wide text-on-surface-variant">
+              {t('detail.title')}
             </h3>
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-body-md">
               {rows.map(([label, value]) => (
                 <div key={label} className="flex flex-col">
-                  <dt className="text-xs uppercase text-on-surface-variant">
+                  <dt className="text-label-sm uppercase text-on-surface-variant">
                     {label}
                   </dt>
                   <dd className="font-medium text-on-surface">{value}</dd>
@@ -124,7 +131,7 @@ export function StickerDetailModal({
             </dl>
           </section>
         ) : (
-          <p className="text-sm text-on-surface-variant">
+          <p className="text-body-sm text-on-surface-variant">
             {t('detail.noData')}
           </p>
         )}

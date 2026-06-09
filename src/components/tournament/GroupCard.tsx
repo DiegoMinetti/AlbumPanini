@@ -7,6 +7,7 @@ import type {
 } from '@/services/tournamentService';
 import type { StoredTeam } from '@/types/collection';
 import type { TournamentGroup, TournamentMatch } from '@/types/tournament';
+import { Icon } from '@/components/ui/Icon';
 import { GroupStandingsTable } from './GroupStandingsTable';
 import { MatchScoreRow } from './MatchScoreRow';
 
@@ -50,15 +51,30 @@ export function GroupCard({
   return (
     <section className="card flex flex-col gap-3 p-4">
       <header className="flex items-center justify-between">
-        <h2 className="text-base font-bold">
+        <h2 className="text-title-md font-bold text-on-surface">
           {t('tournament.group', { id: group.id })}
         </h2>
         <button
           type="button"
-          className="text-xs font-semibold text-brand-600 dark:text-brand-400"
+          className="has-state-layer relative inline-flex h-8 items-center gap-1
+            overflow-hidden rounded-full px-2.5
+            text-label-md font-semibold text-primary
+            transition-colors duration-motion-short2 ease-standard
+            hover:bg-primary-container/60
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           onClick={() => setOpen((v) => !v)}
         >
-          {open ? t('tournament.hideMatches') : t('tournament.showMatches')}
+          <Icon
+            name="chevron_right"
+            size={16}
+            className={`text-primary transition-transform duration-motion-medium2 ease-emphasized ${
+              open ? 'rotate-90' : ''
+            }`}
+          />
+          <span>
+            {open ? t('tournament.hideMatches') : t('tournament.showMatches')}
+          </span>
+          <span aria-hidden className="state-layer" />
         </button>
       </header>
 
@@ -70,7 +86,7 @@ export function GroupCard({
       />
 
       {open ? (
-        <div className="mt-1 divide-y divide-slate-100 border-t border-slate-100 dark:divide-slate-800 dark:border-slate-800">
+        <div className="mt-1 divide-y divide-outline-variant/40 border-t border-outline-variant/40">
           {groupMatches.map((m) => {
             const result = results.get(m.id);
             return (

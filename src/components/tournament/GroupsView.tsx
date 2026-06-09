@@ -15,7 +15,13 @@ interface GroupsViewProps {
   scenarioId: string;
 }
 
-/** All groups stacked, each with its standings and (collapsible) fixtures. */
+/**
+ * All groups stacked, each with its standings and (collapsible) fixtures.
+ *
+ * M3 styling: M3 outline tokens for the qualify/best-third markers
+ * (secondary for auto-qualify, tertiary for best-thirds), on-surface-variant
+ * for the legend text.
+ */
 export function GroupsView({
   tournament,
   standings,
@@ -28,13 +34,13 @@ export function GroupsView({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-label-sm text-on-surface-variant">
         <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-2 border-l-2 border-emerald-500" />
+          <span className="inline-block h-3 w-2 border-l-2 border-secondary" />
           {t('tournament.legend.qualify')}
         </span>
         <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-2 border-l-2 border-dashed border-amber-500" />
+          <span className="inline-block h-3 w-2 border-l-2 border-dashed border-tertiary" />
           {t('tournament.legend.bestThird')}
         </span>
       </div>

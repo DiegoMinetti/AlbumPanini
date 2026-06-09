@@ -14,9 +14,8 @@ import { BracketView } from '@/components/tournament/BracketView';
 type Tab = 'groups' | 'bracket';
 
 /**
- * Tournament hub for the active collection: scenario switcher plus two views —
- * the group stage (standings + fixtures) and the knockout bracket. Renders an
- * empty state for collections that ship no tournament block.
+ * Tournament — usa SegmentedControl M3 (indicator animado) para alternar
+ * entre vista de grupos y eliminatorias. Mantiene el resto de la API.
  */
 export function TournamentPage() {
   const { t } = useTranslation();

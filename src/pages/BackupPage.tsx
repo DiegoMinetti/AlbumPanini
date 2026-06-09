@@ -13,6 +13,10 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from '@/stores/uiStore';
 
+/**
+ * Backup — usa M3 tokens (text-on-surface-variant) en lugar de slate.
+ * Mantiene data-testid y la API de SegmentedControl.
+ */
 export function BackupPage() {
   const { t } = useTranslation();
   const settings = useSettingsStore();
@@ -84,11 +88,15 @@ export function BackupPage() {
   return (
     <div className="flex flex-col gap-5">
       <section className="card flex flex-col gap-3">
-        <h2 className="text-base font-semibold">{t('backup.export')}</h2>
-        <p className="text-sm text-slate-500">{t('backup.exportDesc')}</p>
+        <h2 className="text-title-md font-semibold text-on-surface">
+          {t('backup.export')}
+        </h2>
+        <p className="text-body-md text-on-surface-variant">
+          {t('backup.exportDesc')}
+        </p>
         <button
           type="button"
-          className="btn-primary"
+          className="btn-primary self-start"
           onClick={() => void handleExport()}
           data-testid="export-backup"
         >
@@ -97,11 +105,15 @@ export function BackupPage() {
       </section>
 
       <section className="card flex flex-col gap-3">
-        <h2 className="text-base font-semibold">{t('backup.import')}</h2>
-        <p className="text-sm text-slate-500">{t('backup.importDesc')}</p>
+        <h2 className="text-title-md font-semibold text-on-surface">
+          {t('backup.import')}
+        </h2>
+        <p className="text-body-md text-on-surface-variant">
+          {t('backup.importDesc')}
+        </p>
 
         <div>
-          <label className="mb-1 block text-sm text-slate-500">
+          <label className="mb-1 block text-label-md text-on-surface-variant">
             {t('backup.mode')}
           </label>
           <SegmentedControl
@@ -117,7 +129,7 @@ export function BackupPage() {
 
         <button
           type="button"
-          className="btn-secondary"
+          className="btn-secondary self-start"
           onClick={() => fileRef.current?.click()}
           data-testid="import-backup"
         >

@@ -30,6 +30,9 @@ const KNOCKOUT_STAGES: MatchStage[] = [
  * Knockout bracket as a vertical list of rounds. Each side of every match is
  * resolved live from standings + earlier results via the bracket resolver, so
  * scoring a match instantly populates the next round.
+ *
+ * M3 styling: `.card` token (surface-container-low + elev-1), M3 outline-variant
+ * dividers, primary token for the stage title.
  */
 export function BracketView({
   matches,
@@ -58,10 +61,11 @@ export function BracketView({
         if (!list) return null;
         return (
           <section key={stage} className="card flex flex-col gap-1 p-4">
-            <h2 className="mb-1 text-sm font-bold uppercase tracking-wide text-brand-600 dark:text-brand-400">
+            <h2 className="mb-1 text-label-md font-bold uppercase
+              tracking-wide text-primary">
               {t(`tournament.stage.${stage}`)}
             </h2>
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="divide-y divide-outline-variant/40">
               {list.map((m) => {
                 const { homeTeamId, awayTeamId } = resolver.resolveMatch(m);
                 return (

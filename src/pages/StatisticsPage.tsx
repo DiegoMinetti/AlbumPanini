@@ -18,8 +18,12 @@ import { EmptyState } from '@/components/feedback/EmptyState';
 import { CollectionHeatmap } from '@/components/stats/CollectionHeatmap';
 import { formatPercent } from '@/utils/format';
 
-const PIE_COLORS = ['#16a34a', '#e2e8f0'];
+const PIE_COLORS = ['#16a34a', '#cbd5e1'];
 
+/**
+ * Statistics — usa M3 colors en todos los textos de slate hard-coded y
+ * en los charts. M3 type scale (label-md, body-md) para los headers.
+ */
 export function StatisticsPage() {
   const { t } = useTranslation();
   const { active, loading: loadingActive } = useActiveCollection();
@@ -54,7 +58,7 @@ export function StatisticsPage() {
     <div className="flex flex-col gap-5">
       <section className="grid grid-cols-2 gap-4">
         <div className="card flex flex-col items-center">
-          <h2 className="mb-1 text-sm font-semibold text-slate-500">
+          <h2 className="mb-1 text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
             {t('dashboard.completion')}
           </h2>
           <div className="h-36 w-full">
@@ -75,12 +79,12 @@ export function StatisticsPage() {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-2xl font-bold tabular-nums">
+          <p className="text-title-lg font-bold tabular-nums text-on-surface">
             {formatPercent(overview.completion)}
           </p>
         </div>
 
-        <div className="card flex flex-col justify-center gap-2 text-sm">
+        <div className="card flex flex-col justify-center gap-2 text-body-md">
           <Row label={t('common.total')} value={overview.total} />
           <Row label={t('common.owned')} value={overview.owned} />
           <Row label={t('common.missing')} value={overview.missing} />
@@ -94,7 +98,7 @@ export function StatisticsPage() {
 
       {teamChart.length > 0 ? (
         <section className="card">
-          <h2 className="mb-3 text-sm font-semibold text-slate-500">
+          <h2 className="mb-3 text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
             {t('dashboard.teamCompletion')}
           </h2>
           <div className="h-64 w-full">
@@ -117,7 +121,7 @@ export function StatisticsPage() {
 
       {categories.length > 1 ? (
         <section className="card">
-          <h2 className="mb-3 text-sm font-semibold text-slate-500">
+          <h2 className="mb-3 text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
             {t('stickers.category')}
           </h2>
           <div className="h-56 w-full">
@@ -139,7 +143,7 @@ export function StatisticsPage() {
       ) : null}
 
       <section className="card">
-        <h2 className="mb-3 text-sm font-semibold text-slate-500">
+        <h2 className="mb-3 text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
           {t('exchange.iCanGive')} · {t('common.duplicates')}
         </h2>
         {mostRepeated.length === 0 ? (
@@ -147,12 +151,15 @@ export function StatisticsPage() {
         ) : (
           <ul className="flex flex-col gap-2">
             {mostRepeated.map((s) => (
-              <li key={s.stickerId} className="flex justify-between text-sm">
+              <li
+                key={s.stickerId}
+                className="flex justify-between text-body-md text-on-surface"
+              >
                 <span>
                   <span className="font-mono font-semibold">{s.code}</span>{' '}
                   {s.name}
                 </span>
-                <span className="font-bold tabular-nums text-amber-600">
+                <span className="font-bold tabular-nums text-tertiary">
                   ×{s.quantity}
                 </span>
               </li>
@@ -162,30 +169,30 @@ export function StatisticsPage() {
       </section>
 
       {(completedTeams.length > 0 || nearCompleteTeams.length > 0) && (
-        <section className="card grid grid-cols-2 gap-4 text-sm">
+        <section className="card grid grid-cols-2 gap-4 text-body-md">
           <div>
-            <h3 className="mb-2 font-semibold text-emerald-600">
+            <h3 className="mb-2 font-semibold text-secondary">
               {t('common.owned')} ✓
             </h3>
-            <ul className="flex flex-col gap-1">
+            <ul className="flex flex-col gap-1 text-on-surface">
               {completedTeams.map((tm) => (
                 <li key={tm.teamId}>{tm.teamName}</li>
               ))}
               {completedTeams.length === 0 ? (
-                <li className="text-slate-400">—</li>
+                <li className="text-on-surface-variant">—</li>
               ) : null}
             </ul>
           </div>
           <div>
-            <h3 className="mb-2 font-semibold text-amber-600">≥ 80%</h3>
-            <ul className="flex flex-col gap-1">
+            <h3 className="mb-2 font-semibold text-tertiary">≥ 80%</h3>
+            <ul className="flex flex-col gap-1 text-on-surface">
               {nearCompleteTeams.map((tm) => (
                 <li key={tm.teamId}>
                   {tm.teamName} · {formatPercent(tm.completion)}
                 </li>
               ))}
               {nearCompleteTeams.length === 0 ? (
-                <li className="text-slate-400">—</li>
+                <li className="text-on-surface-variant">—</li>
               ) : null}
             </ul>
           </div>
@@ -193,7 +200,9 @@ export function StatisticsPage() {
       )}
 
       <section className="card">
-        <h2 className="mb-3 text-sm font-semibold text-slate-500">Heatmap</h2>
+        <h2 className="mb-3 text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
+          Heatmap
+        </h2>
         <CollectionHeatmap stickers={stickers} inventory={inventory} />
       </section>
     </div>
@@ -202,8 +211,8 @@ export function StatisticsPage() {
 
 function Row({ label, value }: { label: string; value: number }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-slate-500">{label}</span>
+    <div className="flex items-center justify-between text-on-surface">
+      <span className="text-on-surface-variant">{label}</span>
       <span className="font-bold tabular-nums">{value}</span>
     </div>
   );

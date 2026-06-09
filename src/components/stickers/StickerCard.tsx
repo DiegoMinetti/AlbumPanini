@@ -43,7 +43,7 @@ function StickerFallbackImage({
       } relative overflow-hidden rounded-lg`}
       style={{
         background:
-          'linear-gradient(155deg, #e2e8f0 0%, #cbd5e1 45%, #94a3b8 100%)',
+          'linear-gradient(155deg, var(--md-sys-color-surface-container) 0%, var(--md-sys-color-surface-container-high) 45%, var(--md-sys-color-surface-container-highest) 100%)',
       }}
     >
       <div
@@ -55,13 +55,19 @@ function StickerFallbackImage({
         style={{ backgroundColor: secondary }}
       />
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="h-8 w-8 rounded-full bg-slate-100/80" />
+        <div className="h-8 w-8 rounded-full bg-surface-container-low/80" />
       </div>
     </div>
   );
 }
 
-/** M3 status accent: ring-color replaces the previous M2 status rings. */
+/**
+ * M3 status accent: ring-color reemplaza el status ring M2. Mapea al
+ * rol M3 correspondiente:
+ *   - missing    → outline-variant
+ *   - duplicate  → tertiary
+ *   - owned      → secondary
+ */
 function statusAccent(quantity: number): string {
   if (quantity === 0) return 'ring-outline-variant/60';
   if (quantity > 1) return 'ring-tertiary/70';
@@ -145,19 +151,19 @@ function StickerCardComponent({
         className="min-w-0 flex-1 text-left disabled:cursor-default"
       >
         <div className="flex items-center gap-2">
-          <span className="rounded-md bg-surface-container px-1.5 py-0.5 text-xs font-bold uppercase text-on-surface-variant">
+          <span className="rounded-md bg-surface-container px-1.5 py-0.5 text-label-sm font-bold uppercase text-on-surface-variant">
             {sticker.code}
           </span>
           {dupes > 0 ? (
-            <span className="rounded-md bg-tertiary-container px-1.5 py-0.5 text-xs font-semibold text-on-tertiary-container">
+            <span className="rounded-md bg-tertiary-container px-1.5 py-0.5 text-label-sm font-semibold text-on-tertiary-container">
               +{dupes}
             </span>
           ) : null}
         </div>
-        <p className="mt-1 truncate text-sm font-semibold text-on-surface">
+        <p className="mt-1 truncate text-body-md font-semibold text-on-surface">
           {sticker.name}
         </p>
-        <p className="text-xs text-on-surface-variant">
+        <p className="text-label-md text-on-surface-variant">
           {t('stickers.quantity', { count: quantity })}
         </p>
       </button>

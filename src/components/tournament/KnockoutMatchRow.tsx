@@ -18,6 +18,31 @@ interface KnockoutMatchRowProps {
   result?: IndexedMatchResult;
 }
 
+/**
+ * M3 text field for short numeric input (goals).
+ * Matches `MatchScoreRow` so both group and knockout score inputs feel
+ * identical across the app.
+ */
+const goalInputCls =
+  'h-9 w-10 rounded-md border border-outline-variant bg-transparent text-center ' +
+  'text-body-md font-bold tabular-nums text-on-surface ' +
+  'transition-colors duration-motion-short2 ease-standard ' +
+  'hover:border-outline focus:border-primary focus:outline-none ' +
+  'focus:ring-2 focus:ring-primary/40 disabled:opacity-40';
+
+/**
+ * M3 chip-style input for the penalty shootout (tertiary palette).
+ * Uses the M3 tertiary-container (amber-100 light / amber-900-tinted dark)
+ * to clearly mark these as a "highlighted" secondary score channel.
+ */
+const penInputCls =
+  'h-7 w-8 rounded border border-tertiary/40 bg-tertiary-container ' +
+  'text-center text-label-md font-semibold tabular-nums ' +
+  'text-on-tertiary-container ' +
+  'transition-colors duration-motion-short2 ease-standard ' +
+  'hover:border-tertiary focus:border-tertiary focus:outline-none ' +
+  'focus:ring-2 focus:ring-tertiary/40';
+
 function TeamSide({
   team,
   label,
@@ -41,15 +66,17 @@ function TeamSide({
             <span className="text-lg leading-none">{team.flag}</span>
           ) : null}
           <span
-            className={`truncate text-sm ${
-              isWinner ? 'font-bold' : 'font-medium'
+            className={`truncate text-body-md ${
+              isWinner
+                ? 'font-bold text-on-surface'
+                : 'font-medium text-on-surface-variant'
             }`}
           >
             {team.name}
           </span>
         </>
       ) : (
-        <span className="truncate text-sm italic text-slate-400">
+        <span className="truncate text-body-md italic text-on-surface-variant">
           {label ?? '—'}
         </span>
       )}
@@ -100,11 +127,6 @@ export function KnockoutMatchRow({
       awayPens: next.awayPens ?? result?.awayPens ?? null,
     });
 
-  const goalInput =
-    'h-9 w-10 rounded-md border border-slate-300 bg-white text-center text-sm font-bold tabular-nums disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800';
-  const penInput =
-    'h-7 w-8 rounded border border-amber-300 bg-amber-50 text-center text-xs font-semibold tabular-nums dark:border-amber-700/60 dark:bg-amber-900/20';
-
   return (
     <div className="flex flex-col gap-1 py-2">
       <div className="flex items-center gap-2">
@@ -123,9 +145,9 @@ export function KnockoutMatchRow({
             disabled={!editable}
             value={homeGoals}
             onChange={(e) => commit({ homeGoals: parse(e.target.value) })}
-            className={goalInput}
+            className={goalInputCls}
           />
-          <span className="text-slate-400">-</span>
+          <span className="text-on-surface-variant">-</span>
           <input
             type="number"
             inputMode="numeric"
@@ -134,7 +156,7 @@ export function KnockoutMatchRow({
             disabled={!editable}
             value={awayGoals}
             onChange={(e) => commit({ awayGoals: parse(e.target.value) })}
-            className={goalInput}
+            className={goalInputCls}
           />
         </div>
         <TeamSide
@@ -146,8 +168,10 @@ export function KnockoutMatchRow({
       </div>
 
       {editable && drawn ? (
-        <div className="flex items-center justify-center gap-1 text-amber-600 dark:text-amber-400">
-          <span className="text-[10px] font-semibold uppercase">
+        <div className="mt-1 flex items-center justify-center gap-1.5 rounded-md
+          bg-tertiary-container/60 px-2 py-1
+          text-on-tertiary-container">
+          <span className="text-label-sm font-semibold uppercase tracking-wide">
             {t('tournament.pens')}
           </span>
           <input
@@ -157,9 +181,9 @@ export function KnockoutMatchRow({
             aria-label={`${home?.name ?? 'home'} penalties`}
             value={homePens}
             onChange={(e) => commit({ homePens: parse(e.target.value) })}
-            className={penInput}
+            className={penInputCls}
           />
-          <span className="text-amber-400">-</span>
+          <span className="text-on-tertiary-container/70">-</span>
           <input
             type="number"
             inputMode="numeric"
@@ -167,7 +191,7 @@ export function KnockoutMatchRow({
             aria-label={`${away?.name ?? 'away'} penalties`}
             value={awayPens}
             onChange={(e) => commit({ awayPens: parse(e.target.value) })}
-            className={penInput}
+            className={penInputCls}
           />
         </div>
       ) : null}

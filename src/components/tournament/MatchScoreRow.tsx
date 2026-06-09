@@ -12,6 +12,18 @@ interface MatchScoreRowProps {
   onScore: (homeGoals: number | null, awayGoals: number | null) => void;
 }
 
+/**
+ * M3 text field variant for short numeric inputs (score).
+ * Transparent fill, M3 outline, on-surface text, focus ring inherits from
+ * the global M3 focus-visible styles in index.css.
+ */
+const scoreInputCls =
+  'h-9 w-10 rounded-md border border-outline-variant bg-transparent text-center ' +
+  'text-body-md font-bold tabular-nums text-on-surface ' +
+  'transition-colors duration-motion-short2 ease-standard ' +
+  'hover:border-outline focus:border-primary focus:outline-none ' +
+  'focus:ring-2 focus:ring-primary/40 disabled:opacity-40';
+
 function TeamSide({
   team,
   label,
@@ -26,10 +38,12 @@ function TeamSide({
       {team.flag ? (
         <span className="text-lg leading-none">{team.flag}</span>
       ) : null}
-      <span className="truncate text-sm font-medium">{team.name}</span>
+      <span className="truncate text-body-md font-medium text-on-surface">
+        {team.name}
+      </span>
     </>
   ) : (
-    <span className="truncate text-sm italic text-slate-400">
+    <span className="truncate text-body-md italic text-on-surface-variant">
       {label ?? '—'}
     </span>
   );
@@ -78,9 +92,9 @@ export function MatchScoreRow({
           onChange={(e) =>
             onScore(parse(e.target.value), parse(String(awayGoals)))
           }
-          className="h-9 w-10 rounded-md border border-slate-300 bg-white text-center text-sm font-bold tabular-nums disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800"
+          className={scoreInputCls}
         />
-        <span className="text-slate-400">-</span>
+        <span className="text-on-surface-variant">-</span>
         <input
           type="number"
           inputMode="numeric"
@@ -91,7 +105,7 @@ export function MatchScoreRow({
           onChange={(e) =>
             onScore(parse(String(homeGoals)), parse(e.target.value))
           }
-          className="h-9 w-10 rounded-md border border-slate-300 bg-white text-center text-sm font-bold tabular-nums disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800"
+          className={scoreInputCls}
         />
       </div>
       <TeamSide team={away} label={awayLabel} align="right" />

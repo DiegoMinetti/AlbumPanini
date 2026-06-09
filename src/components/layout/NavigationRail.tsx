@@ -3,14 +3,25 @@ import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Icon, type IconName } from '@/components/ui/Icon';
 
-interface NavItem {
+interface RailItem {
   to: string;
   labelKey: string;
   icon: IconName;
   end?: boolean;
 }
 
-const ITEMS: NavItem[] = [
+/**
+ * M3 NavigationRail — variante lateral (tablet/desktop ≥ md).
+ *
+ * Aparece en pantallas anchas en lugar del BottomNav (NavigationBar).
+ * Renderiza un rail vertical a la izquierda con:
+ *  - Ítems centrados con icono arriba y label abajo (estado activo = pastilla).
+ *  - FAB anclado arriba del rail (M3 spec).
+ *  - Menú FAB opcional al final del rail (futuro).
+ *
+ * La translucidez la aporta `nav-rail-surface` (backdrop-blur + surface-container).
+ */
+const RAIL_ITEMS: RailItem[] = [
   { to: '/', labelKey: 'nav.dashboard', icon: 'home', end: true },
   { to: '/stickers', labelKey: 'nav.stickers', icon: 'grid_view' },
   { to: '/tournament', labelKey: 'nav.tournament', icon: 'trophy' },
@@ -18,21 +29,11 @@ const ITEMS: NavItem[] = [
   { to: '/donations', labelKey: 'nav.donations', icon: 'volunteer_activism' },
 ];
 
-/**
- * M3 NavigationBar — barra inferior translúcida (móvil < md).
- *
- * Patrón M3 canónico:
- *  - Altura fija 80dp con safe-area-inset-bottom.
- *  - Surface-container translúcida + backdrop-blur (M3 "translucent surface").
- *  - Cada item: 64dp contenedor con icono arriba y label abajo.
- *  - Activo: pastilla secondary-container con `on-secondary-container`.
- *  - State layer al 8%/12% (hover/press).
- *  - Indicador de blink aleatorio en el ítem de Donaciones.
- *
- * En pantallas anchas (md+) este componente NO se renderiza — el `NavigationRail`
- * toma el control. Esto se decide con clases responsive (`md:hidden`).
- */
-export function BottomNav() {
+interface NavigationRailProps {
+  onDonateClick?: () => void;
+}
+
+export function NavigationRail({ onDonateClick }: NavigationRailProps) {
   const { t } = useTranslation();
   const [donationBlink, setDonationBlink] = useState(false);
   const nextBlinkTimeoutRef = useRef<number | null>(null);
@@ -63,31 +64,46 @@ export function BottomNav() {
 
   return (
     <nav
-      className="nav-bar-surface fixed inset-x-0 bottom-0 z-40 md:hidden
-        border-t border-outline-variant/30 pb-safe-bottom"
+      className="nav-rail-surface fixed inset-y-0 left-0 z-40 hidden w-20 flex-col items-center
+        border-r border-outline-variant/30 pt-safe-top md:flex
+        pb-safe-bottom"
       aria-label="Primary"
     >
-      <ul
-        className="mx-auto flex h-[64px] w-full max-w-2xl items-stretch px-2
-          pt-1.5"
+      {/*
+        FAB del rail (M3 spec — el FAB se ancla arriba del NavigationRail,
+        como una pieza independiente de la navegación).
+      */}
+      <button
+        type="button"
+        onClick={onDonateClick}
+        className={`has-state-layer relative mt-3 grid h-14 w-14 place-items-center
+          overflow-hidden rounded-2xl bg-primary-container
+          text-on-primary-container shadow-elev-1 transition-all
+          duration-motion-short2 ease-standard
+          hover:shadow-elev-2
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
+          ${donationBlink ? 'donation-nav-blink' : ''}`}
+        aria-label={t('nav.donations')}
+        title={t('nav.donations')}
       >
-        {ITEMS.map((item) => (
-          <li key={item.to} className="flex flex-1 items-stretch">
+        <Icon name="volunteer_activism" size={24} />
+        <span aria-hidden className="state-layer" />
+      </button>
+
+      <ul className="mt-4 flex w-full flex-1 flex-col items-stretch gap-1 px-3">
+        {RAIL_ITEMS.map((item) => (
+          <li key={item.to}>
             <NavLink
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `has-state-layer group relative flex flex-1 flex-col items-center
-                  justify-center gap-0.5 overflow-hidden rounded-2xl
+                `has-state-layer group relative flex h-14 w-full flex-col
+                  items-center justify-center gap-0.5 overflow-hidden rounded-2xl
                   transition-all duration-motion-short2 ease-standard
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     isActive
                       ? 'nav-item-active-pill font-semibold'
                       : 'text-on-surface-variant hover:bg-surface-container-high'
-                  } ${
-                    item.to === '/donations' && donationBlink
-                      ? 'donation-nav-blink'
-                      : ''
                   }`
               }
             >

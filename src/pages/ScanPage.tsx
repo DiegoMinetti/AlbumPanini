@@ -9,6 +9,10 @@ import { EmptyState } from '@/components/feedback/EmptyState';
 import { toast } from '@/stores/uiStore';
 import { haptics } from '@/utils/haptics';
 
+/**
+ * Scan — usa M3 tokens (text-on-surface-variant, surface-container) en
+ * lugar de slate hard-coded. Mantiene data-testid y la API.
+ */
 export function ScanPage() {
   const { t } = useTranslation();
   const { active, loading } = useActiveCollection();
@@ -98,10 +102,10 @@ export function ScanPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-slate-500">{t('scan.ocrHint')}</p>
+      <p className="text-body-md text-on-surface-variant">{t('scan.ocrHint')}</p>
 
       <section className="card flex flex-col gap-3">
-        <div className="aspect-video w-full overflow-hidden rounded-xl bg-slate-900">
+        <div className="aspect-video w-full overflow-hidden rounded-xl bg-inverse-surface">
           <video
             ref={videoRef}
             playsInline
@@ -109,7 +113,7 @@ export function ScanPage() {
             className={`h-full w-full object-cover ${cameraOn ? '' : 'hidden'}`}
           />
           {!cameraOn ? (
-            <div className="flex h-full items-center justify-center text-slate-500">
+            <div className="flex h-full items-center justify-center text-inverse-on-surface">
               📷
             </div>
           ) : null}
@@ -171,7 +175,7 @@ export function ScanPage() {
       {processing ? <Spinner label={t('scan.processing')} /> : null}
 
       <section className="card">
-        <h2 className="mb-3 text-sm font-semibold text-slate-500">
+        <h2 className="mb-3 text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
           {t('scan.detected')}
         </h2>
         {codes.length === 0 ? (
@@ -185,7 +189,7 @@ export function ScanPage() {
               {codes.map((code, i) => (
                 <li
                   key={`${code}-${i}`}
-                  className="rounded-md bg-slate-100 px-2 py-1 font-mono text-sm dark:bg-slate-800"
+                  className="rounded-md bg-surface-container px-2 py-1 font-mono text-body-md text-on-surface"
                 >
                   {code}
                 </li>

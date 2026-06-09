@@ -53,6 +53,9 @@ const config: Config = {
         outline: 'var(--md-sys-color-outline)',
         'outline-variant': 'var(--md-sys-color-outline-variant)',
 
+        'inverse-surface': 'var(--md-sys-color-inverse-surface)',
+        'inverse-on-surface': 'var(--md-sys-color-inverse-on-surface)',
+
         // Estados de figurita (mapean a roles M3)
         'sticker-owned': 'var(--md-sys-color-tertiary-container)',
         'sticker-duplicate': 'var(--md-sys-color-tertiary)',
@@ -71,6 +74,13 @@ const config: Config = {
       spacing: {
         'safe-bottom': 'env(safe-area-inset-bottom)',
         'safe-top': 'env(safe-area-inset-top)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
+        // M3 — NavigationBar items altura
+        'nav-bar': '80px',
+        'nav-rail': '80px',
+        // M3 — Top app bar heights
+        'top-bar': '64px',
       },
       minHeight: {
         tap: '44px',
@@ -99,11 +109,36 @@ const config: Config = {
         accelerate: 'cubic-bezier(0.3, 0, 1, 1)',
       },
       transitionDuration: {
+        'motion-short1': '50ms',
         'motion-short2': '150ms',
         'motion-short3': '200ms',
+        'motion-short4': '250ms',
+        'motion-medium1': '200ms',
         'motion-medium2': '300ms',
         'motion-medium3': '400ms',
+        'motion-medium4': '450ms',
+        'motion-long1': '400ms',
         'motion-long2': '500ms',
+        'motion-long3': '550ms',
+        'motion-long4': '600ms',
+      },
+      fontSize: {
+        // M3 — type scale
+        'display-lg': ['57px', { lineHeight: '64px', letterSpacing: '-0.25px' }],
+        'display-md': ['45px', { lineHeight: '52px' }],
+        'display-sm': ['36px', { lineHeight: '44px' }],
+        'headline-lg': ['32px', { lineHeight: '40px' }],
+        'headline-md': ['28px', { lineHeight: '36px' }],
+        'headline-sm': ['24px', { lineHeight: '32px' }],
+        'title-lg': ['22px', { lineHeight: '28px' }],
+        'title-md': ['16px', { lineHeight: '24px', letterSpacing: '0.15px' }],
+        'title-sm': ['14px', { lineHeight: '20px', letterSpacing: '0.1px' }],
+        'body-lg': ['16px', { lineHeight: '24px', letterSpacing: '0.5px' }],
+        'body-md': ['14px', { lineHeight: '20px', letterSpacing: '0.25px' }],
+        'body-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.4px' }],
+        'label-lg': ['14px', { lineHeight: '20px', letterSpacing: '0.1px' }],
+        'label-md': ['12px', { lineHeight: '16px', letterSpacing: '0.5px' }],
+        'label-sm': ['11px', { lineHeight: '16px', letterSpacing: '0.5px' }],
       },
       keyframes: {
         'fade-in': {

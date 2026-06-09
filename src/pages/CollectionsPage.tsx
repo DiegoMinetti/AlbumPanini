@@ -31,6 +31,11 @@ type DialogState =
   | { type: 'duplicate'; collection: StoredCollection }
   | { type: 'delete'; collection: StoredCollection };
 
+/**
+ * Collections — usa M3 tokens. Fila activa tiene `outline` en M3 color
+ * en lugar de brand-500 hard-coded; chips usan M3 secondary-container
+ * cuando es "selected".
+ */
 export function CollectionsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -130,8 +135,10 @@ export function CollectionsPage() {
               className="card flex items-center justify-between gap-3"
             >
               <div className="min-w-0">
-                <p className="truncate font-semibold">{entry.name}</p>
-                <p className="truncate text-xs text-slate-500">
+                <p className="truncate font-semibold text-on-surface">
+                  {entry.name}
+                </p>
+                <p className="truncate text-label-md text-on-surface-variant">
                   {t('collections.version', { version: entry.version })} ·{' '}
                   {entry.description}
                 </p>
@@ -224,7 +231,7 @@ function CollectionGroup({
 }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+      <h2 className="text-label-md font-semibold uppercase tracking-wide text-on-surface-variant">
         {title}
       </h2>
       {children}
@@ -258,21 +265,23 @@ function CollectionRow({
   const { t } = useTranslation();
   return (
     <div
-      className={`card flex flex-col gap-3 ${isActive ? 'ring-2 ring-brand-500' : ''}`}
+      className={`card flex flex-col gap-3 ${
+        isActive ? 'ring-2 ring-primary' : ''
+      }`}
       data-testid="collection-row"
     >
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate font-semibold">{collection.name}</p>
-          <p className="truncate text-xs text-slate-500">
+          <p className="truncate font-semibold text-on-surface">
+            {collection.name}
+          </p>
+          <p className="truncate text-label-md text-on-surface-variant">
             {t('collections.version', { version: collection.version })} ·{' '}
             {collection.language.toUpperCase()}
           </p>
         </div>
         {isActive ? (
-          <span className="chip bg-brand-100 text-brand-700 ring-brand-200 dark:bg-brand-900/40 dark:text-brand-300 dark:ring-brand-800">
-            {t('collections.selected')}
-          </span>
+          <span className="chip chip-active">{t('collections.selected')}</span>
         ) : (
           <button type="button" className="btn-primary" onClick={onSelect}>
             {t('collections.select')}
@@ -291,13 +300,13 @@ function CollectionRow({
         </button>
         <button
           type="button"
-          className="btn-ghost text-red-600"
+          className="btn-ghost text-error"
           onClick={onDelete}
         >
           {t('common.delete')}
         </button>
       </div>
-      <label className="flex items-start gap-2 border-t border-slate-200 pt-3 text-sm text-slate-600 dark:border-slate-700 dark:text-slate-300">
+      <label className="flex items-start gap-2 border-t border-outline-variant pt-3 text-body-md text-on-surface">
         <input
           type="checkbox"
           className="mt-0.5 h-4 w-4"
@@ -305,10 +314,8 @@ function CollectionRow({
           onChange={(e) => onToggleExtras(e.target.checked)}
         />
         <span>
-          <span className="font-medium text-slate-800 dark:text-slate-100">
-            {t('stickers.includeExtras')}
-          </span>
-          <span className="mt-0.5 block text-xs text-slate-500">
+          <span className="font-medium">{t('stickers.includeExtras')}</span>
+          <span className="mt-0.5 block text-label-md text-on-surface-variant">
             {t('collections.includeExtrasHint')}
           </span>
         </span>
