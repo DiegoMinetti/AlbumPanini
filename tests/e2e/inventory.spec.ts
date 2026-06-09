@@ -35,7 +35,12 @@ test('filter by missing then owned', async ({ page }) => {
 
 test('bulk import adds inventory by code', async ({ page }) => {
   await goto(page, '/stickers');
-  await page.getByRole('button', { name: 'Bulk import' }).click();
+  // FAB plays a 200ms scale-in animation on mount; wait for the element to
+  // be attached and the animation to settle so Playwright's stability check
+  // doesn't race with it.
+  const fab = page.getByTestId('fab');
+  await fab.waitFor({ state: 'visible' });
+  await fab.click();
   await page.getByTestId('bulk-input').fill('ARG 1\nARG 1\nBRA 12\nZZZ 9');
   await page.getByRole('button', { name: 'Import', exact: true }).click();
   await expect(page.getByTestId('bulk-report')).toContainText('2');
