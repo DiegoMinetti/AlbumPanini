@@ -113,7 +113,14 @@ export function StickersPage() {
       missing: all.filter((s) => (inventory.get(s.id) ?? 0) === 0).length,
       duplicates: all.filter((s) => (inventory.get(s.id) ?? 0) > 1).length,
     };
-  }, [baseStickers, inventory, filter.search, filter.teamId, filter.category, filter.rarity]);
+  }, [
+    baseStickers,
+    inventory,
+    filter.search,
+    filter.teamId,
+    filter.category,
+    filter.rarity,
+  ]);
 
   // While searching, force every section open so matches are never hidden.
   const forceExpand = filter.search.trim().length > 0;
@@ -233,14 +240,10 @@ export function StickersPage() {
                   }`}
                 aria-pressed={editMode}
                 aria-label={
-                  editMode
-                    ? t('stickers.edit.lock')
-                    : t('stickers.edit.unlock')
+                  editMode ? t('stickers.edit.lock') : t('stickers.edit.unlock')
                 }
                 title={
-                  editMode
-                    ? t('stickers.edit.lock')
-                    : t('stickers.edit.unlock')
+                  editMode ? t('stickers.edit.lock') : t('stickers.edit.unlock')
                 }
                 onClick={toggleEdit}
               >
@@ -333,11 +336,7 @@ export function StickersPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={
-            <Icon
-              name="search"
-              size={36}
-              className="text-on-surface-variant"
-            />
+            <Icon name="search" size={36} className="text-on-surface-variant" />
           }
           title={t('stickers.noResults')}
           action={

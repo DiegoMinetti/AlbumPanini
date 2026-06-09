@@ -14,7 +14,12 @@ interface SearchBarProps {
  * Search bar M3 — variante docked (icono leading + clear trailing). Pensada
  * para uso dentro del FilterBar y como sticky top en la sección de stickers.
  */
-export function SearchBar({ value, onChange, placeholder, ariaLabel }: SearchBarProps) {
+export function SearchBar({
+  value,
+  onChange,
+  placeholder,
+  ariaLabel,
+}: SearchBarProps) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -24,11 +29,7 @@ export function SearchBar({ value, onChange, placeholder, ariaLabel }: SearchBar
         bg-surface-container-high px-4 transition-colors duration-motion-short2 ease-standard
         focus-within:bg-surface-container-highest focus-within:shadow-elev-1"
     >
-      <Icon
-        name="search"
-        size={20}
-        className="text-on-surface-variant"
-      />
+      <Icon name="search" size={20} className="text-on-surface-variant" />
       <input
         ref={inputRef}
         type="search"

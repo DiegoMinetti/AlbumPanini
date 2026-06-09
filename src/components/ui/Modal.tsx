@@ -100,9 +100,7 @@ export function Modal({
         <div className="max-h-[70vh] overflow-y-auto px-4">{children}</div>
 
         {footer ? (
-          <div className="mt-3 flex justify-end gap-2 px-4 pt-3">
-            {footer}
-          </div>
+          <div className="mt-3 flex justify-end gap-2 px-4 pt-3">{footer}</div>
         ) : null}
       </div>
     </div>

@@ -1,9 +1,4 @@
-import {
-  useLayoutEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { haptics } from '@/utils/haptics';
 
 export interface SegmentOption<T extends string> {
@@ -42,7 +37,7 @@ export function SegmentedControl<T extends string>({
     const root = containerRef.current;
     if (!root) return;
     const active = root.querySelector<HTMLElement>(
-      `[data-segment-value="${value}"]`,
+      `[data-segment-value="${value}"]`
     );
     if (!active) return;
     const rootRect = root.getBoundingClientRect();

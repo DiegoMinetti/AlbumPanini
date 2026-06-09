@@ -1,8 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type {
-  OwnershipFilter,
-  StickerFilter,
-} from '@/services/filterService';
+import type { OwnershipFilter, StickerFilter } from '@/services/filterService';
 import { haptics } from '@/utils/haptics';
 import { Icon } from '@/components/ui/Icon';
 import { FilterChips } from './FilterChips';

@@ -53,9 +53,7 @@ export function Fab({
         'group fixed z-30 inline-flex items-center justify-center gap-2 overflow-hidden',
         'rounded-full transition-all duration-motion-medium2 ease-emphasized',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-        isExtended
-          ? 'h-14 rounded-2xl px-5 text-sm font-medium'
-          : 'h-14 w-14',
+        isExtended ? 'h-14 rounded-2xl px-5 text-sm font-medium' : 'h-14 w-14',
         VARIANT_CLS[variant],
         position === 'bottom-end' && 'right-4 bottom-24',
         position === 'bottom-center' && 'left-1/2 -translate-x-1/2 bottom-24',

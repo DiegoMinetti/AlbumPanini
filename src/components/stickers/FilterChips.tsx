@@ -88,7 +88,9 @@ export function FilterChips({ value, onChange, counts }: FilterChipsProps) {
           >
             <span>{t(`stickers.filter.${filter}`)}</span>
             {counts?.[filter] !== undefined ? (
-              <span className="opacity-70 tabular-nums">({counts[filter]})</span>
+              <span className="opacity-70 tabular-nums">
+                ({counts[filter]})
+              </span>
             ) : null}
             <span aria-hidden className="state-layer" />
           </button>

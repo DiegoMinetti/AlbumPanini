@@ -60,7 +60,9 @@ export function QuantityStepper({
   };
 
   const sizeCls =
-    size === 'sm' ? 'h-8 w-8 text-base' : 'h-10 w-10 min-h-tap min-w-tap text-lg';
+    size === 'sm'
+      ? 'h-8 w-8 text-base'
+      : 'h-10 w-10 min-h-tap min-w-tap text-lg';
 
   return (
     <div className="inline-flex items-center gap-1">

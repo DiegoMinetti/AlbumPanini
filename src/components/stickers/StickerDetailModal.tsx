@@ -124,7 +124,9 @@ export function StickerDetailModal({
             </dl>
           </section>
         ) : (
-          <p className="text-sm text-on-surface-variant">{t('detail.noData')}</p>
+          <p className="text-sm text-on-surface-variant">
+            {t('detail.noData')}
+          </p>
         )}
 
         {/* Acciones */}
