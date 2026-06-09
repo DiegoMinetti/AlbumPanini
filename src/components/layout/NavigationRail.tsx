@@ -16,8 +16,7 @@ interface RailItem {
  * Aparece en pantallas anchas en lugar del BottomNav (NavigationBar).
  * Renderiza un rail vertical a la izquierda con:
  *  - Ítems centrados con icono arriba y label abajo (estado activo = pastilla).
- *  - FAB anclado arriba del rail (M3 spec).
- *  - Menú FAB opcional al final del rail (futuro).
+ *  - Indicador de blink aleatorio en el ítem de Donaciones (último ítem).
  *
  * La translucidez la aporta `nav-rail-surface` (backdrop-blur + surface-container).
  */
@@ -29,11 +28,7 @@ const RAIL_ITEMS: RailItem[] = [
   { to: '/donations', labelKey: 'nav.donations', icon: 'volunteer_activism' },
 ];
 
-interface NavigationRailProps {
-  onDonateClick?: () => void;
-}
-
-export function NavigationRail({ onDonateClick }: NavigationRailProps) {
+export function NavigationRail() {
   const { t } = useTranslation();
   const [donationBlink, setDonationBlink] = useState(false);
   const nextBlinkTimeoutRef = useRef<number | null>(null);
@@ -69,28 +64,7 @@ export function NavigationRail({ onDonateClick }: NavigationRailProps) {
         pb-safe-bottom"
       aria-label="Primary"
     >
-      {/*
-        FAB del rail (M3 spec — el FAB se ancla arriba del NavigationRail,
-        como una pieza independiente de la navegación).
-      */}
-      <button
-        type="button"
-        onClick={onDonateClick}
-        className={`has-state-layer relative mt-3 grid h-14 w-14 place-items-center
-          overflow-hidden rounded-2xl bg-primary-container
-          text-on-primary-container shadow-elev-1 transition-all
-          duration-motion-short2 ease-standard
-          hover:shadow-elev-2
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
-          ${donationBlink ? 'donation-nav-blink' : ''}`}
-        aria-label={t('nav.donations')}
-        title={t('nav.donations')}
-      >
-        <Icon name="volunteer_activism" size={24} />
-        <span aria-hidden className="state-layer" />
-      </button>
-
-      <ul className="mt-4 flex w-full flex-1 flex-col items-stretch gap-1 px-3">
+      <ul className="mt-3 flex w-full flex-1 flex-col items-stretch gap-1 px-3">
         {RAIL_ITEMS.map((item) => (
           <li key={item.to}>
             <NavLink
@@ -104,6 +78,10 @@ export function NavigationRail({ onDonateClick }: NavigationRailProps) {
                     isActive
                       ? 'nav-item-active-pill font-semibold'
                       : 'text-on-surface-variant hover:bg-surface-container-high'
+                  } ${
+                    item.to === '/donations' && donationBlink
+                      ? 'donation-nav-blink'
+                      : ''
                   }`
               }
             >
