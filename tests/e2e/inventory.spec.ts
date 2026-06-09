@@ -41,12 +41,14 @@ test('bulk import adds inventory by code', async ({ page }) => {
   const fab = page.getByTestId('fab');
   await fab.waitFor({ state: 'visible' });
   // The build produces a service worker; the first load surfaces a transient
-  // "App ready to work offline" prompt at the bottom of the screen, whose
-  // "Close" button
-  // be attached and the animation to settle so Playwright's stability check
-  // doesn't race with it.
-  const fab = page.getByTestId('fab');
-  await fab.waitFor({ state: 'visible' });
+  // "App ready to work offline" prompt at the bottom of the screen that
+  // overlaps the FAB. Dismiss it before clicking — the bulk-import dialog
+  // isn't open yet, so the first "Close" button on the page belongs to the
+  // PWA prompt.
+  const pwaClose = page.getByRole('button', { name: 'Close' }).first();
+  if (await pwaClose.isVisible().catch(() => false)) {
+    await pwaClose.click();
+  }
   await fab.click();
   await page.getByTestId('bulk-input').fill('ARG 1\nARG 1\nBRA 12\nZZZ 9');
   await page.getByRole('button', { name: 'Import', exact: true }).click();
