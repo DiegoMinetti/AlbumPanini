@@ -3,6 +3,11 @@ import type { Page } from '@playwright/test';
 /**
  * Force a deterministic initial settings state (English, light theme, no active
  * collection) before the app boots, so E2E selectors are stable.
+ *
+ * `defaultCollectionSeeded: true` skips the App-level auto-install of the
+ * bundled FIFA World Cup 2026 collection (see App.tsx + collectionLoader).
+ * Without it, that effect runs during test boot and pollutes IndexedDB with
+ * 980 stickers that break every count-based assertion below.
  */
 export async function primeSettings(page: Page): Promise<void> {
   await page.addInitScript(() => {
@@ -16,6 +21,7 @@ export async function primeSettings(page: Page): Promise<void> {
           stickerView: 'grid',
           activeCollectionId: null,
           showImages: true,
+          defaultCollectionSeeded: true,
         },
         version: 1,
       })
