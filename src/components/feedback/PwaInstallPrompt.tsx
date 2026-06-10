@@ -63,9 +63,8 @@ export function isIosSafari(): boolean {
 
 export function PwaInstallPrompt() {
   const { t } = useTranslation();
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(
-    null
-  );
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [showIosHelp, setShowIosHelp] = useState(false);
   const [installed, setInstalled] = useState(false);
