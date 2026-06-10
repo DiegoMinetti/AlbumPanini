@@ -360,7 +360,8 @@ export function BackupPage() {
   // -------------------------------------------------------------------------
 
   const showSyncQr = !!syncChunks && !!syncQrUrl;
-  const noSyncData = !generatingSync && syncChunks === null && hasAnyData === false;
+  const noSyncData =
+    !generatingSync && syncChunks === null && hasAnyData === false;
 
   return (
     <div className="flex flex-col gap-5">
@@ -459,9 +460,7 @@ export function BackupPage() {
                   <button
                     type="button"
                     className="btn-secondary"
-                    onClick={() =>
-                      setSyncChunkIdx((i) => Math.max(0, i - 1))
-                    }
+                    onClick={() => setSyncChunkIdx((i) => Math.max(0, i - 1))}
                     disabled={syncChunkIdx === 0}
                   >
                     {t('backup.sync.prevChunk')}
@@ -502,9 +501,7 @@ export function BackupPage() {
             disabled={generatingSync}
             data-testid="generate-sync"
           >
-            {generatingSync
-              ? t('common.loading')
-              : t('backup.sync.generate')}
+            {generatingSync ? t('common.loading') : t('backup.sync.generate')}
           </button>
         )}
 
@@ -512,7 +509,10 @@ export function BackupPage() {
       </section>
 
       {pendingSession && pendingSession.received < pendingSession.total ? (
-        <section className="card flex flex-col gap-2" data-testid="sync-progress">
+        <section
+          className="card flex flex-col gap-2"
+          data-testid="sync-progress"
+        >
           <h2 className="text-title-sm font-semibold text-on-surface">
             {t('backup.sync.progress.title')}
           </h2>

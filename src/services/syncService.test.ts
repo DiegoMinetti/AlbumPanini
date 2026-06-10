@@ -158,7 +158,10 @@ describe('applySyncPayload', () => {
     const payload = await buildSyncPayload(DEFAULT_SETTINGS);
     expect(payload.c[0]).toBeDefined();
     // Mutate the payload so we know it came from "the other phone".
-    payload.c[0]!.q = [['ARG-1', 4], ['BRA-12', 1]];
+    payload.c[0]!.q = [
+      ['ARG-1', 4],
+      ['BRA-12', 1],
+    ];
 
     const summary = await applySyncPayload(payload, { mode: 'merge' });
     expect(summary.inventoryItems).toBe(2);

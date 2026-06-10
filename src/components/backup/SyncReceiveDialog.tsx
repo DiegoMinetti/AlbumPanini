@@ -92,9 +92,7 @@ export function SyncReceiveDialog({
                 count: counts.collections,
               })}
             </li>
-            <li>
-              {t('backup.sync.received.items', { count: counts.items })}
-            </li>
+            <li>{t('backup.sync.received.items', { count: counts.items })}</li>
             <li>
               {t('backup.sync.received.scenarios', {
                 count: counts.scenarios,

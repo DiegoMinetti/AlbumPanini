@@ -21,7 +21,10 @@ import { settingsSchema } from './settings';
 export const SYNC_VERSION = 1;
 
 /** Compact inventory entry: [stickerId, quantity]. */
-const syncInventoryEntrySchema = z.tuple([z.string().min(1), z.number().int().nonnegative()]);
+const syncInventoryEntrySchema = z.tuple([
+  z.string().min(1),
+  z.number().int().nonnegative(),
+]);
 
 /** Compact match result tuple:
  * [matchId, homeGoals, awayGoals, homePens?, awayPens?, played].

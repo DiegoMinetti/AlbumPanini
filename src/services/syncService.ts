@@ -48,19 +48,14 @@ const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? '1.0.0';
 export async function buildSyncPayload(
   settings: Settings
 ): Promise<SyncPayload> {
-  const [
-    collections,
-    inventory,
-    scenarios,
-    matchResults,
-    knockoutPicks,
-  ] = await Promise.all([
-    db.collections.toArray(),
-    db.inventory.toArray(),
-    db.scenarios.toArray(),
-    db.matchResults.toArray(),
-    db.knockoutPicks.toArray(),
-  ]);
+  const [collections, inventory, scenarios, matchResults, knockoutPicks] =
+    await Promise.all([
+      db.collections.toArray(),
+      db.inventory.toArray(),
+      db.scenarios.toArray(),
+      db.matchResults.toArray(),
+      db.knockoutPicks.toArray(),
+    ]);
 
   const invByCol = groupBy(inventory, (i) => i.collectionId);
   const scenByCol = groupBy(scenarios, (s) => s.collectionId);
@@ -92,12 +87,8 @@ export async function buildSyncPayload(
         i: s.id,
         n: s.name,
         o: s.isOfficial,
-        r: (resultsByScenario.get(s.id) ?? []).map((r) =>
-          resultToTuple(r)
-        ),
-        p: (picksByScenario.get(s.id) ?? []).map((p) =>
-          pickToTuple(p)
-        ),
+        r: (resultsByScenario.get(s.id) ?? []).map((r) => resultToTuple(r)),
+        p: (picksByScenario.get(s.id) ?? []).map((p) => pickToTuple(p)),
       })),
     });
   }
@@ -485,12 +476,7 @@ export async function applySyncPayload(
 
   await db.transaction(
     'rw',
-    [
-      db.inventory,
-      db.scenarios,
-      db.matchResults,
-      db.knockoutPicks,
-    ],
+    [db.inventory, db.scenarios, db.matchResults, db.knockoutPicks],
     async () => {
       // Inventory: in 'replace' mode we wipe the per-collection inventory
       // before re-inserting; in 'merge' we let bulkPut upsert.
@@ -553,7 +539,14 @@ export async function applySyncPayloadWithSettings(
 function resultToTuple(
   r: StoredMatchResult
 ): [string, number, number, number | undefined, number | undefined, boolean] {
-  return [r.matchId, r.homeGoals, r.awayGoals, r.homePens, r.awayPens, r.played];
+  return [
+    r.matchId,
+    r.homeGoals,
+    r.awayGoals,
+    r.homePens,
+    r.awayPens,
+    r.played,
+  ];
 }
 
 function pickToTuple(p: StoredKnockoutPick): [string, string] {
@@ -578,7 +571,8 @@ function generateSyncSessionId(): string {
   if (typeof crypto !== 'undefined' && 'getRandomValues' in crypto) {
     crypto.getRandomValues(bytes);
   } else {
-    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+    for (let i = 0; i < bytes.length; i++)
+      bytes[i] = Math.floor(Math.random() * 256);
   }
   let s = '';
   for (let i = 0; i < bytes.length; i++) {
@@ -590,8 +584,7 @@ function generateSyncSessionId(): string {
 function readStoredSession(): StoredSession | null {
   let raw: string | null = null;
   try {
-    raw =
-      globalThis.localStorage?.getItem(SYNC_SESSION_STORAGE_KEY) ?? null;
+    raw = globalThis.localStorage?.getItem(SYNC_SESSION_STORAGE_KEY) ?? null;
   } catch {
     /* ignore */
   }
@@ -628,8 +621,9 @@ function toSessionInfo(stored: StoredSession): SyncSessionInfo {
   return {
     sid: stored.sid,
     total: stored.total,
-    chunks: new Map(Object.entries(stored.chunks).map(([k, v]) => [Number(k), v])),
+    chunks: new Map(
+      Object.entries(stored.chunks).map(([k, v]) => [Number(k), v])
+    ),
     receivedAt: stored.receivedAt,
   };
 }
-
