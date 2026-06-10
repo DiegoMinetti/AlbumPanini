@@ -28,6 +28,9 @@ import type { BackupPayload } from '@/types/backup';
 import { downloadBlob, readFileAsBytes } from '@/utils/file';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Modal } from '@/components/ui/Modal';
+import { Icon } from '@/components/ui/Icon';
+import { isStandaloneDisplay } from '@/components/feedback/PwaInstallPrompt';
 import {
   SyncReceiveDialog,
   type SyncReceiveMode,
@@ -44,6 +47,11 @@ import { toast } from '@/stores/uiStore';
  *  - When the user opens such a link (or re-opens the page after a
  *    chunk was added to the local session buffer) we decode the
  *    payload and offer a merge / replace apply.
+ *
+ * When the user opens a `?sync=…` link in the regular browser tab
+ * (because the PWA is not installed on that device, or the OS does
+ * not route QR scans to the installed PWA) we show a dialog explaining
+ * the situation and offering to install the PWA / copy the URL.
  */
 export function BackupPage() {
   const { t } = useTranslation();
@@ -62,6 +70,10 @@ export function BackupPage() {
   const [syncChunks, setSyncChunks] = useState<SyncChunks | null>(null);
   const [syncChunkIdx, setSyncChunkIdx] = useState(0);
   const [syncQrUrl, setSyncQrUrl] = useState<string | null>(null);
+  // Plain-text URL encoded into the QR. Kept in state so we can show it
+  // alongside the image and let the user copy it as a fallback (or paste
+  // it into the receiver device manually when scanning isn't an option).
+  const [syncUrl, setSyncUrl] = useState<string | null>(null);
   const [generatingSync, setGeneratingSync] = useState(false);
 
   // Incoming payload (decoded from one or more scanned QRs).
@@ -79,6 +91,13 @@ export function BackupPage() {
     total: number;
     received: number;
   } | null>(null);
+
+  // Shown when the page was opened with `?sync=…` in the regular browser
+  // tab (i.e. the PWA is not installed in standalone mode). iOS and some
+  // Android setups always route scanned QR URLs to the browser, so this
+  // dialog helps the user understand why the link opened in a regular tab
+  // and how to make the QR open the app directly.
+  const [browserSyncHelpOpen, setBrowserSyncHelpOpen] = useState(false);
 
   // -------------------------------------------------------------------------
   // Backup import/export
@@ -176,6 +195,7 @@ export function BackupPage() {
         toast.warning(t('backup.sync.noData'));
         setSyncChunks(null);
         setSyncQrUrl(null);
+        setSyncUrl(null);
         return;
       }
       const encoded = encodeSync(payload);
@@ -190,6 +210,7 @@ export function BackupPage() {
       });
       const dataUrl = await renderSyncQr(url, { size: 320 });
       setSyncQrUrl(dataUrl);
+      setSyncUrl(url);
     } catch {
       toast.error(t('toast.error'));
     } finally {
@@ -212,7 +233,10 @@ export function BackupPage() {
           data: piece,
         });
         const dataUrl = await renderSyncQr(url, { size: 320 });
-        if (!cancelled) setSyncQrUrl(dataUrl);
+        if (!cancelled) {
+          setSyncQrUrl(dataUrl);
+          setSyncUrl(url);
+        }
       } catch {
         if (!cancelled) toast.error(t('toast.error'));
       }
@@ -221,6 +245,30 @@ export function BackupPage() {
       cancelled = true;
     };
   }, [syncChunks, syncChunkIdx, t]);
+
+  const copySyncUrl = async () => {
+    if (!syncUrl) return;
+    try {
+      await navigator.clipboard.writeText(syncUrl);
+      toast.success(t('toast.copied'));
+    } catch {
+      // Fallback for browsers without async clipboard (e.g. older WebViews).
+      const ta = document.createElement('textarea');
+      ta.value = syncUrl;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        toast.success(t('toast.copied'));
+      } catch {
+        toast.error(t('toast.error'));
+      } finally {
+        document.body.removeChild(ta);
+      }
+    }
+  };
 
   // -------------------------------------------------------------------------
   // Sync (receiver)
@@ -233,6 +281,12 @@ export function BackupPage() {
    */
   const handleIncomingLink = useCallback(
     async (link: ParsedSyncLink) => {
+      // If the page was reached in the regular browser (PWA not installed)
+      // we still want to process the sync, but we also offer the user a
+      // hint about why the link opened in a tab instead of the app.
+      if (!isStandaloneDisplay() && typeof window !== 'undefined') {
+        setBrowserSyncHelpOpen(true);
+      }
       const result = recordSyncChunk(link);
       if (!result) {
         // Stale / out of order: just clear and ask the user to rescan.
@@ -486,12 +540,44 @@ export function BackupPage() {
               onClick={() => {
                 setSyncChunks(null);
                 setSyncQrUrl(null);
+                setSyncUrl(null);
                 setSyncChunkIdx(0);
                 void generateSync();
               }}
             >
               {t('backup.sync.regenerate')}
             </button>
+
+            {/* Fallback: plain-text URL + copy button.
+                Useful when the QR can't be scanned (camera dirty, low light)
+                or the receiver device routes the link to the browser tab
+                instead of the installed PWA. */}
+            {syncUrl ? (
+              <div
+                className="mt-2 w-full max-w-md rounded-lg border border-outline-variant
+                  bg-surface-container p-3"
+                data-testid="sync-url-block"
+              >
+                <p className="mb-1 text-label-md text-on-surface-variant">
+                  {t('backup.sync.urlLabel')}
+                </p>
+                <p
+                  className="mb-2 break-all font-mono text-label-md text-on-surface"
+                  data-testid="sync-url-text"
+                >
+                  {syncUrl}
+                </p>
+                <button
+                  type="button"
+                  className="btn-secondary self-start"
+                  onClick={() => void copySyncUrl()}
+                  data-testid="sync-url-copy"
+                >
+                  <Icon name="content_copy" size={16} className="mr-1" />
+                  {t('backup.sync.urlCopy')}
+                </button>
+              </div>
+            ) : null}
           </div>
         ) : (
           <button
@@ -558,6 +644,28 @@ export function BackupPage() {
         onApply={() => void confirmReceive()}
         onCancel={cancelReceive}
       />
+
+      <Modal
+        open={browserSyncHelpOpen}
+        onClose={() => setBrowserSyncHelpOpen(false)}
+        title={t('backup.sync.browserHelp.title')}
+        footer={
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => setBrowserSyncHelpOpen(false)}
+          >
+            {t('common.close')}
+          </button>
+        }
+      >
+        <p className="text-body-md text-on-surface-variant">
+          {t('backup.sync.browserHelp.body')}
+        </p>
+        <p className="mt-3 text-body-md text-on-surface-variant">
+          {t('backup.sync.browserHelp.hint')}
+        </p>
+      </Modal>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { queryClient } from './queryClient';
 import { router } from './router';
 import { ToastViewport } from '@/components/feedback/ToastViewport';
 import { PwaUpdatePrompt } from '@/components/feedback/PwaUpdatePrompt';
+import { PwaInstallPrompt } from '@/components/feedback/PwaInstallPrompt';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { seedDefaultCollection } from '@/services/collectionLoader';
 
@@ -60,6 +61,7 @@ export function App() {
       <RouterProvider router={router} />
       <ToastViewport />
       <PwaUpdatePrompt />
+      <PwaInstallPrompt />
     </QueryClientProvider>
   );
 }

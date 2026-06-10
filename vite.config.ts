@@ -28,15 +28,35 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
+        // Unique PWA identifier (Chrome 96+). Prevents the "PWA is being
+        // replaced" surprise when the user navigates to the app from
+        // different entry points (e.g. QR vs. installed icon).
+        id: basePath,
         name: 'Panini Collection Tracker',
         short_name: 'Panini',
         description: 'Offline-first sticker collection tracker.',
+        lang: 'es',
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
         orientation: 'portrait',
         start_url: basePath,
         scope: basePath,
+        // We don't have a native companion app — keep the PWA install path
+        // explicit so the browser always offers it.
+        prefer_related_applications: false,
+        // Chrome 102+: when installed, links that fall inside `scope` open
+        // directly in the PWA window instead of the browser tab. This is
+        // what makes the QR / WhatsApp link land in Panini.
+        // (iOS Safari ignores this field — there Universal Links would be
+        // needed, which aren't available for pure PWAs.)
+        handle_links: 'preferred',
+        // Chrome 110+: when a second navigation to the app arrives while
+        // it's already running, reuse the existing window instead of
+        // spawning a duplicate. Pairs with `handle_links: 'preferred'`.
+        launch_handler: {
+          client_mode: 'auto',
+        },
         icons: [
           {
             src: 'icons/icon-192.png',

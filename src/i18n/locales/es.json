@@ -235,6 +235,15 @@
         "hint": "Escaneá los QR restantes desde el otro celular. Esta pantalla se actualiza sola.",
         "scanNext": "Escanear siguiente QR",
         "cancel": "Cancelar sincronización"
+      },
+      "urlLabel": "O copiá este link:",
+      "urlCopy": "Copiar link",
+      "urlCopied": "¡Link copiado!",
+      "browserHelp": {
+        "title": "Abrí este link en la app",
+        "body": "Este QR se abrió en una pestaña del navegador, no en la app instalada.",
+        "hint": "Si instalás la app (botón \"Instalar\" abajo) y volvés a escanear el QR, va a abrir Panini directamente.",
+        "understood": "Entendido"
       }
     }
   },
@@ -323,5 +332,17 @@
       "third": "Tercer puesto",
       "final": "Final"
     }
+  },
+  "pwaInstall": {
+    "banner": "📱 Agregá Panini a tu pantalla de inicio",
+    "install": "Instalar",
+    "how": "Cómo",
+    "iosTitle": "Instalar en iPhone / iPad",
+    "iosBody": "Safari no ofrece instalar la app automáticamente. Seguí estos pasos:",
+    "iosStep1": "Tocá el botón Compartir (cuadrado con flecha hacia arriba).",
+    "iosStep2": "Elegí \"Agregar a pantalla de inicio\".",
+    "iosStep3": "Confirmá tocando \"Agregar\".",
+    "iosWhy": "Con la app instalada, el QR de sincronización abre Panini directamente, sin pasar por Safari.",
+    "later": "Más tarde"
   }
 }

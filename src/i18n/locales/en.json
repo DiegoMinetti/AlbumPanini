@@ -235,6 +235,15 @@
         "hint": "Scan the remaining QRs from the other phone. This page updates on its own.",
         "scanNext": "Scan next QR",
         "cancel": "Cancel sync"
+      },
+      "urlLabel": "Or copy this link:",
+      "urlCopy": "Copy link",
+      "urlCopied": "Link copied!",
+      "browserHelp": {
+        "title": "Open this link in the app",
+        "body": "This QR opened in a browser tab, not the installed app.",
+        "hint": "Install the app (use the \"Install\" button below) and re-scan the QR to open Panini directly.",
+        "understood": "Got it"
       }
     }
   },
@@ -323,5 +332,17 @@
       "third": "Third place",
       "final": "Final"
     }
+  },
+  "pwaInstall": {
+    "banner": "📱 Add Panini to your home screen",
+    "install": "Install",
+    "how": "How",
+    "iosTitle": "Install on iPhone / iPad",
+    "iosBody": "Safari doesn't offer to install the app automatically. Follow these steps:",
+    "iosStep1": "Tap the Share button (square with an arrow pointing up).",
+    "iosStep2": "Choose \"Add to Home Screen\".",
+    "iosStep3": "Confirm by tapping \"Add\".",
+    "iosWhy": "Once installed, the sync QR opens Panini directly instead of Safari.",
+    "later": "Later"
   }
 }
