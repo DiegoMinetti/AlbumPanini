@@ -201,7 +201,42 @@
     "exported": "Backup exported.",
     "restored": "Restored {{collections}} collections, {{stickers}} stickers.",
     "migrated": "Backup migrated from version {{from}}.",
-    "invalid": "That file is not a valid backup."
+    "invalid": "That file is not a valid backup.",
+    "sync": {
+      "title": "Sync between devices",
+      "desc": "Generate a QR on this phone and scan it from the other to keep stickers, scenarios and settings up to date. No internet needed.",
+      "generate": "Generate sync QR",
+      "regenerate": "Generate a new QR",
+      "scan": "Scan sync code",
+      "showQr": "Show this QR on the other phone",
+      "nextChunk": "Next QR",
+      "prevChunk": "Previous QR",
+      "chunk": "QR {{idx}} of {{total}}",
+      "noData": "Nothing to sync yet. Add some stickers to an active collection first.",
+      "received": {
+        "title": "Sync QR detected",
+        "from": "We detected data to sync from another device.",
+        "collections": "Collections: {{count}}",
+        "items": "Stickers: {{count}}",
+        "scenarios": "Scenarios: {{count}}",
+        "settings": "Settings included",
+        "missing": "Some collections are not installed locally: {{ids}}",
+        "mode": "Sync mode",
+        "apply": "Sync now",
+        "ignore": "Cancel",
+        "applied": "Sync applied.",
+        "appliedSummary": "Synced {{items}} stickers and {{scenarios}} scenarios.",
+        "settingsApplied": "Settings were also updated.",
+        "missingWarning": "{{count}} collection not installed was skipped: {{ids}}"
+      },
+      "progress": {
+        "title": "Waiting for more QRs",
+        "received": "Received {{received}} of {{total}}",
+        "hint": "Scan the remaining QRs from the other phone. This page updates on its own.",
+        "scanNext": "Scan next QR",
+        "cancel": "Cancel sync"
+      }
+    }
   },
   "settings": {
     "title": "Settings",

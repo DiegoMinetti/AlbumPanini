@@ -6,3 +6,4 @@ export * from './exchange';
 export * from './stats';
 export * from './tournament';
 export * from './scenario';
+export * from './sync';

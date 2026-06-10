@@ -201,7 +201,42 @@
     "exported": "Respaldo exportado.",
     "restored": "Se restauraron {{collections}} colecciones, {{stickers}} figuritas.",
     "migrated": "Respaldo migrado desde la versión {{from}}.",
-    "invalid": "Ese archivo no es un respaldo válido."
+    "invalid": "Ese archivo no es un respaldo válido.",
+    "sync": {
+      "title": "Sincronizar entre dispositivos",
+      "desc": "Generá un QR en este celular y escanealo desde el otro para mantener las figuritas, escenarios y ajustes al día. No necesita internet.",
+      "generate": "Generar QR de sincronización",
+      "regenerate": "Generar otro QR",
+      "scan": "Escanear código de sincronización",
+      "showQr": "Mostrá este QR en el otro celular",
+      "nextChunk": "Siguiente QR",
+      "prevChunk": "QR anterior",
+      "chunk": "QR {{idx}} de {{total}}",
+      "noData": "No hay datos para sincronizar todavía. Agregá figuritas a una colección activa primero.",
+      "received": {
+        "title": "QR de sincronización detectado",
+        "from": "Detectamos datos para sincronizar desde otro dispositivo.",
+        "collections": "Colecciones: {{count}}",
+        "items": "Figuritas: {{count}}",
+        "scenarios": "Escenarios: {{count}}",
+        "settings": "Ajustes incluidos",
+        "missing": "Algunas colecciones no están instaladas localmente: {{ids}}",
+        "mode": "Modo de sincronización",
+        "apply": "Sincronizar ahora",
+        "ignore": "Cancelar",
+        "applied": "Sincronización aplicada.",
+        "appliedSummary": "Se sincronizaron {{items}} figuritas y {{scenarios}} escenarios.",
+        "settingsApplied": "También se actualizaron los ajustes.",
+        "missingWarning": "{{count}} colección no instalada se omitió: {{ids}}"
+      },
+      "progress": {
+        "title": "Esperando más QRs",
+        "received": "Recibido {{received}} de {{total}}",
+        "hint": "Escaneá los QR restantes desde el otro celular. Esta pantalla se actualiza sola.",
+        "scanNext": "Escanear siguiente QR",
+        "cancel": "Cancelar sincronización"
+      }
+    }
   },
   "settings": {
     "title": "Ajustes",

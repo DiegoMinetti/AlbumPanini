@@ -5,6 +5,7 @@ export * as statsService from './statsService';
 export * as filterService from './filterService';
 export * as backupService from './backupService';
 export * as qrService from './qrService';
+export * as syncService from './syncService';
 export * as ocrService from './ocrService';
 export * as tournamentService from './tournamentService';
 export * as scenarioService from './scenarioService';
