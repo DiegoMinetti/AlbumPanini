@@ -30,7 +30,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Modal } from '@/components/ui/Modal';
 import { Icon } from '@/components/ui/Icon';
-import { isStandaloneDisplay } from '@/components/feedback/PwaInstallPrompt';
+import { isStandaloneDisplay } from '@/components/feedback/pwaDetection';
 import {
   SyncReceiveDialog,
   type SyncReceiveMode,
