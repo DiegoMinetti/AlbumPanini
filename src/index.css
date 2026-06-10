@@ -117,6 +117,17 @@
     height: 100%;
   }
 
+  /* Mobile native feel: bloquea el zoom por gestos (pinch + double-tap)
+     y el ajuste automático de tamaño de texto de iOS. La PWA se siente
+     como una app nativa: el viewport queda fijo, sin cambios de escala
+     accidentales, y la UX es más fluida. */
+  html,
+  body {
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   /* Native-like background: gradient sutil de M3 "background" (no blanco puro,
      con un tinte apenas perceptible del primary en el fondo). */
   body {
