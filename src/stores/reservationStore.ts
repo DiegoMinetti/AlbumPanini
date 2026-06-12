@@ -41,9 +41,11 @@ export interface Reservation {
 interface ReservationState {
   reservations: Reservation[];
   /** Add a new reservation, or bump the count on an existing one. */
-  addReservation: (input: Omit<Reservation, 'createdAt' | 'count'> & {
-    count?: number;
-  }) => void;
+  addReservation: (
+    input: Omit<Reservation, 'createdAt' | 'count'> & {
+      count?: number;
+    }
+  ) => void;
   /** Remove a single reservation by its composite key. */
   removeReservation: (
     collectionId: string,
@@ -88,7 +90,9 @@ const safeStorage: StateStorage = {
 };
 
 /** Stable key for `(collectionId, stickerId, partner)` lookups. */
-function reservationKey(r: Pick<Reservation, 'collectionId' | 'stickerId' | 'partner'>) {
+function reservationKey(
+  r: Pick<Reservation, 'collectionId' | 'stickerId' | 'partner'>
+) {
   return `${r.collectionId}::${r.stickerId}::${r.partner}`;
 }
 

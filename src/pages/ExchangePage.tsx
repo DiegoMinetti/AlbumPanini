@@ -41,9 +41,7 @@ const DEFAULT_PARTNER = 'figuritas.app';
 export function ExchangePage() {
   const { t } = useTranslation();
   const { active, loading } = useActiveCollection();
-  const { stickers, teams, inventory } = useCollectionData(
-    active?.id ?? null
-  );
+  const { stickers, teams, inventory } = useCollectionData(active?.id ?? null);
 
   const [qr, setQr] = useState<string | null>(null);
   const [position, setPosition] = useState<OwnPosition | null>(null);
@@ -328,10 +326,7 @@ function MyDuplicatesSection({
   const handleCopy = async () => {
     if (!built.text) return;
     try {
-      if (
-        typeof navigator !== 'undefined' &&
-        navigator.clipboard?.writeText
-      ) {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(built.text);
       } else {
         // Fallback for older browsers / non-secure contexts.
@@ -553,10 +548,7 @@ function FiguritasAppResult({
   }
 
   return (
-    <div
-      className="flex flex-col gap-4"
-      data-testid="figuritas-app-result"
-    >
+    <div className="flex flex-col gap-4" data-testid="figuritas-app-result">
       {result.byLine.map((line, idx) => (
         <FiguritasAppLine
           key={`${line.prefix}-${idx}`}
@@ -574,16 +566,10 @@ function FiguritasAppResult({
               displayPrefix: sticker.displayPrefix,
               emoji: sticker.emoji,
             });
-            toast.success(
-              t('exchange.figuritasApp.reservedFor', { partner })
-            );
+            toast.success(t('exchange.figuritasApp.reservedFor', { partner }));
           }}
           onUnreserve={(sticker) => {
-            removeReservation(
-              collectionId,
-              sticker.stickerId,
-              partner
-            );
+            removeReservation(collectionId, sticker.stickerId, partner);
           }}
         />
       ))}

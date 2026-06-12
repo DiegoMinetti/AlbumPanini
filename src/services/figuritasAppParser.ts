@@ -178,13 +178,15 @@ export function buildDuplicatesList(input: BuildDuplicatesInput): {
     const qty =
       input.inventory instanceof Map
         ? (input.inventory.get(sticker.code) ??
-          input.inventory.get((sticker as { id?: string }).id ?? sticker.code) ??
+          input.inventory.get(
+            (sticker as { id?: string }).id ?? sticker.code
+          ) ??
           0)
-        : (input.inventory as Record<string, number>)[sticker.code] ??
+        : ((input.inventory as Record<string, number>)[sticker.code] ??
           (input.inventory as Record<string, number>)[
             (sticker as { id?: string }).id ?? ''
           ] ??
-          0;
+          0);
     // Duplicates = at least one extra copy beyond the album slot.
     if (qty <= 1) continue;
 
@@ -211,9 +213,7 @@ export function buildDuplicatesList(input: BuildDuplicatesInput): {
       numbersByPrefix.set(prefix, []);
       order.push(prefix);
     }
-    numbersByPrefix
-      .get(prefix)!
-      .push(sticker.code.replace(/^[A-Za-z]+/, ''));
+    numbersByPrefix.get(prefix)!.push(sticker.code.replace(/^[A-Za-z]+/, ''));
   }
 
   // Build the final groups + text, keeping the source order.
@@ -233,7 +233,7 @@ export function buildDuplicatesList(input: BuildDuplicatesInput): {
         ? wfcEmoji
         : prefix === 'INTRO'
           ? ''
-          : teamEmoji.get(prefix) ?? '🏳️';
+          : (teamEmoji.get(prefix) ?? '🏳️');
     groups.push({ prefix, emoji, numbers: sorted });
     lines.push(
       emoji
