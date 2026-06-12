@@ -171,7 +171,32 @@
     "pasteCode": "Pegar código de cambio",
     "decode": "Decodificar",
     "noDuplicates": "Todavía no tenés repetidas para ofrecer.",
-    "summary": "Podés dar {{give}} y recibir {{receive}} figuritas."
+    "summary": "Podés dar {{give}} y recibir {{receive}} figuritas.",
+    "figuritasApp": {
+      "title": "Lista de Figuritas App",
+      "description": "Pegá la lista de faltantes que comparte figuritas.app y vemos qué cambiamos.",
+      "paste": "Pegar acá la lista de figuritas.app",
+      "placeholder": "FWC 🏆: 00, 1, 3\nUSA 🇺🇸: 3, 15, 16, 19\nARG 🇦🇷: 18",
+      "analyze": "Analizar lista",
+      "clear": "Limpiar",
+      "partnerLabel": "Nombre o alias del coleccionista",
+      "partnerPlaceholder": "Ej. María, @panini_arg",
+      "downloadHint": "Descargá la app desde figuritas.app/es/descargar",
+      "noMatch": "No encontramos figuritas para cambiar en esta lista.",
+      "canGiveHeader": "Podés cambiarle ({{count}})",
+      "canReceiveHeader": "Te puede dar ({{count}})",
+      "alreadyOwnHeader": "Ya la tenés ({{count}})",
+      "unresolvedHeader": "No reconocidas en tu álbum ({{count}})",
+      "reserved": "Reservada",
+      "reserve": "Reservar",
+      "unreserve": "Quitar reserva",
+      "reservedFor": "Reservada para {{partner}}",
+      "reservedForSomeone": "Reservada para otra persona",
+      "reservedSummary": "Tenés {{count}} figuritas reservadas para intercambios.",
+      "noReservations": "Todavía no reservaste ninguna figurita para un cambio.",
+      "appBanner": "Pegá acá la lista de Figuritas App",
+      "partnerBanner": "Identificá a quién le vas a cambiar"
+    }
   },
   "collections": {
     "title": "Colecciones",

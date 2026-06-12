@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActiveCollection } from '@/hooks';
 import { useCollectionData } from '@/hooks/useCollectionData';
@@ -11,12 +11,25 @@ import {
   scanQrFromImageData,
   type OwnPosition,
 } from '@/services/qrService';
+import {
+  matchFiguritasAppList,
+  type FiguritasAppLineMatch,
+  type FiguritasAppMatchResult,
+  type FiguritasAppStickerMatch,
+} from '@/services/figuritasAppMatcher';
+import {
+  totalReservedFor,
+  useReservationStore,
+} from '@/stores/reservationStore';
 import type { ExchangeMatch } from '@/types/exchange';
 import { Spinner } from '@/components/feedback/Spinner';
 import { NoActiveCollection } from '@/components/collections/NoActiveCollection';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { toast } from '@/stores/uiStore';
 import { imageToImageData, loadImageFromBlob } from '@/utils/file';
+
+/** Default partner label used when the user pastes a list without naming someone. */
+const DEFAULT_PARTNER = 'figuritas.app';
 
 /**
  * Exchange — usa M3 tokens (text-on-surface-variant, surface-container, etc.)
@@ -25,7 +38,7 @@ import { imageToImageData, loadImageFromBlob } from '@/utils/file';
 export function ExchangePage() {
   const { t } = useTranslation();
   const { active, loading } = useActiveCollection();
-  const { stickers } = useCollectionData(active?.id ?? null);
+  const { stickers, inventory } = useCollectionData(active?.id ?? null);
 
   const [qr, setQr] = useState<string | null>(null);
   const [position, setPosition] = useState<OwnPosition | null>(null);
@@ -33,12 +46,21 @@ export function ExchangePage() {
   const [match, setMatch] = useState<ExchangeMatch | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // ---- Figuritas App paste flow ----
+  const [figuritasText, setFiguritasText] = useState('');
+  const [figuritasPartner, setFiguritasPartner] = useState(DEFAULT_PARTNER);
+  const [figuritasResult, setFiguritasResult] =
+    useState<FiguritasAppMatchResult | null>(null);
+  const [figuritasLoading, setFiguritasLoading] = useState(false);
+  const reservations = useReservationStore((s) => s.reservations);
+
   const collectionId = active?.id ?? null;
 
   useEffect(() => {
     setQr(null);
     setPosition(null);
     setMatch(null);
+    setFiguritasResult(null);
   }, [collectionId]);
 
   if (loading) return <Spinner />;
@@ -90,6 +112,24 @@ export function ExchangePage() {
     } catch {
       toast.error(t('toast.error'));
     }
+  };
+
+  const handleAnalyzeFiguritas = async () => {
+    if (!figuritasText.trim()) return;
+    setFiguritasLoading(true);
+    try {
+      const result = await matchFiguritasAppList(collectionId, figuritasText);
+      setFiguritasResult(result);
+    } catch {
+      toast.error(t('toast.error'));
+    } finally {
+      setFiguritasLoading(false);
+    }
+  };
+
+  const handleClearFiguritas = () => {
+    setFiguritasText('');
+    setFiguritasResult(null);
   };
 
   return (
@@ -194,6 +234,20 @@ export function ExchangePage() {
       {position && position.duplicates.length === 0 ? (
         <EmptyState title={t('exchange.noDuplicates')} />
       ) : null}
+
+      <FiguritasAppSection
+        text={figuritasText}
+        onTextChange={setFiguritasText}
+        partner={figuritasPartner}
+        onPartnerChange={setFiguritasPartner}
+        loading={figuritasLoading}
+        result={figuritasResult}
+        collectionId={collectionId}
+        inventory={inventory}
+        reservations={reservations}
+        onAnalyze={handleAnalyzeFiguritas}
+        onClear={handleClearFiguritas}
+      />
     </div>
   );
 }
@@ -227,6 +281,416 @@ function MatchList({
         {ids.length === 0 ? (
           <li className="text-on-surface-variant">—</li>
         ) : null}
+      </ul>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Figuritas App paste flow                                            */
+/* ------------------------------------------------------------------ */
+
+interface FiguritasAppSectionProps {
+  text: string;
+  onTextChange: (value: string) => void;
+  partner: string;
+  onPartnerChange: (value: string) => void;
+  loading: boolean;
+  result: FiguritasAppMatchResult | null;
+  collectionId: string;
+  inventory: Map<string, number>;
+  reservations: { collectionId: string; stickerId: string; partner: string }[];
+  onAnalyze: () => void;
+  onClear: () => void;
+}
+
+/**
+ * The "Figuritas App" paste section. Renders a partner field, a textarea for
+ * the source list, an Analyze button, and (when a result is available) a
+ * per-team breakdown of stickers the user can give / receive, with a Reserve
+ * button next to each tradable sticker.
+ */
+function FiguritasAppSection({
+  text,
+  onTextChange,
+  partner,
+  onPartnerChange,
+  loading,
+  result,
+  collectionId,
+  inventory,
+  reservations,
+  onAnalyze,
+  onClear,
+}: FiguritasAppSectionProps) {
+  const { t } = useTranslation();
+  const reservationsForCollection = useMemo(
+    () => reservations.filter((r) => r.collectionId === collectionId),
+    [reservations, collectionId]
+  );
+
+  return (
+    <section
+      className="card flex flex-col gap-3"
+      data-testid="figuritas-app-section"
+    >
+      <header className="flex flex-col gap-1">
+        <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
+          {t('exchange.figuritasApp.title')}
+        </h2>
+        <p className="text-body-sm text-on-surface-variant">
+          {t('exchange.figuritasApp.description')}
+        </p>
+        <a
+          href="https://www.figuritas.app/es/descargar"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-label-md text-primary underline underline-offset-2"
+        >
+          {t('exchange.figuritasApp.downloadHint')}
+        </a>
+      </header>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-label-md text-on-surface-variant">
+          {t('exchange.figuritasApp.partnerLabel')}
+        </span>
+        <input
+          type="text"
+          className="input py-2"
+          placeholder={t('exchange.figuritasApp.partnerPlaceholder')}
+          value={partner}
+          onChange={(e) => onPartnerChange(e.target.value)}
+          aria-label={t('exchange.figuritasApp.partnerLabel')}
+        />
+      </label>
+
+      <textarea
+        className="input min-h-[140px] resize-y py-2 font-mono text-body-sm"
+        placeholder={t('exchange.figuritasApp.placeholder')}
+        value={text}
+        onChange={(e) => onTextChange(e.target.value)}
+        aria-label={t('exchange.figuritasApp.paste')}
+        data-testid="figuritas-app-paste"
+      />
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          className="btn-primary flex-1"
+          onClick={onAnalyze}
+          disabled={text.trim().length === 0 || loading}
+          data-testid="figuritas-app-analyze"
+        >
+          {loading ? t('common.loading') : t('exchange.figuritasApp.analyze')}
+        </button>
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={onClear}
+          disabled={text.length === 0 && !result}
+        >
+          {t('exchange.figuritasApp.clear')}
+        </button>
+      </div>
+
+      {result ? (
+        <FiguritasAppResult
+          result={result}
+          collectionId={collectionId}
+          inventory={inventory}
+          reservations={reservationsForCollection}
+          partner={partner.trim() || DEFAULT_PARTNER}
+        />
+      ) : null}
+    </section>
+  );
+}
+
+interface FiguritasAppResultProps {
+  result: FiguritasAppMatchResult;
+  collectionId: string;
+  inventory: Map<string, number>;
+  reservations: { collectionId: string; stickerId: string; partner: string }[];
+  partner: string;
+}
+
+function FiguritasAppResult({
+  result,
+  collectionId,
+  inventory,
+  reservations,
+  partner,
+}: FiguritasAppResultProps) {
+  const { t } = useTranslation();
+  const addReservation = useReservationStore((s) => s.addReservation);
+  const removeReservation = useReservationStore((s) => s.removeReservation);
+
+  if (
+    result.iCanGive.length === 0 &&
+    result.iNeed.length === 0 &&
+    result.unresolved.length === 0
+  ) {
+    return <EmptyState title={t('exchange.figuritasApp.noMatch')} />;
+  }
+
+  return (
+    <div
+      className="flex flex-col gap-4"
+      data-testid="figuritas-app-result"
+    >
+      {result.byLine.map((line, idx) => (
+        <FiguritasAppLine
+          key={`${line.prefix}-${idx}`}
+          line={line}
+          collectionId={collectionId}
+          inventory={inventory}
+          reservations={reservations}
+          partner={partner}
+          onReserve={(sticker) => {
+            addReservation({
+              collectionId,
+              stickerId: sticker.stickerId,
+              partner,
+              code: sticker.code,
+              displayPrefix: sticker.displayPrefix,
+              emoji: sticker.emoji,
+            });
+            toast.success(
+              t('exchange.figuritasApp.reservedFor', { partner })
+            );
+          }}
+          onUnreserve={(sticker) => {
+            removeReservation(
+              collectionId,
+              sticker.stickerId,
+              partner
+            );
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+interface FiguritasAppLineProps {
+  line: FiguritasAppLineMatch;
+  collectionId: string;
+  inventory: Map<string, number>;
+  reservations: { collectionId: string; stickerId: string; partner: string }[];
+  partner: string;
+  onReserve: (sticker: FiguritasAppStickerMatch) => void;
+  onUnreserve: (sticker: FiguritasAppStickerMatch) => void;
+}
+
+function FiguritasAppLine({
+  line,
+  collectionId,
+  inventory,
+  reservations,
+  partner,
+  onReserve,
+  onUnreserve,
+}: FiguritasAppLineProps) {
+  const { t } = useTranslation();
+
+  if (
+    line.iCanGive.length === 0 &&
+    line.iNeed.length === 0 &&
+    line.iOwn.length === 0 &&
+    line.unresolved.length === 0
+  ) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-outline-variant p-3">
+      <h3 className="flex items-center gap-2 text-title-sm font-semibold text-on-surface">
+        <span aria-hidden="true">{line.emoji}</span>
+        <span className="font-mono">{line.prefix}</span>
+      </h3>
+
+      {line.iCanGive.length > 0 ? (
+        <FiguritasAppStickerList
+          tone="secondary"
+          title={t('exchange.figuritasApp.canGiveHeader', {
+            count: line.iCanGive.length,
+          })}
+          items={line.iCanGive}
+          collectionId={collectionId}
+          inventory={inventory}
+          reservations={reservations}
+          partner={partner}
+          onReserve={onReserve}
+          onUnreserve={onUnreserve}
+        />
+      ) : null}
+
+      {line.iNeed.length > 0 ? (
+        <FiguritasAppStickerList
+          tone="primary"
+          title={t('exchange.figuritasApp.canReceiveHeader', {
+            count: line.iNeed.length,
+          })}
+          items={line.iNeed}
+          collectionId={collectionId}
+          inventory={inventory}
+          reservations={reservations}
+          partner={partner}
+          onReserve={onReserve}
+          onUnreserve={onUnreserve}
+          readOnly
+        />
+      ) : null}
+
+      {line.iOwn.length > 0 ? (
+        <FiguritasAppStickerList
+          tone="muted"
+          title={t('exchange.figuritasApp.alreadyOwnHeader', {
+            count: line.iOwn.length,
+          })}
+          items={line.iOwn}
+          collectionId={collectionId}
+          inventory={inventory}
+          reservations={reservations}
+          partner={partner}
+          onReserve={onReserve}
+          onUnreserve={onUnreserve}
+          readOnly
+        />
+      ) : null}
+
+      {line.unresolved.length > 0 ? (
+        <details className="rounded-md bg-surface-container-low p-2 text-body-sm">
+          <summary className="cursor-pointer text-on-surface-variant">
+            {t('exchange.figuritasApp.unresolvedHeader', {
+              count: line.unresolved.length,
+            })}
+          </summary>
+          <ul className="mt-2 flex flex-wrap gap-1">
+            {line.unresolved.map((u) => (
+              <li
+                key={u.number}
+                className="rounded-md bg-surface-container px-1.5 py-0.5 font-mono text-label-md text-on-surface"
+                title={u.candidates.join(', ')}
+              >
+                {u.number}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+    </div>
+  );
+}
+
+interface FiguritasAppStickerListProps {
+  title: string;
+  items: FiguritasAppStickerMatch[];
+  tone: 'primary' | 'secondary' | 'muted';
+  collectionId: string;
+  inventory: Map<string, number>;
+  reservations: { collectionId: string; stickerId: string; partner: string }[];
+  partner: string;
+  onReserve: (sticker: FiguritasAppStickerMatch) => void;
+  onUnreserve: (sticker: FiguritasAppStickerMatch) => void;
+  readOnly?: boolean;
+}
+
+function FiguritasAppStickerList({
+  title,
+  items,
+  tone,
+  collectionId,
+  inventory,
+  reservations,
+  partner,
+  onReserve,
+  onUnreserve,
+  readOnly = false,
+}: FiguritasAppStickerListProps) {
+  const { t } = useTranslation();
+
+  const toneClass =
+    tone === 'secondary'
+      ? 'text-secondary'
+      : tone === 'primary'
+        ? 'text-primary'
+        : 'text-on-surface-variant';
+
+  return (
+    <div>
+      <h4 className={`mb-1 text-label-md font-semibold ${toneClass}`}>
+        {title}
+      </h4>
+      <ul className="flex flex-wrap gap-2">
+        {items.map((s) => {
+          const total = inventory.get(s.stickerId) ?? 0;
+          const reserved = totalReservedFor(
+            reservations as never,
+            collectionId,
+            s.stickerId
+          );
+          // Duplicates the user can still earmark for this/other partners.
+          const availableToGive = Math.max(0, total - 1 - reserved);
+          // Existing reservation for the *current* partner (if any).
+          const myReservation = reservations.find(
+            (r) => r.stickerId === s.stickerId && r.partner === partner
+          );
+          // A reservation belonging to a *different* partner.
+          const otherReservation = reservations.find(
+            (r) => r.stickerId === s.stickerId && r.partner !== partner
+          );
+          const canReserve = !readOnly && availableToGive > 0;
+
+          return (
+            <li
+              key={`${s.stickerId}-${s.number}`}
+              className="flex flex-col items-stretch gap-1 rounded-md
+                border border-outline-variant bg-surface-container-lowest p-2"
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-label-md text-on-surface">
+                  {s.code}
+                </span>
+                {reserved > 0 ? (
+                  <span
+                    className="rounded-full bg-tertiary-container px-2 py-0.5
+                      text-label-sm text-on-tertiary-container"
+                    title={t('exchange.figuritasApp.reserved')}
+                  >
+                    {t('exchange.figuritasApp.reserved')}
+                  </span>
+                ) : null}
+              </div>
+              {readOnly ? null : myReservation ? (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => onUnreserve(s)}
+                  data-testid={`unreserve-${s.stickerId}`}
+                >
+                  {t('exchange.figuritasApp.unreserve')}
+                </button>
+              ) : canReserve ? (
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => onReserve(s)}
+                  data-testid={`reserve-${s.stickerId}`}
+                >
+                  {t('exchange.figuritasApp.reserve')}
+                </button>
+              ) : (
+                <span className="text-label-sm text-on-surface-variant">
+                  {otherReservation
+                    ? t('exchange.figuritasApp.reservedForSomeone')
+                    : '—'}
+                </span>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

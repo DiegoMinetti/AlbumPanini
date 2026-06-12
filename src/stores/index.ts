@@ -6,3 +6,9 @@ export {
 export { useUiStore, toast } from './uiStore';
 export type { Toast, ToastKind } from './uiStore';
 export { useScenarioStore } from './scenarioStore';
+export {
+  useReservationStore,
+  isReserved,
+  totalReservedFor,
+} from './reservationStore';
+export type { Reservation } from './reservationStore';
