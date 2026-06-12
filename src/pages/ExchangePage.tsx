@@ -17,11 +17,13 @@ import {
   type FiguritasAppMatchResult,
   type FiguritasAppStickerMatch,
 } from '@/services/figuritasAppMatcher';
+import { buildDuplicatesList } from '@/services/figuritasAppParser';
 import {
   totalReservedFor,
   useReservationStore,
 } from '@/stores/reservationStore';
 import type { ExchangeMatch } from '@/types/exchange';
+import type { StoredSticker, StoredTeam } from '@/types/collection';
 import { Spinner } from '@/components/feedback/Spinner';
 import { NoActiveCollection } from '@/components/collections/NoActiveCollection';
 import { EmptyState } from '@/components/feedback/EmptyState';
@@ -32,13 +34,16 @@ import { imageToImageData, loadImageFromBlob } from '@/utils/file';
 const DEFAULT_PARTNER = 'figuritas.app';
 
 /**
- * Exchange — usa M3 tokens (text-on-surface-variant, surface-container, etc.)
- * en lugar de slate hard-coded, manteniendo la API y los data-testid.
+ * Exchange — M3 tokens, redesigned with a "Figuritas App" paste section that
+ * tells the user at a glance which of their duplicates can be traded and lets
+ * them emit a `figuritas.app`–style list of their own duplicates to share.
  */
 export function ExchangePage() {
   const { t } = useTranslation();
   const { active, loading } = useActiveCollection();
-  const { stickers, inventory } = useCollectionData(active?.id ?? null);
+  const { stickers, teams, inventory } = useCollectionData(
+    active?.id ?? null
+  );
 
   const [qr, setQr] = useState<string | null>(null);
   const [position, setPosition] = useState<OwnPosition | null>(null);
@@ -235,6 +240,12 @@ export function ExchangePage() {
         <EmptyState title={t('exchange.noDuplicates')} />
       ) : null}
 
+      <MyDuplicatesSection
+        stickers={stickers}
+        teams={teams}
+        inventory={inventory}
+      />
+
       <FiguritasAppSection
         text={figuritasText}
         onTextChange={setFiguritasText}
@@ -287,6 +298,119 @@ function MatchList({
 }
 
 /* ------------------------------------------------------------------ */
+/* My duplicates — generate + copy a figuritas.app–style list         */
+/* ------------------------------------------------------------------ */
+
+interface MyDuplicatesSectionProps {
+  stickers: StoredSticker[];
+  teams: StoredTeam[];
+  inventory: Map<string, number>;
+}
+
+function MyDuplicatesSection({
+  stickers,
+  teams,
+  inventory,
+}: MyDuplicatesSectionProps) {
+  const { t } = useTranslation();
+  const [copied, setCopied] = useState(false);
+
+  const built = useMemo(
+    () =>
+      buildDuplicatesList({
+        stickers: stickers.map((s) => ({ code: s.code, teamId: s.teamId })),
+        teams: teams.map((tm) => ({ id: tm.id, flag: tm.flag })),
+        inventory,
+      }),
+    [stickers, teams, inventory]
+  );
+
+  const handleCopy = async () => {
+    if (!built.text) return;
+    try {
+      if (
+        typeof navigator !== 'undefined' &&
+        navigator.clipboard?.writeText
+      ) {
+        await navigator.clipboard.writeText(built.text);
+      } else {
+        // Fallback for older browsers / non-secure contexts.
+        const ta = document.createElement('textarea');
+        ta.value = built.text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      setCopied(true);
+      toast.success(t('toast.copied'));
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error(t('toast.error'));
+    }
+  };
+
+  const totalDuplicates = built.groups.reduce(
+    (sum, g) => sum + g.numbers.length,
+    0
+  );
+
+  return (
+    <section
+      className="card flex flex-col gap-3"
+      data-testid="my-duplicates-section"
+    >
+      <header className="flex flex-col gap-1">
+        <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
+          {t('exchange.figuritasApp.myDuplicatesTitle')}
+        </h2>
+        <p className="text-body-sm text-on-surface-variant">
+          {t('exchange.figuritasApp.myDuplicatesDescription', {
+            count: totalDuplicates,
+          })}
+        </p>
+      </header>
+
+      {built.text ? (
+        <>
+          <textarea
+            className="input min-h-[140px] resize-y py-2 font-mono text-body-sm"
+            value={built.text}
+            readOnly
+            aria-label={t('exchange.figuritasApp.myDuplicatesTitle')}
+            data-testid="my-duplicates-text"
+            onFocus={(e) => e.currentTarget.select()}
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="btn-primary flex-1"
+              onClick={() => void handleCopy()}
+              data-testid="my-duplicates-copy"
+            >
+              {copied
+                ? t('exchange.figuritasApp.copied')
+                : t('exchange.figuritasApp.copyList')}
+            </button>
+          </div>
+          <p className="text-label-sm text-on-surface-variant">
+            {t('exchange.figuritasApp.shareHint')}
+          </p>
+        </>
+      ) : (
+        <EmptyState
+          title={t('exchange.figuritasApp.noDuplicates')}
+          description={t('exchange.figuritasApp.noDuplicatesHint')}
+        />
+      )}
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Figuritas App paste flow                                            */
 /* ------------------------------------------------------------------ */
 
@@ -304,12 +428,6 @@ interface FiguritasAppSectionProps {
   onClear: () => void;
 }
 
-/**
- * The "Figuritas App" paste section. Renders a partner field, a textarea for
- * the source list, an Analyze button, and (when a result is available) a
- * per-team breakdown of stickers the user can give / receive, with a Reserve
- * button next to each tradable sticker.
- */
 function FiguritasAppSection({
   text,
   onTextChange,
@@ -611,6 +729,17 @@ function FiguritasAppStickerList({
 }: FiguritasAppStickerListProps) {
   const { t } = useTranslation();
 
+  // The "Ya la tenés" list (muted) is rendered with a disabled greyed-out
+  // look — no border accent, reduced opacity, no reserve controls. The other
+  // tones keep their full contrast because they're actionable.
+  const containerClass =
+    tone === 'muted'
+      ? 'flex flex-col items-stretch gap-1 rounded-md border border-dashed'
+      : 'flex flex-col items-stretch gap-1 rounded-md border border-outline-variant bg-surface-container-lowest p-2';
+  const codeClass =
+    tone === 'muted'
+      ? 'font-mono text-label-md text-on-surface-variant line-through'
+      : 'font-mono text-label-md text-on-surface';
   const toneClass =
     tone === 'secondary'
       ? 'text-secondary'
@@ -623,7 +752,13 @@ function FiguritasAppStickerList({
       <h4 className={`mb-1 text-label-md font-semibold ${toneClass}`}>
         {title}
       </h4>
-      <ul className="flex flex-wrap gap-2">
+      <ul
+        className={
+          tone === 'muted'
+            ? 'flex flex-wrap gap-1.5 opacity-60'
+            : 'flex flex-wrap gap-2'
+        }
+      >
         {items.map((s) => {
           const total = inventory.get(s.stickerId) ?? 0;
           const reserved = totalReservedFor(
@@ -646,14 +781,22 @@ function FiguritasAppStickerList({
           return (
             <li
               key={`${s.stickerId}-${s.number}`}
-              className="flex flex-col items-stretch gap-1 rounded-md
-                border border-outline-variant bg-surface-container-lowest p-2"
+              data-testid={`figuritas-row-${s.stickerId}`}
+              data-tone={tone}
+              aria-disabled={tone === 'muted' || undefined}
+              className={containerClass}
             >
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-label-md text-on-surface">
-                  {s.code}
-                </span>
-                {reserved > 0 ? (
+              <div className="flex items-center gap-2 p-2">
+                <span className={codeClass}>{s.code}</span>
+                {tone === 'muted' ? (
+                  <span
+                    className="rounded-full bg-surface-container px-2 py-0.5
+                      text-label-sm text-on-surface-variant"
+                  >
+                    {t('exchange.figuritasApp.ownedBadge')}
+                  </span>
+                ) : null}
+                {tone !== 'muted' && reserved > 0 ? (
                   <span
                     className="rounded-full bg-tertiary-container px-2 py-0.5
                       text-label-sm text-on-tertiary-container"
@@ -663,10 +806,10 @@ function FiguritasAppStickerList({
                   </span>
                 ) : null}
               </div>
-              {readOnly ? null : myReservation ? (
+              {readOnly || tone === 'muted' ? null : myReservation ? (
                 <button
                   type="button"
-                  className="btn-secondary"
+                  className="btn-secondary m-2 mt-0"
                   onClick={() => onUnreserve(s)}
                   data-testid={`unreserve-${s.stickerId}`}
                 >
@@ -675,14 +818,14 @@ function FiguritasAppStickerList({
               ) : canReserve ? (
                 <button
                   type="button"
-                  className="btn-primary"
+                  className="btn-primary m-2 mt-0"
                   onClick={() => onReserve(s)}
                   data-testid={`reserve-${s.stickerId}`}
                 >
                   {t('exchange.figuritasApp.reserve')}
                 </button>
               ) : (
-                <span className="text-label-sm text-on-surface-variant">
+                <span className="m-2 mt-0 text-label-sm text-on-surface-variant">
                   {otherReservation
                     ? t('exchange.figuritasApp.reservedForSomeone')
                     : '—'}

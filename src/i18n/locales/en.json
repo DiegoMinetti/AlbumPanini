@@ -195,7 +195,15 @@
       "reservedSummary": "You have {{count}} stickers reserved for trades.",
       "noReservations": "You haven’t reserved any stickers for a trade yet.",
       "appBanner": "Paste the Figuritas App list here",
-      "partnerBanner": "Identify who you’re trading with"
+      "partnerBanner": "Identify who you’re trading with",
+      "myDuplicatesTitle": "My duplicates list",
+      "myDuplicatesDescription": "You have {{count}} duplicates ready to trade. Copy and share them.",
+      "copyList": "Copy list",
+      "copied": "List copied!",
+      "shareHint": "Share it via WhatsApp, Telegram, or anywhere you like. The other person can paste it straight into their Figuritas App.",
+      "noDuplicates": "No duplicates yet",
+      "noDuplicatesHint": "Once you have stickers with more than one copy, they'll show up here ready to share.",
+      "ownedBadge": "Owned"
     }
   },
   "collections": {

@@ -195,7 +195,15 @@
       "reservedSummary": "Tenés {{count}} figuritas reservadas para intercambios.",
       "noReservations": "Todavía no reservaste ninguna figurita para un cambio.",
       "appBanner": "Pegá acá la lista de Figuritas App",
-      "partnerBanner": "Identificá a quién le vas a cambiar"
+      "partnerBanner": "Identificá a quién le vas a cambiar",
+      "myDuplicatesTitle": "Mi lista de repetidas",
+      "myDuplicatesDescription": "Tenés {{count}} figuritas repetidas listas para cambiar. Copialas y compartilas.",
+      "copyList": "Copiar lista",
+      "copied": "¡Lista copiada!",
+      "shareHint": "Compartila por WhatsApp, Telegram o donde quieras. El otro puede pegarla directo en su app Figuritas.",
+      "noDuplicates": "Todavía no tenés repetidas",
+      "noDuplicatesHint": "Cuando tengas figuritas con más de una copia, aparecerán acá listas para compartir.",
+      "ownedBadge": "Ya la tenés"
     }
   },
   "collections": {
