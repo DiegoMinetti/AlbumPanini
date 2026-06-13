@@ -3,895 +3,677 @@ import { useTranslation } from 'react-i18next';
 import { useActiveCollection } from '@/hooks';
 import { useCollectionData } from '@/hooks/useCollectionData';
 import {
-  buildOwnPosition,
-  computeMatch,
-  decodeExchange,
-  generateExchangeQr,
-  positionToPayload,
-  scanQrFromImageData,
-  type OwnPosition,
-} from '@/services/qrService';
-import {
-  matchFiguritasAppList,
-  type FiguritasAppMatchResult,
-  type FiguritasAppStickerMatch,
-} from '@/services/figuritasAppMatcher';
-import { buildDuplicatesList } from '@/services/figuritasAppParser';
+  buildExchangeText,
+  buildOwnList,
+  parseExchangeText,
+  resolveExchangeText,
+  type ExchangeSection,
+  type ResolvedExchange,
+} from '@/services/exchangeService';
 import { adjustQuantity } from '@/services/inventoryService';
-import type { ExchangeMatch } from '@/types/exchange';
-import type { StoredSticker, StoredTeam } from '@/types/collection';
 import { Spinner } from '@/components/feedback/Spinner';
 import { NoActiveCollection } from '@/components/collections/NoActiveCollection';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { toast } from '@/stores/uiStore';
-import { imageToImageData, loadImageFromBlob } from '@/utils/file';
 
 /** Default partner label used when the user pastes a list without naming someone. */
-const DEFAULT_PARTNER = 'figuritas.app';
+const DEFAULT_PARTNER = 'amigo';
 
-/**
- * Exchange — redesigned as a 3-step flow that keeps the surface area tiny:
- *   1. Generate a QR / scan a friend's QR (mutual best trade).
- *   2. Copy your duplicates list with a single button (no textarea preview).
- *   3. Paste a friend's list straight from the clipboard and tap the chips
- *      you want to swap. Confirm in one tap to apply deltas to your
- *      inventory (decrement each "give", increment each "receive").
- */
 export function ExchangePage() {
   const { t } = useTranslation();
   const { active, loading } = useActiveCollection();
   const { stickers, teams, inventory } = useCollectionData(active?.id ?? null);
 
-  const [qr, setQr] = useState<string | null>(null);
-  const [position, setPosition] = useState<OwnPosition | null>(null);
-  const [pastedQr, setPastedQr] = useState('');
-  const [match, setMatch] = useState<ExchangeMatch | null>(null);
+  // ---- Repetidas: sub-selection of which duplicates we'll offer. ----
+  // The user can uncheck stickers from the auto-populated list to narrow
+  // down what they want to copy/share.
+  const [offeredDuplicates, setOfferedDuplicates] = useState<Set<string>>(new Set());
+  const [offeredMissing, setOfferedMissing] = useState<Set<string>>(new Set());
 
-  // ---- Figuritas App paste flow ----
+  // ---- Paste flow state. ----
   const [partner, setPartner] = useState(DEFAULT_PARTNER);
-  const [figuritasResult, setFiguritasResult] =
-    useState<FiguritasAppMatchResult | null>(null);
-  const [figuritasLoading, setFiguritasLoading] = useState(false);
+  const [resolved, setResolved] = useState<ResolvedExchange | null>(null);
+  const [pastedText, setPastedText] = useState('');
+  const [analyzing, setAnalyzing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const collectionId = active?.id ?? null;
 
-  useEffect(() => {
-    setQr(null);
-    setPosition(null);
-    setMatch(null);
-    setFiguritasResult(null);
-  }, [collectionId]);
-
-  if (loading) return <Spinner />;
-  if (!active || !collectionId) return <NoActiveCollection />;
-
-  const stickerLabel = (id: string) => {
-    const s = stickers.find((x) => x.id === id);
-    return s ? `${s.code}` : id;
-  };
-
-  const handleGenerate = async () => {
-    try {
-      const pos = await buildOwnPosition(collectionId);
-      setPosition(pos);
-      const dataUrl = await generateExchangeQr(positionToPayload(pos));
-      setQr(dataUrl);
-    } catch {
-      toast.error(t('toast.error'));
-    }
-  };
-
-  const runQrMatch = async (code: string) => {
-    try {
-      const payload = decodeExchange(code);
-      const mine = position ?? (await buildOwnPosition(collectionId));
-      if (!position) setPosition(mine);
-      const result = computeMatch(mine, payload);
-      if (!result.sameCollection) {
-        toast.error(t('exchange.sameCollectionRequired'));
-        return;
-      }
-      if (result.versionMismatch) toast.warning(t('exchange.versionMismatch'));
-      setMatch(result);
-    } catch {
-      toast.error(t('toast.error'));
-    }
-  };
-
-  const handleUploadQr = async (file: File) => {
-    try {
-      const img = await loadImageFromBlob(file);
-      const data = await imageToImageData(img);
-      const text = data ? scanQrFromImageData(data) : null;
-      if (!text) {
-        toast.error(t('toast.error'));
-        return;
-      }
-      await runQrMatch(text);
-    } catch {
-      toast.error(t('toast.error'));
-    }
-  };
-
-  const analyzeClipboard = async () => {
-    setFiguritasLoading(true);
-    try {
-      if (typeof navigator === 'undefined' || !navigator.clipboard?.readText) {
-        toast.error(t('exchange.figuritasApp.pasteClipboardUnsupported'));
-        return;
-      }
-      const text = await navigator.clipboard.readText();
-      if (!text.trim()) {
-        toast.error(t('exchange.figuritasApp.pasteClipboardEmpty'));
-        return;
-      }
-      const result = await matchFiguritasAppList(collectionId, text);
-      setFiguritasResult(result);
-      toast.success(t('exchange.figuritasApp.pasteClipboardOk'));
-    } catch {
-      toast.error(t('exchange.figuritasApp.pasteClipboardError'));
-    } finally {
-      setFiguritasLoading(false);
-    }
-  };
-
-  const clearFiguritas = () => {
-    setFiguritasResult(null);
-  };
-
-  return (
-    <div className="flex flex-col gap-5">
-      {/* 1. My QR / scan theirs */}
-      <section className="card flex flex-col items-center gap-3">
-        <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
-          {t('exchange.myCode')}
-        </h2>
-        {qr ? (
-          <img
-            src={qr}
-            alt={t('exchange.myCode')}
-            className="h-64 w-64 rounded-xl bg-surface p-2"
-            data-testid="exchange-qr"
-          />
-        ) : (
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => void handleGenerate()}
-          >
-            {t('exchange.generate')}
-          </button>
-        )}
-        {position ? (
-          <p className="text-label-md text-on-surface-variant">
-            {t('exchange.summary', {
-              give: position.duplicates.length,
-              receive: position.missing.length,
-            })}
-          </p>
-        ) : null}
-      </section>
-
-      <section className="card flex flex-col gap-3">
-        <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
-          {t('exchange.scanTheirs')}
-        </h2>
-        <p className="text-body-sm text-on-surface-variant">
-          {t('exchange.figuritasApp.scanQrHint')}
-        </p>
-        <input
-          type="text"
-          className="input py-2 font-mono text-body-sm"
-          placeholder={t('exchange.pasteCode')}
-          value={pastedQr}
-          onChange={(e) => setPastedQr(e.target.value)}
-          aria-label={t('exchange.pasteCode')}
-          data-testid="exchange-paste"
-        />
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className="btn-primary flex-1"
-            onClick={() => void runQrMatch(pastedQr)}
-            disabled={pastedQr.trim().length === 0}
-          >
-            {t('exchange.decode')}
-          </button>
-          <label className="btn-secondary cursor-pointer">
-            {t('exchange.scanUpload')}
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void handleUploadQr(file);
-                e.target.value = '';
-              }}
-            />
-          </label>
-        </div>
-      </section>
-
-      {match ? (
-        <section
-          className="card flex flex-col gap-4"
-          data-testid="exchange-result"
-        >
-          <p className="text-center text-title-sm font-semibold text-primary">
-            {t('exchange.mutual', { count: match.mutualCount })}
-          </p>
-          <div className="grid grid-cols-2 gap-4 text-body-md">
-            <MatchList
-              title={t('exchange.iCanGive')}
-              ids={match.iCanGive}
-              label={stickerLabel}
-              tone="secondary"
-            />
-            <MatchList
-              title={t('exchange.iCanReceive')}
-              ids={match.iCanReceive}
-              label={stickerLabel}
-              tone="primary"
-            />
-          </div>
-        </section>
-      ) : null}
-
-      {position && position.duplicates.length === 0 ? (
-        <EmptyState title={t('exchange.noDuplicates')} />
-      ) : null}
-
-      {/* 2. Copy my duplicates — single button, no preview */}
-      <MyDuplicatesSection
-        stickers={stickers}
-        teams={teams}
-        inventory={inventory}
-      />
-
-      {/* 3. Paste partner list from clipboard + simple compare */}
-      <CompareSection
-        result={figuritasResult}
-        loading={figuritasLoading}
-        partner={partner}
-        onPartnerChange={setPartner}
-        collectionId={collectionId}
-        inventory={inventory}
-        onPasteFromClipboard={() => void analyzeClipboard()}
-        onClear={clearFiguritas}
-      />
-    </div>
-  );
-}
-
-function MatchList({
-  title,
-  ids,
-  label,
-  tone,
-}: {
-  title: string;
-  ids: string[];
-  label: (id: string) => string;
-  tone: 'primary' | 'secondary';
-}) {
-  const toneClass = tone === 'secondary' ? 'text-secondary' : 'text-primary';
-  return (
-    <div>
-      <h3 className={`mb-2 font-semibold ${toneClass}`}>
-        {title} ({ids.length})
-      </h3>
-      <ul className="flex flex-wrap gap-1">
-        {ids.map((id) => (
-          <li
-            key={id}
-            className="rounded-md bg-surface-container px-1.5 py-0.5 font-mono text-label-md text-on-surface"
-          >
-            {label(id)}
-          </li>
-        ))}
-        {ids.length === 0 ? (
-          <li className="text-on-surface-variant">—</li>
-        ) : null}
-      </ul>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* My duplicates — single copy button + simple visual breakdown        */
-/* ------------------------------------------------------------------ */
-
-interface MyDuplicatesSectionProps {
-  stickers: StoredSticker[];
-  teams: StoredTeam[];
-  inventory: Map<string, number>;
-}
-
-function MyDuplicatesSection({
-  stickers,
-  teams,
-  inventory,
-}: MyDuplicatesSectionProps) {
-  const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
-
-  const built = useMemo(
+  // ---- Derive the "Repetidas" / "Faltan" groups from the active collection. ----
+  const ownList = useMemo(
     () =>
-      buildDuplicatesList({
-        stickers: stickers.map((s) => ({ code: s.code, teamId: s.teamId })),
+      buildOwnList({
+        stickers: stickers.map((s) => ({
+          id: s.id,
+          code: s.code,
+          teamId: s.teamId,
+        })),
         teams: teams.map((tm) => ({ id: tm.id, flag: tm.flag })),
         inventory,
       }),
     [stickers, teams, inventory]
   );
 
-  const totalDuplicates = built.groups.reduce(
+  // Pre-select all duplicates when the list first loads (or changes due to
+  // a fresh collection). Missing is empty by default — the user has to
+  // explicitly mark which ones they want to ask for.
+  const duplicatesKey = ownList.duplicates
+    .map((g) => g.prefix + g.numbers.join(','))
+    .join('|');
+  const missingKey = ownList.missing
+    .map((g) => g.prefix + g.numbers.join(','))
+    .join('|');
+  useEffect(() => {
+    setOfferedDuplicates(
+      new Set(
+        ownList.duplicates.flatMap((g) =>
+          g.numbers.map((n) => `${g.prefix}${n}`)
+        )
+      )
+    );
+    setOfferedMissing(new Set());
+    setResolved(null);
+    setPastedText('');
+    setErrorMsg(null);
+    // We intentionally re-seed the selection only when the *shape* of
+    // duplicates/missing changes (captured in `duplicatesKey` / `missingKey`)
+    // — not on every inventory write.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [duplicatesKey, missingKey]);
+
+  if (loading) return <Spinner />;
+  if (!active || !collectionId) return <NoActiveCollection />;
+
+  const toggleOffered = (
+    code: string,
+    set: Set<string>,
+    setter: (next: Set<string>) => void
+  ) => {
+    const next = new Set(set);
+    if (next.has(code)) next.delete(code);
+    else next.add(code);
+    setter(next);
+  };
+
+  const handleCopyOwn = (section: ExchangeSection) => {
+    const labels = {
+      header: t('exchange.header'),
+      duplicatesTitle: t('exchange.duplicatesTitle'),
+      missingTitle: t('exchange.missingTitle'),
+      openInApp: t('exchange.openInApp'),
+    };
+    const duplicates = section === 'duplicates' ? pickSelected(ownList.duplicates, offeredDuplicates) : [];
+    const missing = section === 'missing' ? pickSelected(ownList.missing, offeredMissing) : [];
+    const text = buildExchangeText({
+      labels,
+      collectionId,
+      duplicates,
+      missing,
+    });
+    void writeClipboard(text).then((ok) => {
+      if (!ok) toast.error(t('toast.error'));
+      else toast.success(t('exchange.copied'));
+    });
+  };
+
+  const handleCopyBoth = () => {
+    const labels = {
+      header: t('exchange.header'),
+      duplicatesTitle: t('exchange.duplicatesTitle'),
+      missingTitle: t('exchange.missingTitle'),
+      openInApp: t('exchange.openInApp'),
+    };
+    const duplicates = pickSelected(ownList.duplicates, offeredDuplicates);
+    const missing = pickSelected(ownList.missing, offeredMissing);
+    const text = buildExchangeText({
+      labels,
+      collectionId,
+      duplicates,
+      missing,
+    });
+    void writeClipboard(text).then((ok) => {
+      if (!ok) toast.error(t('toast.error'));
+      else toast.success(t('exchange.copied'));
+    });
+  };
+
+  const handleShareBoth = async () => {
+    const labels = {
+      header: t('exchange.header'),
+      duplicatesTitle: t('exchange.duplicatesTitle'),
+      missingTitle: t('exchange.missingTitle'),
+      openInApp: t('exchange.openInApp'),
+    };
+    const duplicates = pickSelected(ownList.duplicates, offeredDuplicates);
+    const missing = pickSelected(ownList.missing, offeredMissing);
+    const text = buildExchangeText({
+      labels,
+      collectionId,
+      duplicates,
+      missing,
+    });
+    const ok = await shareOrCopy(text);
+    if (!ok) toast.error(t('toast.error'));
+    else toast.success(t('exchange.copied'));
+  };
+
+  const handlePasteFromClipboard = async () => {
+    if (typeof navigator === 'undefined' || !navigator.clipboard?.readText) {
+      setErrorMsg(t('exchange.pasteUnsupported'));
+      return;
+    }
+    setAnalyzing(true);
+    setErrorMsg(null);
+    try {
+      const text = await navigator.clipboard.readText();
+      await analyzeText(text);
+    } catch {
+      setErrorMsg(t('exchange.pasteError'));
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const handleAnalyzePasted = async () => {
+    if (!pastedText.trim()) {
+      setErrorMsg(t('exchange.pasteEmpty'));
+      return;
+    }
+    setAnalyzing(true);
+    setErrorMsg(null);
+    try {
+      await analyzeText(pastedText);
+    } catch {
+      setErrorMsg(t('exchange.pasteError'));
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const analyzeText = async (text: string) => {
+    const parsed = parseExchangeText(text);
+    if (parsed.source === 'own' && parsed.collectionId && parsed.collectionId !== collectionId) {
+      setErrorMsg(t('exchange.sameCollectionRequired'));
+      setResolved(null);
+      return;
+    }
+    if (parsed.lines.length === 0 && parsed.duplicates.length === 0 && parsed.missing.length === 0) {
+      setErrorMsg(t('exchange.pasteEmpty'));
+      setResolved(null);
+      return;
+    }
+    const out = await resolveExchangeText(collectionId, text);
+    setResolved(out);
+    setPastedText(text);
+    toast.success(t('exchange.pasteAnalyzed'));
+  };
+
+  const handleClearPaste = () => {
+    setResolved(null);
+    setPastedText('');
+    setErrorMsg(null);
+  };
+
+  const handleApplyTrade = async () => {
+    if (!resolved) return;
+    // Apply: for every "they give you" → +1; every "you give them" → -1
+    // (only if you have a duplicate to give). The user picks which
+    // duplicates to give via `offeredDuplicates` (already filtered).
+    const received = resolved.missing; // things they have, you need
+    const given = ownList.duplicates
+      .flatMap((g) =>
+        g.numbers
+          .filter((n) => offeredDuplicates.has(`${g.prefix}${n}`))
+          .map((n) => ({ stickerId: `${g.prefix}${n}`, code: `${g.prefix}${n}` }))
+      )
+      // only the ones the friend has (intersection)
+      .filter((d) =>
+        resolved.duplicates.some((r) => r.code === d.code)
+      );
+
+    if (given.length === 0 && received.length === 0) {
+      toast.error(t('exchange.tradeEmpty'));
+      return;
+    }
+
+    try {
+      for (const g of given) {
+        await adjustQuantity(collectionId, g.stickerId, -1);
+      }
+      for (const r of received) {
+        await adjustQuantity(collectionId, r.stickerId, 1);
+      }
+      toast.success(
+        t('exchange.tradeApplied', {
+          give: given.length,
+          receive: received.length,
+          partner: partner.trim() || t('exchange.partnerDefault'),
+        })
+      );
+      setResolved(null);
+      setPastedText('');
+    } catch {
+      toast.error(t('toast.error'));
+    }
+  };
+
+  const totalDuplicates = ownList.duplicates.reduce(
     (sum, g) => sum + g.numbers.length,
     0
   );
-
-  const handleCopy = async () => {
-    if (!built.text) {
-      toast.error(t('exchange.figuritasApp.noDuplicates'));
-      return;
-    }
-    try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(built.text);
-      } else {
-        const ta = document.createElement('textarea');
-        ta.value = built.text;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.focus();
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-      }
-      setCopied(true);
-      toast.success(t('toast.copied'));
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error(t('toast.error'));
-    }
-  };
+  const totalMissing = ownList.missing.reduce((sum, g) => sum + g.numbers.length, 0);
+  const totalOfferedDup = offeredDuplicates.size;
+  const totalOfferedMiss = offeredMissing.size;
 
   return (
-    <section
-      className="card flex flex-col gap-3"
-      data-testid="my-duplicates-section"
-    >
-      <header className="flex flex-col gap-1">
-        <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
-          {t('exchange.figuritasApp.myDuplicatesTitle')}
-        </h2>
-        <p className="text-body-sm text-on-surface-variant">
-          {t('exchange.figuritasApp.myDuplicatesDescription', {
-            count: totalDuplicates,
-          })}
-        </p>
-      </header>
+    <div className="flex flex-col gap-5">
+      {/* ============== 1. REPETIDAS ============== */}
+      <OwnSection
+        title={t('exchange.duplicatesTitle')}
+        description={t('exchange.duplicatesDescription', { count: totalDuplicates })}
+        groups={ownList.duplicates}
+        selected={offeredDuplicates}
+        onToggle={(code) =>
+          toggleOffered(code, offeredDuplicates, setOfferedDuplicates)
+        }
+        copyLabel={t('exchange.copyDuplicates')}
+        copyLabelSelected={t('exchange.copyDuplicatesSelected', { count: totalOfferedDup })}
+        onCopy={() => handleCopyOwn('duplicates')}
+        onSelectAll={() =>
+          setOfferedDuplicates(
+            new Set(
+              ownList.duplicates.flatMap((g) => g.numbers.map((n) => `${g.prefix}${n}`))
+            )
+          )
+        }
+        onSelectNone={() => setOfferedDuplicates(new Set())}
+        emptyHint={t('exchange.noDuplicatesHint')}
+        testId="duplicates-section"
+        shareDisabled={totalOfferedDup === 0}
+      />
 
-      <button
-        type="button"
-        className="btn-primary"
-        onClick={() => void handleCopy()}
-        disabled={totalDuplicates === 0}
-        data-testid="my-duplicates-copy"
-      >
-        {copied
-          ? t('exchange.figuritasApp.copied')
-          : t('exchange.figuritasApp.copyList')}
-      </button>
+      {/* ============== 2. FALTAN ============== */}
+      <OwnSection
+        title={t('exchange.missingTitle')}
+        description={t('exchange.missingDescription', { count: totalMissing })}
+        groups={ownList.missing}
+        selected={offeredMissing}
+        onToggle={(code) =>
+          toggleOffered(code, offeredMissing, setOfferedMissing)
+        }
+        copyLabel={t('exchange.copyMissing')}
+        copyLabelSelected={t('exchange.copyMissingSelected', { count: totalOfferedMiss })}
+        onCopy={() => handleCopyOwn('missing')}
+        onSelectAll={() =>
+          setOfferedMissing(
+            new Set(
+              ownList.missing.flatMap((g) => g.numbers.map((n) => `${g.prefix}${n}`))
+            )
+          )
+        }
+        onSelectNone={() => setOfferedMissing(new Set())}
+        emptyHint={t('exchange.noMissingHint')}
+        testId="missing-section"
+        shareDisabled={totalOfferedMiss === 0}
+      />
 
-      {totalDuplicates > 0 ? (
-        <details
-          className="rounded-md bg-surface-container-low p-2 text-body-sm"
-          data-testid="my-duplicates-preview"
+      {/* ============== 3. SHARE BOTH ============== */}
+      {(totalDuplicates > 0 || totalMissing > 0) && (
+        <section
+          className="card flex flex-col gap-3"
+          data-testid="share-both-section"
         >
-          <summary className="cursor-pointer text-on-surface-variant">
-            {t('exchange.figuritasApp.previewMyDuplicates')}
-          </summary>
-          <ul className="mt-2 flex flex-wrap gap-1.5">
-            {built.groups.map((g) => (
-              <li
-                key={g.prefix}
-                className="flex items-center gap-1 rounded-md
-                  bg-surface-container px-1.5 py-0.5 font-mono
-                  text-label-md text-on-surface"
-              >
-                <span aria-hidden="true">{g.emoji}</span>
-                <span>{g.prefix}</span>
-                <span className="text-on-surface-variant">·</span>
-                <span>{g.numbers.length}</span>
-              </li>
-            ))}
-          </ul>
-        </details>
-      ) : null}
-
-      <p className="text-label-sm text-on-surface-variant">
-        {t('exchange.figuritasApp.shareHint')}
-      </p>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Compare with partner — clipboard paste + tap-to-trade chips         */
-/* ------------------------------------------------------------------ */
-
-interface CompareSectionProps {
-  result: FiguritasAppMatchResult | null;
-  loading: boolean;
-  partner: string;
-  onPartnerChange: (value: string) => void;
-  collectionId: string;
-  inventory: Map<string, number>;
-  onPasteFromClipboard: () => void;
-  onClear: () => void;
-}
-
-function CompareSection({
-  result,
-  loading,
-  partner,
-  onPartnerChange,
-  collectionId,
-  inventory,
-  onPasteFromClipboard,
-  onClear,
-}: CompareSectionProps) {
-  const { t } = useTranslation();
-  const [giveIds, setGiveIds] = useState<Set<string>>(new Set());
-  const [receiveIds, setReceiveIds] = useState<Set<string>>(new Set());
-  const [submitting, setSubmitting] = useState(false);
-
-  // Reset the in-progress trade whenever a new analysis is loaded.
-  useEffect(() => {
-    setGiveIds(new Set());
-    setReceiveIds(new Set());
-  }, [result]);
-
-  const toggleGive = (id: string) =>
-    setGiveIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-
-  const toggleReceive = (id: string) =>
-    setReceiveIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-
-  const clearSelection = () => {
-    setGiveIds(new Set());
-    setReceiveIds(new Set());
-  };
-
-  const totalGive = giveIds.size;
-  const totalReceive = receiveIds.size;
-  const balanced = totalGive > 0 && totalGive === totalReceive;
-  const canConfirm = balanced && !submitting;
-
-  const handleConfirm = async () => {
-    if (!canConfirm) return;
-    setSubmitting(true);
-    try {
-      for (const id of giveIds) {
-        await adjustQuantity(collectionId, id, -1);
-      }
-      for (const id of receiveIds) {
-        await adjustQuantity(collectionId, id, 1);
-      }
-      toast.success(
-        t('exchange.figuritasApp.tradeApplied', {
-          give: totalGive,
-          receive: totalReceive,
-          partner: partner.trim() || DEFAULT_PARTNER,
-        })
-      );
-      clearSelection();
-    } catch {
-      toast.error(t('toast.error'));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <section className="card flex flex-col gap-3" data-testid="compare-section">
-      <header className="flex flex-col gap-1">
-        <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
-          {t('exchange.figuritasApp.compareTitle')}
-        </h2>
-        <p className="text-body-sm text-on-surface-variant">
-          {t('exchange.figuritasApp.compareDescription')}
-        </p>
-        <a
-          href="https://www.figuritas.app/es/descargar"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-label-md text-primary underline underline-offset-2"
-        >
-          {t('exchange.figuritasApp.downloadHint')}
-        </a>
-      </header>
-
-      <label className="flex flex-col gap-1">
-        <span className="text-label-md text-on-surface-variant">
-          {t('exchange.figuritasApp.partnerLabel')}
-        </span>
-        <input
-          type="text"
-          className="input py-2"
-          placeholder={t('exchange.figuritasApp.partnerPlaceholder')}
-          value={partner}
-          onChange={(e) => onPartnerChange(e.target.value)}
-          aria-label={t('exchange.figuritasApp.partnerLabel')}
-        />
-      </label>
-
-      <button
-        type="button"
-        className="btn-primary"
-        onClick={onPasteFromClipboard}
-        disabled={loading}
-        data-testid="compare-paste"
-      >
-        {loading
-          ? t('common.loading')
-          : t('exchange.figuritasApp.pasteFromClipboard')}
-      </button>
-      <p className="text-label-sm text-on-surface-variant">
-        {t('exchange.figuritasApp.pasteFromClipboardHint')}
-      </p>
-
-      {result ? (
-        <button
-          type="button"
-          className="btn-secondary"
-          onClick={onClear}
-          data-testid="compare-clear"
-        >
-          {t('exchange.figuritasApp.clear')}
-        </button>
-      ) : null}
-
-      {result ? (
-        <CompareResult
-          result={result}
-          giveIds={giveIds}
-          receiveIds={receiveIds}
-          onToggleGive={toggleGive}
-          onToggleReceive={toggleReceive}
-          totalGive={totalGive}
-          totalReceive={totalReceive}
-          balanced={balanced}
-          canConfirm={canConfirm}
-          submitting={submitting}
-          onConfirm={() => void handleConfirm()}
-          onClearSelection={clearSelection}
-        />
-      ) : (
-        <EmptyState
-          title={t('exchange.figuritasApp.compareEmpty')}
-          description={t('exchange.figuritasApp.compareEmptyHint')}
-        />
-      )}
-
-      {result && balanced ? (
-        <TradeInventoryPreview
-          result={result}
-          giveIds={giveIds}
-          receiveIds={receiveIds}
-          inventory={inventory}
-        />
-      ) : null}
-    </section>
-  );
-}
-
-interface CompareResultProps {
-  result: FiguritasAppMatchResult;
-  giveIds: Set<string>;
-  receiveIds: Set<string>;
-  onToggleGive: (id: string) => void;
-  onToggleReceive: (id: string) => void;
-  totalGive: number;
-  totalReceive: number;
-  balanced: boolean;
-  canConfirm: boolean;
-  submitting: boolean;
-  onConfirm: () => void;
-  onClearSelection: () => void;
-}
-
-function CompareResult({
-  result,
-  giveIds,
-  receiveIds,
-  onToggleGive,
-  onToggleReceive,
-  totalGive,
-  totalReceive,
-  balanced,
-  canConfirm,
-  submitting,
-  onConfirm,
-  onClearSelection,
-}: CompareResultProps) {
-  const { t } = useTranslation();
-  const noMatch = result.iCanGive.length === 0 && result.iNeed.length === 0;
-
-  if (noMatch) {
-    return <EmptyState title={t('exchange.figuritasApp.noMatch')} />;
-  }
-
-  return (
-    <div className="flex flex-col gap-3" data-testid="compare-result">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <CompareColumn
-          tone="give"
-          title={t('exchange.figuritasApp.compareGiveHeader', {
-            count: result.iCanGive.length,
-          })}
-          emptyHint={t('exchange.figuritasApp.tradeGiveEmpty')}
-          items={result.iCanGive}
-          selected={giveIds}
-          onToggle={onToggleGive}
-        />
-        <CompareColumn
-          tone="receive"
-          title={t('exchange.figuritasApp.compareReceiveHeader', {
-            count: result.iNeed.length,
-          })}
-          emptyHint={t('exchange.figuritasApp.tradeReceiveEmpty')}
-          items={result.iNeed}
-          selected={receiveIds}
-          onToggle={onToggleReceive}
-        />
-      </div>
-
-      <div
-        className="flex flex-col gap-1 rounded-md bg-surface-container-lowest
-          p-2 text-body-sm"
-        data-testid="compare-summary"
-      >
-        <p className="flex items-center justify-between gap-2">
-          <span className="text-secondary">
-            {t('exchange.figuritasApp.tradeSummaryGive', { count: totalGive })}
-          </span>
-          <span className="text-on-surface-variant">↔</span>
-          <span className="text-primary">
-            {t('exchange.figuritasApp.tradeSummaryReceive', {
-              count: totalReceive,
-            })}
-          </span>
-        </p>
-        {totalGive > 0 && totalReceive > 0 && !balanced ? (
-          <p className="text-label-sm text-error" data-testid="compare-warning">
-            {t('exchange.figuritasApp.tradeUnbalanced', {
-              give: totalGive,
-              receive: totalReceive,
+          <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
+            {t('exchange.shareBothTitle')}
+          </h2>
+          <p className="text-body-sm text-on-surface-variant">
+            {t('exchange.shareBothDescription', {
+              duplicates: totalOfferedDup,
+              missing: totalOfferedMiss,
             })}
           </p>
-        ) : null}
-      </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              className="btn-primary flex-1"
+              onClick={handleCopyBoth}
+              disabled={totalOfferedDup === 0 && totalOfferedMiss === 0}
+              data-testid="share-both-copy"
+            >
+              {t('exchange.copyBoth')}
+            </button>
+            <button
+              type="button"
+              className="btn-secondary flex-1"
+              onClick={() => void handleShareBoth()}
+              disabled={totalOfferedDup === 0 && totalOfferedMiss === 0}
+              data-testid="share-both-share"
+            >
+              {t('exchange.shareBothShare')}
+            </button>
+          </div>
+          <p className="text-label-sm text-on-surface-variant">
+            {t('exchange.shareBothHint')}
+          </p>
+        </section>
+      )}
 
-      <div className="flex gap-2">
-        <button
-          type="button"
-          className="btn-primary flex-1"
-          onClick={onConfirm}
-          disabled={!canConfirm}
-          data-testid="compare-confirm"
-        >
-          {submitting
-            ? t('common.loading')
-            : t('exchange.figuritasApp.tradeConfirm', {
-                give: totalGive,
-                receive: totalReceive,
-              })}
-        </button>
-        <button
-          type="button"
-          className="btn-secondary"
-          onClick={onClearSelection}
-          disabled={totalGive === 0 && totalReceive === 0}
-          data-testid="compare-clear-selection"
-        >
-          {t('exchange.figuritasApp.tradeClear')}
-        </button>
-      </div>
+      {/* ============== 4. PASTE FROM A FRIEND ============== */}
+      <section className="card flex flex-col gap-3" data-testid="paste-section">
+        <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
+          {t('exchange.pasteTitle')}
+        </h2>
+        <p className="text-body-sm text-on-surface-variant">
+          {t('exchange.pasteDescription')}
+        </p>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-label-md text-on-surface-variant">
+            {t('exchange.partnerLabel')}
+          </span>
+          <input
+            type="text"
+            className="input py-2"
+            placeholder={t('exchange.partnerPlaceholder')}
+            value={partner}
+            onChange={(e) => setPartner(e.target.value)}
+            aria-label={t('exchange.partnerLabel')}
+            data-testid="paste-partner"
+          />
+        </label>
+
+        <textarea
+          className="input min-h-[140px] py-2 font-mono text-label-sm"
+          placeholder={t('exchange.pastePlaceholder')}
+          value={pastedText}
+          onChange={(e) => setPastedText(e.target.value)}
+          aria-label={t('exchange.pasteLabel')}
+          data-testid="paste-textarea"
+        />
+
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            className="btn-secondary flex-1"
+            onClick={handlePasteFromClipboard}
+            disabled={analyzing}
+            data-testid="paste-from-clipboard"
+          >
+            {analyzing ? t('common.loading') : t('exchange.pasteFromClipboard')}
+          </button>
+          <button
+            type="button"
+            className="btn-primary flex-1"
+            onClick={handleAnalyzePasted}
+            disabled={analyzing || !pastedText.trim()}
+            data-testid="paste-analyze"
+          >
+            {analyzing ? t('common.loading') : t('exchange.pasteAnalyze')}
+          </button>
+        </div>
+
+        {errorMsg ? (
+          <p className="text-label-sm text-error" data-testid="paste-error">
+            {errorMsg}
+          </p>
+        ) : null}
+
+        {resolved ? (
+          <>
+            <ResolvedSummary resolved={resolved} collectionId={collectionId} />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="btn-primary flex-1"
+                onClick={handleApplyTrade}
+                disabled={
+                  resolved.missing.length === 0 &&
+                  (ownList.duplicates
+                    .flatMap((g) => g.numbers.map((n) => `${g.prefix}${n}`))
+                    .filter((c) => offeredDuplicates.has(c) &&
+                      resolved.duplicates.some((r) => r.code === c))
+                    .length === 0)
+                }
+                data-testid="paste-apply"
+              >
+                {t('exchange.tradeConfirm', {
+                  give: ownList.duplicates
+                    .flatMap((g) => g.numbers.map((n) => `${g.prefix}${n}`))
+                    .filter((c) =>
+                      offeredDuplicates.has(c) &&
+                      resolved.duplicates.some((r) => r.code === c)
+                    ).length,
+                  receive: resolved.missing.length,
+                })}
+              </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={handleClearPaste}
+                data-testid="paste-clear"
+              >
+                {t('exchange.clear')}
+              </button>
+            </div>
+          </>
+        ) : null}
+      </section>
     </div>
   );
 }
 
-interface CompareColumnProps {
-  tone: 'give' | 'receive';
+/* ------------------------------------------------------------------ */
+/* Own section (Repetidas or Faltan)                                   */
+/* ------------------------------------------------------------------ */
+
+interface OwnSectionProps {
   title: string;
-  emptyHint: string;
-  items: FiguritasAppStickerMatch[];
+  description: string;
+  groups: { prefix: string; emoji: string; numbers: string[] }[];
   selected: Set<string>;
-  onToggle: (id: string) => void;
+  onToggle: (code: string) => void;
+  copyLabel: string;
+  copyLabelSelected: string;
+  onCopy: () => void;
+  onSelectAll: () => void;
+  onSelectNone: () => void;
+  emptyHint: string;
+  testId: string;
+  shareDisabled: boolean;
 }
 
-function CompareColumn({
-  tone,
+function OwnSection({
   title,
-  emptyHint,
-  items,
+  description,
+  groups,
   selected,
   onToggle,
-}: CompareColumnProps) {
+  copyLabel,
+  copyLabelSelected,
+  onCopy,
+  onSelectAll,
+  onSelectNone,
+  emptyHint,
+  testId,
+  shareDisabled,
+}: OwnSectionProps) {
   const { t } = useTranslation();
-  const titleClass = tone === 'give' ? 'text-secondary' : 'text-primary';
+  const totalGroups = groups.length;
+  const hasAny = totalGroups > 0;
+
+  return (
+    <section className="card flex flex-col gap-3" data-testid={testId}>
+      <header className="flex flex-col gap-1">
+        <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
+          {title}
+        </h2>
+        <p className="text-body-sm text-on-surface-variant">{description}</p>
+      </header>
+
+      {hasAny ? (
+        <>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={onSelectAll}
+              data-testid={`${testId}-select-all`}
+            >
+              {t('exchange.selectAll')}
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={onSelectNone}
+              data-testid={`${testId}-select-none`}
+            >
+              {t('exchange.selectNone')}
+            </button>
+          </div>
+
+          <ul className="flex flex-wrap gap-1.5" data-testid={`${testId}-list`}>
+            {groups.flatMap((g) =>
+              g.numbers.map((n) => {
+                const code = `${g.prefix}${n}`;
+                const isSelected = selected.has(code);
+                return (
+                  <li key={code}>
+                    <button
+                      type="button"
+                      onClick={() => onToggle(code)}
+                      aria-pressed={isSelected}
+                      aria-label={code}
+                      data-testid={`${testId}-chip-${code}`}
+                      data-selected={isSelected}
+                      className={`flex items-center gap-1 rounded-full border px-2.5
+                        py-1 font-mono text-label-md transition-colors
+                        ${
+                          isSelected
+                            ? 'border-primary bg-primary-container text-on-primary-container'
+                            : 'border-outline-variant bg-surface text-on-surface hover:bg-surface-container'
+                        }`}
+                    >
+                      <span aria-hidden="true">{g.emoji || '·'}</span>
+                      <span>{code}</span>
+                    </button>
+                  </li>
+                );
+              })
+            )}
+          </ul>
+
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              className="btn-primary flex-1"
+              onClick={onCopy}
+              disabled={shareDisabled}
+              data-testid={`${testId}-copy`}
+            >
+              {selected.size > 0 ? copyLabelSelected : copyLabel}
+            </button>
+          </div>
+        </>
+      ) : (
+        <EmptyState
+          title={t('exchange.noItems')}
+          description={emptyHint}
+        />
+      )}
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Resolved summary after a paste                                       */
+/* ------------------------------------------------------------------ */
+
+function ResolvedSummary({
+  resolved,
+}: {
+  resolved: ResolvedExchange;
+  collectionId?: string;
+}) {
+  const { t } = useTranslation();
+  const iCanGive = resolved.duplicates.length;
+  const iNeed = resolved.missing.length;
+  const unresolved = resolved.unresolved.length;
 
   return (
     <div
-      className="flex flex-col gap-2 rounded-md border border-outline-variant
-        bg-surface-container-lowest p-2"
-      data-testid={`compare-column-${tone}`}
+      className="flex flex-col gap-1 rounded-md bg-surface-container-lowest p-2 text-body-sm"
+      data-testid="paste-summary"
     >
-      <h3 className={`text-label-md font-semibold ${titleClass}`}>{title}</h3>
-      {items.length === 0 ? (
-        <p className="text-label-sm text-on-surface-variant">{emptyHint}</p>
-      ) : (
-        <ul className="flex flex-wrap gap-1.5">
-          {items.map((s) => {
-            const isSelected = selected.has(s.stickerId);
-            return (
-              <li key={`${tone}-${s.stickerId}`}>
-                <button
-                  type="button"
-                  onClick={() => onToggle(s.stickerId)}
-                  aria-pressed={isSelected}
-                  aria-label={s.code}
-                  title={
-                    isSelected
-                      ? t('exchange.figuritasApp.tapToRemove')
-                      : t('exchange.figuritasApp.tapToSelect')
-                  }
-                  data-testid={`compare-chip-${tone}-${s.stickerId}`}
-                  data-selected={isSelected}
-                  className={`flex items-center gap-1 rounded-full border px-2.5
-                    py-1 font-mono text-label-md transition-colors
-                    ${
-                      isSelected
-                        ? tone === 'give'
-                          ? 'border-secondary bg-secondary-container text-on-secondary-container'
-                          : 'border-primary bg-primary-container text-on-primary-container'
-                        : 'border-outline-variant bg-surface text-on-surface hover:bg-surface-container'
-                    }`}
-                >
-                  <span>{s.code}</span>
-                  {tone === 'give' ? (
-                    <span
-                      className={`rounded-full px-1 text-label-sm ${
-                        isSelected
-                          ? 'bg-on-secondary-container/15 text-on-secondary-container'
-                          : 'bg-surface-container text-on-surface-variant'
-                      }`}
-                    >
-                      {s.quantity}
-                    </span>
-                  ) : null}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <p className="flex items-center justify-between gap-2">
+        <span className="text-secondary">
+          {t('exchange.pasteTheyGive', { count: iCanGive })}
+        </span>
+        <span className="text-on-surface-variant">↔</span>
+        <span className="text-primary">
+          {t('exchange.pasteYouReceive', { count: iNeed })}
+        </span>
+      </p>
+      {unresolved > 0 ? (
+        <p className="text-label-sm text-on-surface-variant">
+          {t('exchange.pasteUnresolved', { count: unresolved })}
+        </p>
+      ) : null}
     </div>
   );
 }
 
-interface TradeInventoryPreviewProps {
-  result: FiguritasAppMatchResult;
-  giveIds: Set<string>;
-  receiveIds: Set<string>;
-  inventory: Map<string, number>;
+/* ------------------------------------------------------------------ */
+/* Helpers                                                              */
+/* ------------------------------------------------------------------ */
+
+function pickSelected(
+  groups: { prefix: string; emoji: string; numbers: string[] }[],
+  selected: Set<string>
+): { prefix: string; emoji: string; numbers: string[] }[] {
+  return groups
+    .map((g) => {
+      const kept = g.numbers.filter((n) => selected.has(`${g.prefix}${n}`));
+      return { prefix: g.prefix, emoji: g.emoji, numbers: kept };
+    })
+    .filter((g) => g.numbers.length > 0);
 }
 
-/**
- * Tiny "before → after" sanity check for the trade-in-progress. Flags the
- * rare case where handing over a duplicate would leave a sticker with less
- * than one copy. Collapsed by default to keep the surface area small.
- */
-function TradeInventoryPreview({
-  result,
-  giveIds,
-  receiveIds,
-  inventory,
-}: TradeInventoryPreviewProps) {
-  const { t } = useTranslation();
-  const giveRows = result.iCanGive
-    .filter((s) => giveIds.has(s.stickerId))
-    .map((s) => {
-      const current = inventory.get(s.stickerId) ?? 0;
-      return { code: s.code, current, after: current - 1 };
-    });
-  const receiveRows = result.iNeed
-    .filter((s) => receiveIds.has(s.stickerId))
-    .map((s) => {
-      const current = inventory.get(s.stickerId) ?? 0;
-      return { code: s.code, current, after: current + 1 };
-    });
-  const unsafe = giveRows.some((r) => r.current - 1 < 1);
-  const totalRows = giveRows.length + receiveRows.length;
-  if (totalRows === 0) return null;
+async function writeClipboard(text: string): Promise<boolean> {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
 
-  return (
-    <details
-      className="rounded-md bg-surface-container-low p-2 text-body-sm"
-      data-testid="compare-preview"
-    >
-      <summary className="cursor-pointer text-on-surface-variant">
-        {t('exchange.figuritasApp.tradePreviewSummary', {
-          give: giveRows.length,
-          receive: receiveRows.length,
-        })}
-      </summary>
-      <div className="mt-2 grid grid-cols-2 gap-3">
-        <div>
-          <h4 className="mb-1 text-label-md font-semibold text-secondary">
-            {t('exchange.figuritasApp.tradeSummaryGive', {
-              count: giveRows.length,
-            })}
-          </h4>
-          <ul className="flex flex-col gap-0.5">
-            {giveRows.map((r) => (
-              <li
-                key={r.code}
-                className="flex items-center justify-between gap-2 font-mono text-label-sm"
-              >
-                <span>{r.code}</span>
-                <span
-                  className={unsafe ? 'text-error' : 'text-on-surface-variant'}
-                >
-                  {r.current} → {r.after}
-                </span>
-              </li>
-            ))}
-          </ul>
-          {unsafe ? (
-            <p
-              className="mt-1 text-label-sm text-error"
-              data-testid="compare-safety"
-            >
-              {t('exchange.figuritasApp.tradeSafetyWarning')}
-            </p>
-          ) : null}
-        </div>
-        <div>
-          <h4 className="mb-1 text-label-md font-semibold text-primary">
-            {t('exchange.figuritasApp.tradeSummaryReceive', {
-              count: receiveRows.length,
-            })}
-          </h4>
-          <ul className="flex flex-col gap-0.5">
-            {receiveRows.map((r) => (
-              <li
-                key={r.code}
-                className="flex items-center justify-between gap-2 font-mono text-label-sm"
-              >
-                <span>{r.code}</span>
-                <span className="text-on-surface-variant">
-                  {r.current} → {r.after}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </details>
-  );
+async function shareOrCopy(text: string): Promise<boolean> {
+  try {
+    if (
+      typeof navigator !== 'undefined' &&
+      typeof navigator.share === 'function' &&
+      typeof navigator.canShare === 'function'
+    ) {
+      const data = { text, title: 'AlbumPanini exchange' };
+      if (navigator.canShare(data)) {
+        await navigator.share(data);
+        return true;
+      }
+    }
+  } catch {
+    // fall through to clipboard
+  }
+  return writeClipboard(text);
 }
