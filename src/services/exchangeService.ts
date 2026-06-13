@@ -53,6 +53,11 @@ import { db } from '@/db';
 import type { StoredSticker, StoredTeam } from '@/types/collection';
 import { normalizeCode } from '@/utils/code';
 import { decodeCompact, encodeCompact } from '@/utils/compression';
+import {
+  albumGroupSort,
+  albumPrefixOrder,
+  sortStickersByAlbumOrder,
+} from '@/utils/albumOrder';
 import { z } from 'zod';
 
 /* ------------------------------------------------------------------ */
@@ -417,9 +422,33 @@ export async function resolveExchangeText(
 ): Promise<ResolvedExchange> {
   const parsed = parseExchangeText(text);
 
-  const [stickers] = await Promise.all([
-    db.stickers.where('collectionId').equals(collectionId).toArray(),
-  ]);
+  const stickers = await db.stickers
+    .where('collectionId')
+    .equals(collectionId)
+    .toArray();
+
+  // Derive the team order from the stickers themselves (sorted by
+  // their `order` field). Dexie's primary-key ordering doesn't
+  // preserve the package's authorial team order, so we walk the
+  // stickers in `order` and pick the first teamId we see for each
+  // unique team.
+  const sortedStickers = sortStickersByAlbumOrder(stickers);
+  const teamsFromStickerOrder: StoredTeam[] = [];
+  const seenTeam = new Set<string>();
+  for (const s of sortedStickers) {
+    if (s.teamId) {
+      const upper = s.teamId.toUpperCase();
+      if (!seenTeam.has(upper)) {
+        seenTeam.add(upper);
+        teamsFromStickerOrder.push({
+          uid: '',
+          id: upper,
+          collectionId,
+          name: upper,
+        });
+      }
+    }
+  }
 
   const byCode = new Map<string, StoredSticker>();
   for (const s of stickers) byCode.set(s.normalizedCode, s);
@@ -468,7 +497,51 @@ export async function resolveExchangeText(
     }
   }
 
-  return { duplicates, missing, unresolved };
+  return {
+    duplicates: sortResolvedStickers(duplicates, teamsFromStickerOrder),
+    missing: sortResolvedStickers(missing, teamsFromStickerOrder),
+    unresolved,
+  };
+}
+
+/**
+ * Sort resolved stickers by album order (group in album order, then by
+ * the sticker's `order` field). Used by `resolveExchangeText` so the UI
+ * always shows the match in the same order as the physical album.
+ */
+function sortResolvedStickers(
+  items: ResolvedSticker[],
+  teams: StoredTeam[]
+): ResolvedSticker[] {
+  const order = albumPrefixOrder(teams);
+  const idx = new Map<string, number>();
+  order.forEach((p, i) => idx.set(p, i));
+  // Helper: numeric compare on the trailing digits of a sticker code.
+  // Sorts KOR2 < KOR10 (lexicographic would reverse these).
+  const numericCmp = (a: ResolvedSticker, b: ResolvedSticker): number => {
+    const na = Number.parseInt(a.code.replace(/^\D+/, ''), 10);
+    const nb = Number.parseInt(b.code.replace(/^\D+/, ''), 10);
+    if (!Number.isNaN(na) && !Number.isNaN(nb) && na !== nb) return na - nb;
+    return a.code.localeCompare(b.code);
+  };
+
+  return [...items].sort((a, b) => {
+    // The resolved items carry `code` (e.g. "USA15"); map back to a
+    // prefix to use the album order index.
+    const pa = a.code.replace(/\d.*$/, '').toUpperCase();
+    const pb = b.code.replace(/\d.*$/, '').toUpperCase();
+    const ai = idx.get(pa);
+    const bi = idx.get(pb);
+    // Both known and in the album: order by album prefix, then by
+    // numeric suffix within the same prefix.
+    if (ai !== undefined && bi !== undefined) {
+      if (ai !== bi) return ai - bi;
+      return numericCmp(a, b);
+    }
+    // Both unknown: fall back to numeric / string compare.
+    if (ai === undefined && bi === undefined) return numericCmp(a, b);
+    return ai === undefined ? 1 : -1;
+  });
 }
 
 function toResolved(
@@ -514,7 +587,7 @@ export interface OwnListGroups {
  * buckets, ready to render as text. Source order is preserved.
  */
 export function buildOwnList(args: {
-  stickers: Array<Pick<StoredSticker, 'id' | 'code'> & { teamId?: string }>;
+  stickers: Array<Pick<StoredSticker, 'id' | 'code'> & { teamId?: string; order?: number }>;
   teams: Array<Pick<StoredTeam, 'id'> & { flag?: string }>;
   inventory: Map<string, number>;
 }): OwnListGroups {
@@ -522,6 +595,11 @@ export function buildOwnList(args: {
   for (const t of args.teams) {
     if (t.flag) teamEmoji.set(t.id.toUpperCase(), t.flag);
   }
+
+  // Map of `code` -> original sticker, so we can recover `order` when
+  // sorting inside each group by the album order.
+  const stickerByCode = new Map<string, (typeof args.stickers)[number]>();
+  for (const s of args.stickers) stickerByCode.set(s.code, s);
 
   const dupOrder: string[] = [];
   const dupNumbers = new Map<string, string[]>();
@@ -574,24 +652,45 @@ export function buildOwnList(args: {
     }
   }
 
-  const sortByNumeric = (a: string, b: string) => {
+  // ---- Sort by album order -------------------------------------------
+  // Special prefixes (FWC, INTRO) first, then real teams in the order
+  // they appear in the package's `teams` array. Within each group,
+  // sort by the sticker's `order` field (falls back to numeric suffix).
+  const orderByNumber = (a: string, b: string): number => {
+    const oa = stickerByCode.get(a)?.order;
+    const ob = stickerByCode.get(b)?.order;
+    if (oa !== undefined && ob !== undefined) return oa - ob;
+    if (oa !== undefined) return -1;
+    if (ob !== undefined) return 1;
     const na = Number.parseInt(a, 10);
     const nb = Number.parseInt(b, 10);
-    if (Number.isNaN(na) || Number.isNaN(nb)) return a.localeCompare(b);
-    return na - nb;
+    if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
+    return a.localeCompare(b);
   };
 
+  const dupGroups: {
+    prefix: string;
+    emoji: string;
+    numbers: string[];
+  }[] = dupOrder.map((p) => ({
+    prefix: p,
+    emoji: dupNumbers.get(p)!.length ? emojiFor(p, teamEmoji) : '',
+    numbers: [...dupNumbers.get(p)!].sort(orderByNumber),
+  }));
+  const missGroups: {
+    prefix: string;
+    emoji: string;
+    numbers: string[];
+  }[] = missOrder.map((p) => ({
+    prefix: p,
+    emoji: missNumbers.get(p)!.length ? emojiFor(p, teamEmoji) : '',
+    numbers: [...missNumbers.get(p)!].sort(orderByNumber),
+  }));
+
+  // Use the album helper to sort the groups themselves.
   return {
-    duplicates: dupOrder.map((p) => ({
-      prefix: p,
-      emoji: dupNumbers.get(p)!.length ? emojiFor(p, teamEmoji) : '',
-      numbers: [...dupNumbers.get(p)!].sort(sortByNumeric),
-    })),
-    missing: missOrder.map((p) => ({
-      prefix: p,
-      emoji: missNumbers.get(p)!.length ? emojiFor(p, teamEmoji) : '',
-      numbers: [...missNumbers.get(p)!].sort(sortByNumeric),
-    })),
+    duplicates: albumGroupSort(dupGroups, args.teams as StoredTeam[]),
+    missing: albumGroupSort(missGroups, args.teams as StoredTeam[]),
   };
 }
 
