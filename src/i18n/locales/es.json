@@ -166,6 +166,8 @@
     "duplicatesDescription": "Tenés {{count}} figuritas con más de una copia. Marcá cuáles querés compartir.",
     "missingTitle": "Faltan",
     "missingDescription": "Te faltan {{count}} figuritas. Marcá cuáles querés pedir.",
+    "albumCopy": "{{code}} — figurita de tu álbum",
+    "albumCopyHint": "La primera copia es para tu álbum. No se puede cambiar.",
     "copyDuplicates": "Copiar repetidas",
     "copyDuplicatesSelected": "Copiar seleccionadas ({{count}})",
     "copyMissing": "Copiar faltantes",

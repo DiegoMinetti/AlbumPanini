@@ -166,6 +166,8 @@
     "duplicatesDescription": "You have {{count}} stickers with more than one copy. Mark the ones you want to share.",
     "missingTitle": "Missing",
     "missingDescription": "You're missing {{count}} stickers. Mark the ones you want to ask for.",
+    "albumCopy": "{{code}} — album copy",
+    "albumCopyHint": "The first copy is for your album. It can't be traded.",
     "copyDuplicates": "Copy duplicates",
     "copyDuplicatesSelected": "Copy selected ({{count}})",
     "copyMissing": "Copy missing",

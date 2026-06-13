@@ -731,6 +731,81 @@ export interface OwnListGroups {
 }
 
 /**
+ * The first copy (copyIndex === 0) of any sticker is the "album copy"
+ * — the one that goes into the physical album. It is not tradable.
+ * Only the extras (copyIndex >= 1) can be selected for share or reserved.
+ *
+ * The storage model keeps all copies symmetric; this is a UX-level rule
+ * to avoid the obvious mistake of "I traded my only USA15 and now the
+ * album has a hole".
+ */
+export function isTradeableCopy(copyIndex: number): boolean {
+  return copyIndex >= 1;
+}
+
+/**
+ * Chip key used by the ExchangePage selection set. Format: `<code>#<copyIndex>`.
+ */
+export function chipKey(code: string, copyIndex: number): string {
+  return `${code}#${copyIndex}`;
+}
+
+/**
+ * Parse a chip key back into its components. Returns null if the key
+ * doesn't follow the `<code>#<copyIndex>` convention.
+ */
+export function parseChipKey(key: string): { code: string; copyIndex: number } | null {
+  const idx = key.lastIndexOf('#');
+  if (idx <= 0) return null;
+  const code = key.slice(0, idx);
+  const copyIndex = Number.parseInt(key.slice(idx + 1), 10);
+  if (!Number.isFinite(copyIndex)) return null;
+  return { code, copyIndex };
+}
+
+/**
+ * Filter a set of chip keys (`<code>#<copyIndex>`) down to only the
+ * tradeable ones. Always returns a fresh Set.
+ *
+ * The first copy of every sticker (copyIndex 0) is the "album copy" and
+ * is never tradable. Defense in depth: callers should never include
+ * such keys in the input, but this helper guarantees the contract.
+ */
+export function filterTradeableChipKeys(keys: Iterable<string>): Set<string> {
+  const out = new Set<string>();
+  for (const key of keys) {
+    const parsed = parseChipKey(key);
+    if (parsed && isTradeableCopy(parsed.copyIndex)) out.add(key);
+  }
+  return out;
+}
+
+/**
+ * Build the per-prefix groups (`{prefix, emoji, numbers: string[]}`)
+ * for a set of tradeable chip keys. Used by the "copy my selection"
+ * handlers to translate the UI's chip selection into the text format.
+ *
+ * The output is sorted by the original group order (preserved by
+ * `groups`) and, within a group, by the chip order the user saw.
+ */
+export function pickTradeableGroups(
+  groups: { prefix: string; emoji: string; numbers: string[] }[],
+  selectedKeys: Set<string>
+): { prefix: string; emoji: string; numbers: string[] }[] {
+  const out: { prefix: string; emoji: string; numbers: string[] }[] = [];
+  for (const g of groups) {
+    const kept: string[] = [];
+    for (let i = 0; i < g.numbers.length; i++) {
+      const n = g.numbers[i];
+      if (i === 0) continue; // copyIndex 0 is never tradable
+      if (selectedKeys.has(chipKey(`${g.prefix}${n}`, i))) kept.push(n);
+    }
+    if (kept.length > 0) out.push({ prefix: g.prefix, emoji: g.emoji, numbers: kept });
+  }
+  return out;
+}
+
+/**
  * Group the user's own inventory into the two "Repetidas" / "Faltan"
  * buckets, ready to render as text. Source order is preserved.
  */

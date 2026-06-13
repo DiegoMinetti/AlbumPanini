@@ -135,12 +135,49 @@ export function ExchangePage() {
   // Tournament groups for the 2-level grouping (group → team).
   const tournamentGroups = active?.tournament?.groups ?? null;
 
+  // Pick the codes (deduped) that the user has selected for sharing.
+  // A code is "shareable" when at least one tradeable chip (copyIndex
+  // >= 1) for that code is checked. The first copy (copyIndex 0) is the
+  // album copy and never counts, even if it somehow ended up in the
+  // selection set. Computed as a useMemo so the handler closures don't
+  // capture stale state.
+  const shareableDupCodes = useMemo(() => {
+    const codes = new Set<string>();
+    for (const g of ownList.duplicates) {
+      for (let i = 0; i < g.numbers.length; i++) {
+        if (i === 0) continue;
+        if (offeredDuplicates.has(`${g.prefix}${g.numbers[i]}#${i}`)) {
+          codes.add(`${g.prefix}${g.numbers[i]}`);
+        }
+      }
+    }
+    return codes;
+  }, [ownList.duplicates, offeredDuplicates]);
+
+  const shareableMissCodes = useMemo(() => {
+    const codes = new Set<string>();
+    for (const g of ownList.missing) {
+      // Missing stickers have no inventory copy to trade away, so all
+      // chips are "wishes" — the copyIndex-0 album copy distinction
+      // doesn't apply. We just include any chip the user marked.
+      for (let i = 0; i < g.numbers.length; i++) {
+        if (offeredMissing.has(`${g.prefix}${g.numbers[i]}#${i}`)) {
+          codes.add(`${g.prefix}${g.numbers[i]}`);
+        }
+      }
+    }
+    return codes;
+  }, [ownList.missing, offeredMissing]);
+
   if (loading) return <Spinner />;
   if (!active || !collectionId) return <NoActiveCollection />;
 
-  // Total counts (sum of copies, not distinct stickers).
+  // Total counts of tradeable copies. For duplicates, the first entry
+  // in each group (copyIndex 0) is the album copy and is never tradeable,
+  // so we subtract one per group. For missing, every entry is a wish
+  // (no inventory to lock away) so all of them count.
   const totalDuplicates = ownList.duplicates.reduce(
-    (sum, g) => sum + g.numbers.length,
+    (sum, g) => sum + Math.max(0, g.numbers.length - 1),
     0
   );
   const totalMissing = ownList.missing.reduce((sum, g) => sum + g.numbers.length, 0);
@@ -169,24 +206,12 @@ export function ExchangePage() {
         ? t('exchange.sharedHeaderTitle', { album: active.name })
         : t('exchange.sharedHeaderNoAlbum'),
     };
-    const allDupCodes = ownList.duplicates.flatMap((g) =>
-      g.numbers.map((n) => `${g.prefix}${n}`)
-    );
-    const allMissCodes = ownList.missing.flatMap((g) =>
-      g.numbers.map((n) => `${g.prefix}${n}`)
-    );
-    const selectedDup = allDupCodes.filter((c) =>
-      offeredDuplicates.has(`${c}#0`) || offeredDuplicates.has(`${c}#1`) || offeredDuplicates.has(`${c}#2`)
-    );
-    const selectedMiss = allMissCodes.filter((c) =>
-      offeredMissing.has(`${c}#0`)
-    );
     const duplicates =
       section === 'duplicates'
-        ? pickSelected(ownList.duplicates, selectedDup)
+        ? pickSelected(ownList.duplicates, [...shareableDupCodes])
         : [];
     const missing =
-      section === 'missing' ? pickSelected(ownList.missing, selectedMiss) : [];
+      section === 'missing' ? pickSelected(ownList.missing, [...shareableMissCodes]) : [];
     const text = buildExchangeText({ labels, collectionId, duplicates, missing });
     void writeClipboard(text).then((ok) => {
       if (!ok) toast.error(t('toast.error'));
@@ -203,22 +228,8 @@ export function ExchangePage() {
         ? t('exchange.sharedHeaderTitle', { album: active.name })
         : t('exchange.sharedHeaderNoAlbum'),
     };
-    const allDupCodes = ownList.duplicates.flatMap((g) =>
-      g.numbers.map((n) => `${g.prefix}${n}`)
-    );
-    const allMissCodes = ownList.missing.flatMap((g) =>
-      g.numbers.map((n) => `${g.prefix}${n}`)
-    );
-    const selectedDup = allDupCodes.filter((c) =>
-      offeredDuplicates.has(`${c}#0`) ||
-      offeredDuplicates.has(`${c}#1`) ||
-      offeredDuplicates.has(`${c}#2`)
-    );
-    const selectedMiss = allMissCodes.filter((c) =>
-      offeredMissing.has(`${c}#0`)
-    );
-    const duplicates = pickSelected(ownList.duplicates, selectedDup);
-    const missing = pickSelected(ownList.missing, selectedMiss);
+    const duplicates = pickSelected(ownList.duplicates, [...shareableDupCodes]);
+    const missing = pickSelected(ownList.missing, [...shareableMissCodes]);
     const text = buildExchangeText({ labels, collectionId, duplicates, missing });
     void writeClipboard(text).then((ok) => {
       if (!ok) toast.error(t('toast.error'));
@@ -235,22 +246,8 @@ export function ExchangePage() {
         ? t('exchange.sharedHeaderTitle', { album: active.name })
         : t('exchange.sharedHeaderNoAlbum'),
     };
-    const allDupCodes = ownList.duplicates.flatMap((g) =>
-      g.numbers.map((n) => `${g.prefix}${n}`)
-    );
-    const allMissCodes = ownList.missing.flatMap((g) =>
-      g.numbers.map((n) => `${g.prefix}${n}`)
-    );
-    const selectedDup = allDupCodes.filter((c) =>
-      offeredDuplicates.has(`${c}#0`) ||
-      offeredDuplicates.has(`${c}#1`) ||
-      offeredDuplicates.has(`${c}#2`)
-    );
-    const selectedMiss = allMissCodes.filter((c) =>
-      offeredMissing.has(`${c}#0`)
-    );
-    const duplicates = pickSelected(ownList.duplicates, selectedDup);
-    const missing = pickSelected(ownList.missing, selectedMiss);
+    const duplicates = pickSelected(ownList.duplicates, [...shareableDupCodes]);
+    const missing = pickSelected(ownList.missing, [...shareableMissCodes]);
     const text = buildExchangeText({ labels, collectionId, duplicates, missing });
     const ok = await shareOrCopy(text);
     if (!ok) toast.error(t('toast.error'));
@@ -1113,59 +1110,84 @@ function TeamRow({
             code
           );
           const isSelected = selected.has(key);
+          // The first copy of every sticker (copyIndex 0) is the
+          // "album copy" — the one that goes into the physical album.
+          // It is not tradable. Render it as a static, muted badge with
+          // a lock icon, and skip the reserve button entirely.
+          const isAlbumCopy = copyIndex === 0;
           return (
             <li
               key={key}
               className="flex flex-col items-start gap-1"
               data-testid={`${testId}-chip-${key}`}
+              data-album-copy={isAlbumCopy ? 'true' : undefined}
             >
               <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => onToggle(code, copyIndex)}
-                  aria-pressed={isSelected}
-                  aria-label={code}
-                  data-selected={isSelected}
-                  className={`flex items-center gap-1 rounded-full border px-2.5
-                    py-1 font-mono text-label-md transition-colors
-                    ${
-                      isSelected
-                        ? 'border-primary bg-primary-container text-on-primary-container'
-                        : 'border-outline-variant bg-surface text-on-surface hover:bg-surface-container'
-                    }`}
-                >
-                  {emoji ? (
-                    <span aria-hidden="true">{emoji} </span>
-                  ) : null}
-                  <span>{code}</span>
-                </button>
-                {!partner && testId === 'duplicates-section' ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const firstSticker = (stickers ?? []).find(
-                        (s) => s.code === code
-                      );
-                      if (firstSticker) {
-                        onReserve(
-                          firstSticker.id,
-                          code,
-                          prefix,
-                          emoji,
-                          copyIndex
-                        );
-                      }
-                    }}
-                    className="rounded-full border border-outline-variant
-                      bg-surface-container px-2 py-0.5 text-label-sm
-                      text-on-surface-variant hover:bg-surface-container-high"
-                    aria-label={t('exchange.reservations.reserveAction')}
-                    title={t('exchange.reservations.reserveAction')}
-                    data-testid={`${testId}-reserve-${key}`}
+                {isAlbumCopy ? (
+                  <span
+                    aria-label={t('exchange.albumCopy', { code })}
+                    title={t('exchange.albumCopyHint')}
+                    data-testid={`${testId}-album-copy-${key}`}
+                    className="flex items-center gap-1 rounded-full border
+                      border-dashed border-outline-variant bg-surface-container-low
+                      px-2.5 py-1 font-mono text-label-md text-on-surface-variant"
                   >
-                    {t('exchange.reservations.reserveShort')}
-                  </button>
-                ) : null}
+                    {emoji ? (
+                      <span aria-hidden="true">{emoji} </span>
+                    ) : null}
+                    <span>{code}</span>
+                    <span aria-hidden="true" className="ml-0.5">🔒</span>
+                  </span>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => onToggle(code, copyIndex)}
+                      aria-pressed={isSelected}
+                      aria-label={code}
+                      data-selected={isSelected}
+                      className={`flex items-center gap-1 rounded-full border px-2.5
+                        py-1 font-mono text-label-md transition-colors
+                        ${
+                          isSelected
+                            ? 'border-primary bg-primary-container text-on-primary-container'
+                            : 'border-outline-variant bg-surface text-on-surface hover:bg-surface-container'
+                        }`}
+                    >
+                      {emoji ? (
+                        <span aria-hidden="true">{emoji} </span>
+                      ) : null}
+                      <span>{code}</span>
+                    </button>
+                    {!partner && testId === 'duplicates-section' ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const firstSticker = (stickers ?? []).find(
+                            (s) => s.code === code
+                          );
+                          if (firstSticker) {
+                            onReserve(
+                              firstSticker.id,
+                              code,
+                              prefix,
+                              emoji,
+                              copyIndex
+                            );
+                          }
+                        }}
+                        className="rounded-full border border-outline-variant
+                          bg-surface-container px-2 py-0.5 text-label-sm
+                          text-on-surface-variant hover:bg-surface-container-high"
+                        aria-label={t('exchange.reservations.reserveAction')}
+                        title={t('exchange.reservations.reserveAction')}
+                        data-testid={`${testId}-reserve-${key}`}
+                      >
+                        {t('exchange.reservations.reserveShort')}
+                      </button>
+                    ) : null}
+                  </>
+                )}
               </div>
               {partner ? (
                 <span

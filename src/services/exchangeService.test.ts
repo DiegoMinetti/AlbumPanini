@@ -6,6 +6,11 @@ import {
   buildExchangeText,
   buildOwnList,
   resolveExchangeText,
+  isTradeableCopy,
+  filterTradeableChipKeys,
+  pickTradeableGroups,
+  chipKey,
+  parseChipKey,
 } from './exchangeService';
 
 /**
@@ -214,7 +219,9 @@ describe('buildOwnList', () => {
     ]);
     const out = buildOwnList({ stickers, teams, inventory });
     expect(out.duplicates.map((g) => g.prefix)).toEqual(['MEX', 'USA']);
-    // MEX1 has qty=2 → 2 chips. USA15 has qty=2 → 2 chips.
+    // MEX1 has qty=2 → 2 chips. USA15 has qty=2 → 2 chips. The first
+    // chip of each group (copyIndex 0) is the "album copy" and is
+    // therefore NOT tradable — only the extras count for sharing.
     expect(out.duplicates[0].numbers).toEqual(['1', '1']);
     expect(out.duplicates[1].numbers).toEqual(['15', '15']);
     expect(out.missing.map((g) => g.prefix)).toEqual(['USA', 'ARG']);
@@ -384,3 +391,75 @@ describe('resolveExchangeText (DB-backed)', () => {
     expect(out.friendExtras.map((s) => s.code)).toContain('RSA5');
   });
 });
+
+describe('chip helpers (album copy rule)', () => {
+  describe('chipKey + parseChipKey', () => {
+    it('round-trips codes with copyIndex', () => {
+      expect(chipKey('USA15', 2)).toBe('USA15#2');
+      const parsed = parseChipKey('USA15#2');
+      expect(parsed).toEqual({ code: 'USA15', copyIndex: 2 });
+    });
+
+    it('returns null for malformed keys', () => {
+      expect(parseChipKey('no-hash')).toBeNull();
+      expect(parseChipKey('#5')).toBeNull();
+      expect(parseChipKey('USA15#abc')).toBeNull();
+    });
+  });
+
+  describe('isTradeableCopy', () => {
+    it('returns false for copyIndex 0 (the album copy)', () => {
+      expect(isTradeableCopy(0)).toBe(false);
+    });
+    it('returns true for copyIndex 1+ (the extras)', () => {
+      expect(isTradeableCopy(1)).toBe(true);
+      expect(isTradeableCopy(2)).toBe(true);
+      expect(isTradeableCopy(5)).toBe(true);
+    });
+    it('returns false for negative copyIndex (defense in depth)', () => {
+      expect(isTradeableCopy(-1)).toBe(false);
+    });
+  });
+
+  describe('filterTradeableChipKeys', () => {
+    it('drops the album copy (#0) and keeps the extras', () => {
+      const input = new Set(['USA15#0', 'USA15#1', 'USA15#2']);
+      const out = filterTradeableChipKeys(input);
+      expect([...out].sort()).toEqual(['USA15#1', 'USA15#2']);
+    });
+    it('drops malformed keys', () => {
+      const input = new Set(['USA15#1', 'no-hash', 'USA20#0', 'USA20#5']);
+      const out = filterTradeableChipKeys(input);
+      expect([...out].sort()).toEqual(['USA15#1', 'USA20#5']);
+    });
+  });
+
+  describe('pickTradeableGroups', () => {
+    it('only includes the tradeable copies (#1+) per group', () => {
+      // The user has 3 copies of USA15 (chips: 0, 1, 2) and 2 copies
+      // of MEX1 (chips: 0, 1). They check #1 and #2 of USA15 and #0 of
+      // MEX1 (the album copy — should be ignored).
+      const groups = [
+        { prefix: 'USA', emoji: '🇺🇸', numbers: ['15', '15', '15'] },
+        { prefix: 'MEX', emoji: '🇲🇽', numbers: ['1', '1'] },
+      ];
+      const selectedKeys = new Set([
+        'USA15#1',
+        'USA15#2',
+        'MEX1#0', // album copy — must be filtered out
+      ]);
+      const out = pickTradeableGroups(groups, selectedKeys);
+      expect(out).toEqual([
+        { prefix: 'USA', emoji: '🇺🇸', numbers: ['15', '15'] },
+      ]);
+    });
+
+    it('returns an empty array when no tradeable copy is selected', () => {
+      const groups = [{ prefix: 'USA', emoji: '🇺🇸', numbers: ['15', '15'] }];
+      const selectedKeys = new Set(['USA15#0']); // only the album copy
+      const out = pickTradeableGroups(groups, selectedKeys);
+      expect(out).toEqual([]);
+    });
+  });
+});
+
