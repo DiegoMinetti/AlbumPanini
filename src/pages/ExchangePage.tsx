@@ -1102,6 +1102,11 @@ function TeamRow({
       ) : null}
       <ul className="flex flex-wrap gap-1.5">
         {numbers.map((n, copyIndex) => {
+          // The first copy (copyIndex 0) of every sticker is the
+          // "album copy" — the one that goes into the physical album.
+          // It is not tradable, so we don't render it at all here.
+          // Only the extras (copyIndex >= 1) are visible.
+          if (copyIndex === 0) return null;
           const code = `${prefix}${n}`;
           const key = `${code}#${copyIndex}`;
           const partner = reservedPartnerFor(
@@ -1110,84 +1115,59 @@ function TeamRow({
             code
           );
           const isSelected = selected.has(key);
-          // The first copy of every sticker (copyIndex 0) is the
-          // "album copy" — the one that goes into the physical album.
-          // It is not tradable. Render it as a static, muted badge with
-          // a lock icon, and skip the reserve button entirely.
-          const isAlbumCopy = copyIndex === 0;
           return (
             <li
               key={key}
               className="flex flex-col items-start gap-1"
               data-testid={`${testId}-chip-${key}`}
-              data-album-copy={isAlbumCopy ? 'true' : undefined}
             >
               <div className="flex items-center gap-1">
-                {isAlbumCopy ? (
-                  <span
-                    aria-label={t('exchange.albumCopy', { code })}
-                    title={t('exchange.albumCopyHint')}
-                    data-testid={`${testId}-album-copy-${key}`}
-                    className="flex items-center gap-1 rounded-full border
-                      border-dashed border-outline-variant bg-surface-container-low
-                      px-2.5 py-1 font-mono text-label-md text-on-surface-variant"
+                <button
+                  type="button"
+                  onClick={() => onToggle(code, copyIndex)}
+                  aria-pressed={isSelected}
+                  aria-label={code}
+                  data-selected={isSelected}
+                  className={`flex items-center gap-1 rounded-full border px-2.5
+                    py-1 font-mono text-label-md transition-colors
+                    ${
+                      isSelected
+                        ? 'border-primary bg-primary-container text-on-primary-container'
+                        : 'border-outline-variant bg-surface text-on-surface hover:bg-surface-container'
+                    }`}
+                >
+                  {emoji ? (
+                    <span aria-hidden="true">{emoji} </span>
+                  ) : null}
+                  <span>{code}</span>
+                </button>
+                {!partner && testId === 'duplicates-section' ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const firstSticker = (stickers ?? []).find(
+                        (s) => s.code === code
+                      );
+                      if (firstSticker) {
+                        onReserve(
+                          firstSticker.id,
+                          code,
+                          prefix,
+                          emoji,
+                          copyIndex
+                        );
+                      }
+                    }}
+                    className="rounded-full border border-outline-variant
+                      bg-surface-container px-2 py-0.5 text-label-sm
+                      text-on-surface-variant hover:bg-surface-container-high"
+                    aria-label={t('exchange.reservations.reserveAction')}
+                    title={t('exchange.reservations.reserveAction')}
+                    data-testid={`${testId}-reserve-${key}`}
                   >
-                    {emoji ? (
-                      <span aria-hidden="true">{emoji} </span>
-                    ) : null}
-                    <span>{code}</span>
-                    <span aria-hidden="true" className="ml-0.5">🔒</span>
-                  </span>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => onToggle(code, copyIndex)}
-                      aria-pressed={isSelected}
-                      aria-label={code}
-                      data-selected={isSelected}
-                      className={`flex items-center gap-1 rounded-full border px-2.5
-                        py-1 font-mono text-label-md transition-colors
-                        ${
-                          isSelected
-                            ? 'border-primary bg-primary-container text-on-primary-container'
-                            : 'border-outline-variant bg-surface text-on-surface hover:bg-surface-container'
-                        }`}
-                    >
-                      {emoji ? (
-                        <span aria-hidden="true">{emoji} </span>
-                      ) : null}
-                      <span>{code}</span>
-                    </button>
-                    {!partner && testId === 'duplicates-section' ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const firstSticker = (stickers ?? []).find(
-                            (s) => s.code === code
-                          );
-                          if (firstSticker) {
-                            onReserve(
-                              firstSticker.id,
-                              code,
-                              prefix,
-                              emoji,
-                              copyIndex
-                            );
-                          }
-                        }}
-                        className="rounded-full border border-outline-variant
-                          bg-surface-container px-2 py-0.5 text-label-sm
-                          text-on-surface-variant hover:bg-surface-container-high"
-                        aria-label={t('exchange.reservations.reserveAction')}
-                        title={t('exchange.reservations.reserveAction')}
-                        data-testid={`${testId}-reserve-${key}`}
-                      >
-                        {t('exchange.reservations.reserveShort')}
-                      </button>
-                    ) : null}
-                  </>
-                )}
+                    {t('exchange.reservations.reserveShort')}
+                  </button>
+                ) : null}
               </div>
               {partner ? (
                 <span
@@ -1195,7 +1175,7 @@ function TeamRow({
                     px-1.5 py-0.5 text-label-sm text-on-tertiary-container"
                   data-testid={`${testId}-reserved-${key}`}
                 >
-                  {t('exchange.reservations.reservedBadge', { partner })}
+                  {t('exchange.reservations.reservedFor', { partner })}
                 </span>
               ) : null}
             </li>
