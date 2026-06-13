@@ -6,16 +6,24 @@ import {
 } from 'zustand/middleware';
 
 /**
- * "Reservations" let a user set aside stickers (or whole pending trades)
- * for a specific trade partner *before* they meet in person. The items are
- * still in the inventory and still count as duplicates, but the user has a
- * dedicated view of what's earmarked for whom.
+ * "Reservations" let a user set aside individual sticker copies (or
+ * whole pending trades) for a specific trade partner *before* they meet
+ * in person. The items are still in the inventory and still count as
+ * duplicates, but the user has a dedicated view of what's earmarked
+ * for whom.
+ *
+ * Each sticker copy is its own atomic unit. If the user has 3 copies of
+ * USA15 and reserves 1 for María, that single copy is what's committed.
+ * They can still see the 2 free USA15 in the inventory. This is the
+ * model that makes the "1 chip per copy" UI possible: each chip is one
+ * committed (or free) inventory slot, and tapping a chip toggles its
+ * reserved-for partner.
  *
  * Two flavours of reservation live here:
  *
- *  1. `StickerReservation` — a single sticker (or N copies of it) earmarked
- *     for a partner. Useful when you have 3 copies of USA15 and want to
- *     remember "1 is for María, 1 is for Juan, 1 is spare".
+ *  1. `StickerReservation` — a single sticker copy earmarked for a
+ *     partner. The `instanceId` distinguishes this copy from other
+ *     copies of the same sticker in the inventory.
  *
  *  2. `PendingTrade` — a full bilateral trade in waiting: "I give X, Y, Z
  *     to {{partner}} and they give me A, B back". Created from the paste
@@ -34,14 +42,14 @@ export type ReservationItem =
 
 export interface StickerReservation {
   kind: 'sticker';
+  /** Unique id of this specific sticker copy (each copy gets one). */
+  instanceId: string;
   /** Collection this reservation belongs to. */
   collectionId: string;
   /** Sticker id within that collection. */
   stickerId: string;
   /** Free-form partner label (e.g. "María"). */
   partner: string;
-  /** How many copies of the sticker are earmarked for this partner. */
-  count: number;
   /** Original printed code captured for display (e.g. "USA15"). */
   code: string;
   /** Display label for the team/group, e.g. "USA". */
@@ -85,11 +93,24 @@ interface ReservationState {
   items: ReservationItem[];
 
   // Sticker-level actions
+  /**
+   * Reserve one specific sticker copy. The UI is responsible for
+   * generating `instanceId` if it wants to identify the copy (e.g. via
+   * `crypto.randomUUID()`). This keeps the store DB-agnostic.
+   */
   addStickerReservation: (
-    input: Omit<StickerReservation, 'kind' | 'createdAt' | 'count'> & {
-      count?: number;
-    }
+    input: Omit<StickerReservation, 'kind' | 'createdAt'>
   ) => void;
+  /**
+   * Remove a sticker-level reservation by its instance id. Use this
+   * (not the partner+stickerId combo) when freeing a specific copy.
+   */
+  removeStickerReservationByInstance: (instanceId: string) => void;
+  /**
+   * Legacy: remove every reservation matching
+   * (collectionId, stickerId, partner). Kept for bulk cleanup flows.
+   * Prefer the by-instance version when releasing one chip.
+   */
   removeStickerReservation: (
     collectionId: string,
     stickerId: string,
@@ -109,7 +130,7 @@ interface ReservationState {
 }
 
 const STORAGE_KEY = 'panini-reservations';
-const STORAGE_VERSION = 2; // bump: unified StickerReservation + PendingTrade
+const STORAGE_VERSION = 3; // bump: each sticker copy is its own item (instanceId)
 
 // ---------------------------------------------------------------------------
 // Persistence plumbing (copied from the previous version — see git history)
@@ -148,9 +169,13 @@ const safeStorage: StateStorage = {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-/** Stable key for a sticker-level reservation. */
-function stickerKey(r: Pick<StickerReservation, 'collectionId' | 'stickerId' | 'partner'>) {
-  return `${r.collectionId}::${r.stickerId}::${r.partner}`;
+/** Generate a stable instance id for a single sticker copy. */
+function generateInstanceId(): string {
+  const g: typeof globalThis & {
+    crypto?: { randomUUID?: () => string };
+  } = globalThis;
+  if (g.crypto?.randomUUID) return g.crypto.randomUUID();
+  return `res-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 /** Tiny non-cryptographic id (good enough for a local store). */
@@ -163,10 +188,10 @@ function generateTradeId(): string {
 }
 
 // ---------------------------------------------------------------------------
-// Migration: v1 (legacy "reservations" array) → v2 ("items" array)
+// Migration: v1 → v2 (unify items), v2 → v3 (instance per copy)
 // ---------------------------------------------------------------------------
 
-/** Legacy v1 shape — kept here so the migrate function can read old state. */
+/** Legacy v1 shape — pre-items[]. */
 interface LegacyV1State {
   reservations: Array<{
     collectionId: string;
@@ -180,11 +205,77 @@ interface LegacyV1State {
   }>;
 }
 
+/** Legacy v2 shape — items[] with count per sticker reservation. */
+interface LegacyV2State {
+  items: Array<
+    | {
+        kind: 'sticker';
+        collectionId: string;
+        stickerId: string;
+        partner: string;
+        count: number;
+        code: string;
+        displayPrefix: string;
+        emoji: string;
+        createdAt: number;
+      }
+    | PendingTrade
+  >;
+}
+
 function migrateV1ToV2(legacy: LegacyV1State | undefined): ReservationState {
-  const items: ReservationItem[] = (legacy?.reservations ?? []).map((r) => ({
-    kind: 'sticker' as const,
-    ...r,
-  }));
+  // v1 had no `instanceId` and no per-copy model. Synthesize a stable
+  // instanceId for each legacy reservation so the v2 hydration doesn't
+  // trip on the missing field. (count-based reservations will then be
+  // expanded further by the v2 → v3 migration.)
+  const items: ReservationItem[] = (legacy?.reservations ?? []).map((r) => {
+    const count = Math.max(1, r.count ?? 1);
+    const out: ReservationItem[] = [];
+    for (let i = 0; i < count; i++) {
+      out.push({
+        kind: 'sticker',
+        instanceId: generateInstanceId(),
+        collectionId: r.collectionId,
+        stickerId: r.stickerId,
+        partner: r.partner,
+        code: r.code,
+        displayPrefix: r.displayPrefix,
+        emoji: r.emoji,
+        createdAt: (r.createdAt ?? Date.now()) + i,
+      });
+    }
+    return out[0];
+  });
+  return { items } as unknown as ReservationState;
+}
+
+function migrateV2ToV3(legacy: ReservationState | undefined): ReservationState {
+  const oldItems = (legacy?.items ?? []) as LegacyV2State['items'];
+  const items: ReservationItem[] = [];
+  for (const it of oldItems) {
+    if (it.kind === 'sticker') {
+      // Expand a count-based reservation into N instance-based reservations.
+      const count = Math.max(1, (it as { count?: number }).count ?? 1);
+      const baseTime = (it as { createdAt?: number }).createdAt ?? Date.now();
+      for (let i = 0; i < count; i++) {
+        items.push({
+          kind: 'sticker',
+          instanceId: generateInstanceId(),
+          collectionId: it.collectionId,
+          stickerId: it.stickerId,
+          partner: it.partner,
+          code: it.code,
+          displayPrefix: it.displayPrefix,
+          emoji: it.emoji,
+          createdAt: baseTime + i,
+        });
+      }
+    } else {
+      items.push(it);
+    }
+  }
+  // Migration helpers only return persisted data; Zustand hydrates
+  // the action methods itself, so we cast through `unknown`.
   return { items } as unknown as ReservationState;
 }
 
@@ -198,32 +289,28 @@ export const useReservationStore = create<ReservationState>()(
       items: [],
 
       addStickerReservation: (input) => {
-        const count = Math.max(1, Math.floor(input.count ?? 1));
         set((state) => {
           const incoming: StickerReservation = {
             kind: 'sticker',
+            instanceId: input.instanceId || generateInstanceId(),
             collectionId: input.collectionId,
             stickerId: input.stickerId,
             partner: input.partner,
             code: input.code,
             displayPrefix: input.displayPrefix,
             emoji: input.emoji,
-            count,
             createdAt: Date.now(),
           };
-          const idx = state.items.findIndex(
-            (it) =>
-              it.kind === 'sticker' &&
-              stickerKey(it) === stickerKey(incoming)
-          );
-          if (idx === -1) {
-            return { items: [...state.items, incoming] };
-          }
-          const next = [...state.items];
-          const existing = next[idx] as StickerReservation;
-          next[idx] = { ...existing, count: existing.count + count };
-          return { items: next };
+          return { items: [...state.items, incoming] };
         });
+      },
+
+      removeStickerReservationByInstance: (instanceId) => {
+        set((state) => ({
+          items: state.items.filter(
+            (it) => !(it.kind === 'sticker' && it.instanceId === instanceId)
+          ),
+        }));
       },
 
       removeStickerReservation: (collectionId, stickerId, partner) => {
@@ -295,6 +382,9 @@ export const useReservationStore = create<ReservationState>()(
         if (fromVersion < 2) {
           return migrateV1ToV2(persisted as LegacyV1State);
         }
+        if (fromVersion < 3) {
+          return migrateV2ToV3(persisted as ReservationState);
+        }
         return persisted as ReservationState;
       },
     }
@@ -305,23 +395,21 @@ export const useReservationStore = create<ReservationState>()(
 // Selectors
 // ---------------------------------------------------------------------------
 
-/** Sum of sticker-level reservation counts for a given sticker. */
+/** Count of sticker-level reservation copies for a given sticker. */
 export function totalReservedFor(
   items: ReservationItem[],
   collectionId: string,
   stickerId: string
 ): number {
-  return items
-    .filter(
-      (it) =>
-        it.kind === 'sticker' &&
-        it.collectionId === collectionId &&
-        it.stickerId === stickerId
-    )
-    .reduce((sum, it) => sum + (it as StickerReservation).count, 0);
+  return items.filter(
+    (it) =>
+      it.kind === 'sticker' &&
+      it.collectionId === collectionId &&
+      it.stickerId === stickerId
+  ).length;
 }
 
-/** Sum of all reservation counts for a sticker — sticker + pending trades. */
+/** All reservation copies for a sticker — sticker-level + trade `give` sides. */
 export function totalReservedAcrossTrades(
   items: ReservationItem[],
   collectionId: string,
@@ -331,7 +419,7 @@ export function totalReservedAcrossTrades(
   for (const it of items) {
     if (it.collectionId !== collectionId) continue;
     if (it.kind === 'sticker' && it.stickerId === stickerId) {
-      sum += it.count;
+      sum += 1;
     } else if (it.kind === 'trade') {
       sum += it.give.filter((g) => g.stickerId === stickerId).length;
     }
@@ -346,6 +434,33 @@ export function isReserved(
   stickerId: string
 ): boolean {
   return totalReservedAcrossTrades(items, collectionId, stickerId) > 0;
+}
+
+/**
+ * Map of `stickerId -> partner label` for the FIRST reservation found.
+ * Used by the UI to render the "Reserved: María" badge.
+ *
+ * Multiple partners for the same sticker get joined with ", " in
+ * deterministic order so the badge stays stable across re-renders.
+ */
+export function reservedPartnerFor(
+  items: ReservationItem[],
+  collectionId: string,
+  stickerId: string
+): string | null {
+  const partners = new Set<string>();
+  for (const it of items) {
+    if (it.collectionId !== collectionId) continue;
+    if (it.kind === 'sticker' && it.stickerId === stickerId) {
+      partners.add(it.partner);
+    } else if (it.kind === 'trade') {
+      if (it.give.some((g) => g.stickerId === stickerId)) {
+        partners.add(it.partner);
+      }
+    }
+  }
+  if (partners.size === 0) return null;
+  return [...partners].sort().join(', ');
 }
 
 /** All pending trades for a given collection, newest first. */

@@ -9,6 +9,7 @@ export { useScenarioStore } from './scenarioStore';
 export {
   useReservationStore,
   isReserved,
+  reservedPartnerFor,
   totalReservedFor,
   totalReservedAcrossTrades,
   pendingTradesFor,

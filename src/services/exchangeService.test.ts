@@ -174,8 +174,9 @@ describe('buildOwnList', () => {
     ]);
     const out = buildOwnList({ stickers, teams, inventory });
     expect(out.duplicates.map((g) => g.prefix)).toEqual(['MEX', 'USA']);
-    expect(out.duplicates[0].numbers).toEqual(['1']);
-    expect(out.duplicates[1].numbers).toEqual(['15']);
+    // MEX1 has qty=2 → 2 chips. USA15 has qty=2 → 2 chips.
+    expect(out.duplicates[0].numbers).toEqual(['1', '1']);
+    expect(out.duplicates[1].numbers).toEqual(['15', '15']);
     expect(out.missing.map((g) => g.prefix)).toEqual(['USA', 'ARG']);
     expect(out.missing[0].numbers).toEqual(['3']);
   });

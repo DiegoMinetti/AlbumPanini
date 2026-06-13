@@ -765,7 +765,11 @@ export function buildOwnList(args: {
         dupNumbers.set(prefix, []);
         dupOrder.push(prefix);
       }
-      dupNumbers.get(prefix)!.push(numeric);
+      // Emit N copies so the UI can render one chip per inventory slot.
+      // If the user has 3 copies of USA15, numbers is ['15', '15', '15'].
+      for (let i = 0; i < qty; i++) {
+        dupNumbers.get(prefix)!.push(numeric);
+      }
     }
 
     if (qty === 0) {
