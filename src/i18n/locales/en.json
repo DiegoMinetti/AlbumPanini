@@ -160,6 +160,8 @@
   "exchange": {
     "title": "Exchange",
     "header": "Panini Tracker",
+    "tabsLabel": "Duplicates or missing",
+    "groupHeader": "Group {{letter}}",
     "duplicatesTitle": "Duplicates",
     "duplicatesDescription": "You have {{count}} stickers with more than one copy. Mark the ones you want to share.",
     "missingTitle": "Missing",
@@ -179,6 +181,10 @@
     "shareBothShare": "Share",
     "shareBothHint": "Paste the link in WhatsApp, Telegram, or wherever. If your friend has the app installed, the link opens it directly.",
     "openInApp": "Open in the app",
+    "sharedHeadingDuplicates": "I have duplicates",
+    "sharedHeadingMissing": "I'm missing",
+    "sharedHeaderTitle": "{{album}} · Panini Tracker",
+    "sharedHeaderNoAlbum": "Panini Tracker",
     "copied": "Copied!",
     "pasteTitle": "Paste a friend's list",
     "pasteDescription": "Paste the text they sent. We auto-detect the format.",
@@ -232,11 +238,12 @@
       "confirmTrade": "Confirm trade · {{give}} ↔ {{receive}}",
       "cancelTrade": "Cancel",
       "cancelSticker": "Remove reservation",
+      "releaseSticker": "Release reservation",
       "withPartner": "With {{partner}}",
       "youGive": "You give ({{count}})",
       "youReceive": "They give ({{count}})",
-      "stickerReservationsTitle": "Stickers reserved",
-      "reserveForLater": "Reserve for later",
+      "stickerReservationsTitle": "Reserved stickers",
+      "reserveForLater": "Save for later",
       "reserveTradeEmpty": "Nothing to reserve yet."
     }
   },
@@ -414,3 +421,5 @@
     "later": "Later"
   }
 }
+
+

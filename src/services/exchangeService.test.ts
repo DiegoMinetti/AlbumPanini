@@ -115,28 +115,68 @@ describe('parseExchangeText', () => {
 });
 
 describe('buildExchangeText', () => {
-  it('emits 2 blocks separated by a blank line, no headers', () => {
+  it('emits 2 labelled blocks separated by a blank line, plus a header line and the deep link', () => {
     const text = buildExchangeText({
-      labels: { openInApp: 'Abrí en la app' },
+      labels: {
+        openInApp: 'Abrí en la app',
+        headingDuplicates: 'Tengo repetidas',
+        headingMissing: 'Me faltan',
+        headerTitle: 'World Cup 2026 · Panini Tracker',
+      },
       collectionId: 'worldcup-2026',
       duplicates: [{ prefix: 'FWC', emoji: '🏆', numbers: ['4'] }],
       missing: [{ prefix: 'MEX', emoji: '🇲🇽', numbers: ['14'] }],
     });
-    expect(text).toContain('FWC 🏆: 4');
-    expect(text).toContain('MEX 🇲🇽: 14');
-    // Has a blank line between the two blocks.
-    expect(text).toMatch(/FWC 🏆: 4\nMEX 🇲🇽: 14\n\n/);
-    // Does NOT include section header labels like "Repetidas" / "Faltan".
-    expect(text).not.toMatch(/Repetidas/);
-    expect(text).not.toMatch(/Faltan/);
-    // Has the open-in-app line + at least one deep link.
+    // Header line at the top.
+    expect(text.startsWith('World Cup 2026 · Panini Tracker\n\n')).toBe(true);
+    // Both section headers present and labelled.
+    expect(text).toContain('Tengo repetidas\nFWC 🏆: 4');
+    expect(text).toContain('Me faltan\nMEX 🇲🇽: 14');
+    // Blank line between the two sections.
+    expect(text).toMatch(/FWC 🏆: 4\n\nMe faltan\nMEX 🇲🇽: 14/);
+    // Open-in-app line + at least one deep link.
     expect(text).toContain('Abrí en la app');
-    expect(text).toContain('https://albumpanini.app/exchange');
+    expect(text).toContain('https://diegominetti.github.io/AlbumPanini/');
+  });
+
+  it('omits the duplicates block when the user has no duplicates', () => {
+    const text = buildExchangeText({
+      labels: {
+        openInApp: 'Abrí en la app',
+        headingDuplicates: 'Tengo repetidas',
+        headingMissing: 'Me faltan',
+      },
+      collectionId: 'worldcup-2026',
+      duplicates: [],
+      missing: [{ prefix: 'MEX', emoji: '🇲🇽', numbers: ['14'] }],
+    });
+    // No "Tengo repetidas" header if the duplicates block is empty.
+    expect(text).not.toContain('Tengo repetidas');
+    expect(text).toContain('Me faltan\nMEX 🇲🇽: 14');
+  });
+
+  it('omits the missing block when the user is not missing anything', () => {
+    const text = buildExchangeText({
+      labels: {
+        openInApp: 'Abrí en la app',
+        headingDuplicates: 'Tengo repetidas',
+        headingMissing: 'Me faltan',
+      },
+      collectionId: 'worldcup-2026',
+      duplicates: [{ prefix: 'FWC', emoji: '🏆', numbers: ['4'] }],
+      missing: [],
+    });
+    expect(text).not.toContain('Me faltan');
+    expect(text).toContain('Tengo repetidas\nFWC 🏆: 4');
   });
 
   it('produces a parseable round-trip for its own output', () => {
     const text = buildExchangeText({
-      labels: { openInApp: 'Abrí en la app' },
+      labels: {
+        openInApp: 'Abrí en la app',
+        headingDuplicates: 'Tengo repetidas',
+        headingMissing: 'Me faltan',
+      },
       collectionId: 'worldcup-2026',
       duplicates: [{ prefix: 'FWC', emoji: '🏆', numbers: ['4', '7'] }],
       missing: [{ prefix: 'MEX', emoji: '🇲🇽', numbers: ['14'] }],

@@ -16,14 +16,15 @@
  *
  * ## Wire format
  *
- * Our own format (what we copy/share) is two blocks separated by a blank
- * line, no headers:
+ * Our own format (what we copy/share) is two labelled blocks separated
+ * by a blank line, preceded by an optional header line:
  *
- *   <block 1: lines the user has duplicates of>
+ *   <header line: "<album> · Panini Tracker">   ← optional
+ *   Tengo repetidas
  *   PREFIX1: n, n, n
  *   PREFIX2: n
  *
- *   <block 2: lines the user is missing>
+ *   Me faltan
  *   PREFIX1: n
  *   PREFIX2: n, n
  *
@@ -31,10 +32,11 @@
  *   <deep-link URL>
  *   ...
  *
- * The two blocks are positional: block 1 = duplicates, block 2 = missing.
- * The deep link is a compact, gzipped+base64url payload
- * (see `encodePayload` / `decodePayload`) that lets the app open straight
- * into the right collection with the right list pre-filled.
+ * The block headers ("Tengo repetidas" / "Me faltan") are recognised
+ * case-insensitively in the parser — see `SECTION_HEADERS`. The deep
+ * link is a compact, gzipped+base64url payload (see `encodePayload` /
+ * `decodePayload`) that lets the app open straight into the right
+ * collection with the right list pre-filled.
  *
  * ## External format (the other app)
  *
@@ -114,7 +116,7 @@ export interface ParsedLineSection {
 /* Deep link                                                            */
 /* ------------------------------------------------------------------ */
 
-const DEEP_LINK_BASE = 'https://albumpanini.app/exchange';
+const DEEP_LINK_BASE = 'https://diegominetti.github.io/AlbumPanini/';
 
 /** Section of a list inside a deep link. */
 export type ExchangeSection = 'duplicates' | 'missing';
@@ -156,22 +158,30 @@ export function buildDeepLink(
  * Build a copy-pasteable text with both sections + a deep link per chunk.
  *
  * Output shape:
- *   <Repetidas section>          ← block 1 (no header label, by convention)
+ *   <header line>                       ← "<album> · Panini Tracker" (if album)
+ *   Tengo repetidas
  *   PREFIX1: n, n, n
  *   PREFIX2: n
  *
- *   <Faltan section>             ← block 2 (no header label, by convention)
+ *   Me faltan
  *   PREFIX1: n
+ *   PREFIX2: n, n
  *
  *   Abrí en la app
  *   <deep-link url>
- *   --- 1/N ---                  ← only if chunked
+ *   --- 1/N ---                         ← only if chunked
  *   <deep-link url>
  */
 export function buildExchangeText(args: {
-  /** Localized "Open in the app" label. */
+  /** Localized labels for the shared text. */
   labels: {
     openInApp: string;
+    /** Section header for the duplicates block (e.g. "Tengo repetidas"). */
+    headingDuplicates: string;
+    /** Section header for the missing block (e.g. "Me faltan"). */
+    headingMissing: string;
+    /** Optional friendly header line (e.g. "World Cup 2026 · Panini Tracker"). */
+    headerTitle?: string;
   };
   collectionId: string;
   /** Stickers the user has duplicates of. Block 1. */
@@ -181,8 +191,8 @@ export function buildExchangeText(args: {
 }): string {
   const { labels, collectionId, duplicates, missing } = args;
 
-  const dupBlock = renderSection(duplicates);
-  const missBlock = renderSection(missing);
+  const dupBody = renderSection(duplicates);
+  const missBody = renderSection(missing);
 
   const dupLink = buildDeepLink(
     collectionId,
@@ -210,18 +220,20 @@ export function buildExchangeText(args: {
     });
   }
 
-  // The output is built from up to four "parts" joined with a blank
-  // line between them:
-  //   1. duplicates block (empty if the user has no duplicates)
-  //   2. missing block (empty if the user has no missing)
-  //   3. (blank separator — only included if both 1 and 2 are non-empty)
-  //   4. open-in-app block (always included, even if both 1 and 2 are empty)
+  // Build the text as a stack of "parts" joined by blank lines. We
+  // always include the open-in-app block, but the duplicates / missing
+  // sections are only included when the user actually has content for
+  // them (so an empty list doesn't end with a stray section header).
   const parts: string[] = [];
-  if (dupBlock) parts.push(dupBlock);
-  if (missBlock) parts.push(missBlock);
-  if (dupBlock && missBlock) parts.push('');
+  if (labels.headerTitle) parts.push(labels.headerTitle);
+  if (dupBody) {
+    parts.push([labels.headingDuplicates, dupBody].filter(Boolean).join('\n'));
+  }
+  if (missBody) {
+    parts.push([labels.headingMissing, missBody].filter(Boolean).join('\n'));
+  }
   parts.push(linkLines.join('\n'));
-  return parts.join('\n');
+  return parts.join('\n\n');
 }
 
 function renderSection(
@@ -285,10 +297,14 @@ const SECTION_HEADERS: { pattern: RegExp; kind: 'wants' | 'extras' }[] = [
   { pattern: /^\s*me\s*faltan\s*$/i, kind: 'wants' },
   { pattern: /^\s*repetidas?\s*$/i, kind: 'extras' },
   { pattern: /^\s*repetido\s*$/i, kind: 'extras' },
+  { pattern: /^\s*tengo\s+repetidas\s*$/i, kind: 'extras' },
+  { pattern: /^\s*tengo\s+repetido\s*$/i, kind: 'extras' },
   { pattern: /^\s*faltan\s*$/i, kind: 'wants' },
   // English
   { pattern: /^\s*missing\s*$/i, kind: 'wants' },
   { pattern: /^\s*duplicates?\s*$/i, kind: 'extras' },
+  { pattern: /^\s*i\s+have\s+duplicates\s*$/i, kind: 'extras' },
+  { pattern: /^\s*i'?m\s+missing\s*$/i, kind: 'wants' },
   { pattern: /^\s*spare\s*$/i, kind: 'extras' },
   { pattern: /^\s*spare\s+stickers?\s*$/i, kind: 'extras' },
   // Portuguese

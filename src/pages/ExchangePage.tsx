@@ -15,6 +15,7 @@ import { Spinner } from '@/components/feedback/Spinner';
 import { NoActiveCollection } from '@/components/collections/NoActiveCollection';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { PromptModal } from '@/components/ui/PromptModal';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { toast } from '@/stores/uiStore';
 import {
   pendingTradesFor,
@@ -25,24 +26,11 @@ import {
   type StickerReservation,
   type TradeStickerRef,
 } from '@/stores/reservationStore';
+import type { TournamentGroup } from '@/types/tournament';
+import type { StoredTeam } from '@/types/collection';
 
 /** Default partner label used when the user pastes a list without naming someone. */
 const DEFAULT_PARTNER = 'amigo';
-
-/**
- * One rendered chip. A chip represents ONE physical copy of a sticker
- * (i.e. one slot in the inventory). When the user has 3 copies of USA15,
- * we render 3 chips, each independently tappable.
- */
-interface OwnChip {
-  code: string;
-  /** 0-based index of this particular copy (0, 1, 2, …). */
-  copyIndex: number;
-  /** Total copies the user has of this code. */
-  totalCopies: number;
-  /** Partner name if THIS particular copy is reserved; null otherwise. */
-  reservedPartner: string | null;
-}
 
 export function ExchangePage() {
   const { t } = useTranslation();
@@ -144,6 +132,9 @@ export function ExchangePage() {
     [items, collectionId]
   );
 
+  // Tournament groups for the 2-level grouping (group → team).
+  const tournamentGroups = active?.tournament?.groups ?? null;
+
   if (loading) return <Spinner />;
   if (!active || !collectionId) return <NoActiveCollection />;
 
@@ -153,8 +144,6 @@ export function ExchangePage() {
     0
   );
   const totalMissing = ownList.missing.reduce((sum, g) => sum + g.numbers.length, 0);
-  const totalOfferedDup = offeredDuplicates.size;
-  const totalOfferedMiss = offeredMissing.size;
 
   // ---- Handlers ----
 
@@ -174,6 +163,11 @@ export function ExchangePage() {
   const handleCopyOwn = (section: ExchangeSection) => {
     const labels = {
       openInApp: t('exchange.openInApp'),
+      headingDuplicates: t('exchange.sharedHeadingDuplicates'),
+      headingMissing: t('exchange.sharedHeadingMissing'),
+      headerTitle: active
+        ? t('exchange.sharedHeaderTitle', { album: active.name })
+        : t('exchange.sharedHeaderNoAlbum'),
     };
     const allDupCodes = ownList.duplicates.flatMap((g) =>
       g.numbers.map((n) => `${g.prefix}${n}`)
@@ -201,7 +195,14 @@ export function ExchangePage() {
   };
 
   const handleCopyBoth = () => {
-    const labels = { openInApp: t('exchange.openInApp') };
+    const labels = {
+      openInApp: t('exchange.openInApp'),
+      headingDuplicates: t('exchange.sharedHeadingDuplicates'),
+      headingMissing: t('exchange.sharedHeadingMissing'),
+      headerTitle: active
+        ? t('exchange.sharedHeaderTitle', { album: active.name })
+        : t('exchange.sharedHeaderNoAlbum'),
+    };
     const allDupCodes = ownList.duplicates.flatMap((g) =>
       g.numbers.map((n) => `${g.prefix}${n}`)
     );
@@ -226,7 +227,14 @@ export function ExchangePage() {
   };
 
   const handleShareBoth = async () => {
-    const labels = { openInApp: t('exchange.openInApp') };
+    const labels = {
+      openInApp: t('exchange.openInApp'),
+      headingDuplicates: t('exchange.sharedHeadingDuplicates'),
+      headingMissing: t('exchange.sharedHeadingMissing'),
+      headerTitle: active
+        ? t('exchange.sharedHeaderTitle', { album: active.name })
+        : t('exchange.sharedHeaderNoAlbum'),
+    };
     const allDupCodes = ownList.duplicates.flatMap((g) =>
       g.numbers.map((n) => `${g.prefix}${n}`)
     );
@@ -501,19 +509,23 @@ export function ExchangePage() {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* ============== 1. REPETIDAS ============== */}
-      <OwnSection
-        title={t('exchange.duplicatesTitle')}
-        description={t('exchange.duplicatesDescription', { count: totalDuplicates })}
-        groups={ownList.duplicates}
-        selected={offeredDuplicates}
-        onToggle={(code, idx) =>
+      {/* ============== 1. REPETIDAS / FALTAN (tabs) ============== */}
+      <OwnTabsCard
+        tournamentGroups={tournamentGroups}
+        teams={teams}
+        duplicates={ownList.duplicates}
+        missing={ownList.missing}
+        duplicatesCount={totalDuplicates}
+        missingCount={totalMissing}
+        duplicatesSelected={offeredDuplicates}
+        missingSelected={offeredMissing}
+        onToggleDuplicate={(code, idx) =>
           toggleOffered(code, idx, offeredDuplicates, setOfferedDuplicates)
         }
-        copyLabel={t('exchange.copyDuplicates')}
-        copyLabelSelected={t('exchange.copyDuplicatesSelected', { count: totalOfferedDup })}
-        onCopy={() => handleCopyOwn('duplicates')}
-        onSelectAll={() => {
+        onToggleMissing={(code, idx) =>
+          toggleOffered(code, idx, offeredMissing, setOfferedMissing)
+        }
+        onSelectAllDuplicates={() => {
           const all = new Set<string>();
           ownList.duplicates.forEach((g) =>
             g.numbers.forEach((n, idx) => {
@@ -522,79 +534,25 @@ export function ExchangePage() {
           );
           setOfferedDuplicates(all);
         }}
-        onSelectNone={() => setOfferedDuplicates(new Set())}
-        emptyHint={t('exchange.noDuplicatesHint')}
-        testId="duplicates-section"
-        shareDisabled={totalOfferedDup === 0}
-        onReserve={openReserveModal}
-        collectionId={collectionId}
-        stickers={stickers.map((s) => ({ id: s.id, code: s.code, teamId: s.teamId }))}
-      />
-
-      {/* ============== 2. FALTAN ============== */}
-      <OwnSection
-        title={t('exchange.missingTitle')}
-        description={t('exchange.missingDescription', { count: totalMissing })}
-        groups={ownList.missing}
-        selected={offeredMissing}
-        onToggle={(code, idx) =>
-          toggleOffered(code, idx, offeredMissing, setOfferedMissing)
-        }
-        copyLabel={t('exchange.copyMissing')}
-        copyLabelSelected={t('exchange.copyMissingSelected', { count: totalOfferedMiss })}
-        onCopy={() => handleCopyOwn('missing')}
-        onSelectAll={() => {
+        onSelectNoneDuplicates={() => setOfferedDuplicates(new Set())}
+        onSelectAllMissing={() => {
           const all = new Set<string>();
           ownList.missing.forEach((g) =>
             g.numbers.forEach((n) => all.add(`${g.prefix}${n}#0`))
           );
           setOfferedMissing(all);
         }}
-        onSelectNone={() => setOfferedMissing(new Set())}
-        emptyHint={t('exchange.noMissingHint')}
-        testId="missing-section"
-        shareDisabled={totalOfferedMiss === 0}
+        onSelectNoneMissing={() => setOfferedMissing(new Set())}
+        onCopyDuplicates={() => handleCopyOwn('duplicates')}
+        onCopyMissing={() => handleCopyOwn('missing')}
+        onCopyBoth={handleCopyBoth}
+        onShareBoth={handleShareBoth}
+        onReserve={openReserveModal}
+        collectionId={collectionId}
+        stickers={stickers.map((s) => ({ id: s.id, code: s.code, teamId: s.teamId }))}
       />
 
-      {/* ============== 3. SHARE BOTH ============== */}
-      {(totalDuplicates > 0 || totalMissing > 0) && (
-        <section className="card flex flex-col gap-3" data-testid="share-both-section">
-          <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
-            {t('exchange.shareBothTitle')}
-          </h2>
-          <p className="text-body-sm text-on-surface-variant">
-            {t('exchange.shareBothDescription', {
-              duplicates: totalOfferedDup,
-              missing: totalOfferedMiss,
-            })}
-          </p>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <button
-              type="button"
-              className="btn-primary flex-1"
-              onClick={handleCopyBoth}
-              disabled={totalOfferedDup === 0 && totalOfferedMiss === 0}
-              data-testid="share-both-copy"
-            >
-              {t('exchange.copyBoth')}
-            </button>
-            <button
-              type="button"
-              className="btn-secondary flex-1"
-              onClick={() => void handleShareBoth()}
-              disabled={totalOfferedDup === 0 && totalOfferedMiss === 0}
-              data-testid="share-both-share"
-            >
-              {t('exchange.shareBothShare')}
-            </button>
-          </div>
-          <p className="text-label-sm text-on-surface-variant">
-            {t('exchange.shareBothHint')}
-          </p>
-        </section>
-      )}
-
-      {/* ============== 4. PASTE FROM A FRIEND ============== */}
+      {/* ============== 3. PASTE FROM A FRIEND ============== */}
       <section className="card flex flex-col gap-3" data-testid="paste-section">
         <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
           {t('exchange.pasteTitle')}
@@ -748,103 +706,214 @@ export function ExchangePage() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Own section (Repetidas or Faltan)                                   */
+/* Own Tabs Card — Repetidas / Faltan with 2-level grouping            */
 /* ------------------------------------------------------------------ */
 
-interface OwnSectionProps {
-  title: string;
-  description: string;
-  groups: { prefix: string; emoji: string; numbers: string[] }[];
-  selected: Set<string>; // keys: `${code}#${copyIndex}`
-  onToggle: (code: string, copyIndex: number) => void;
-  copyLabel: string;
-  copyLabelSelected: string;
-  onCopy: () => void;
-  onSelectAll: () => void;
-  onSelectNone: () => void;
-  emptyHint: string;
-  testId: string;
-  shareDisabled: boolean;
-  onReserve?: (
+interface OwnTabsCardProps {
+  tournamentGroups: TournamentGroup[] | null;
+  teams: StoredTeam[];
+  duplicates: { prefix: string; emoji: string; numbers: string[] }[];
+  missing: { prefix: string; emoji: string; numbers: string[] }[];
+  duplicatesCount: number;
+  missingCount: number;
+  duplicatesSelected: Set<string>;
+  missingSelected: Set<string>;
+  onToggleDuplicate: (code: string, copyIndex: number) => void;
+  onToggleMissing: (code: string, copyIndex: number) => void;
+  onSelectAllDuplicates: () => void;
+  onSelectNoneDuplicates: () => void;
+  onSelectAllMissing: () => void;
+  onSelectNoneMissing: () => void;
+  onCopyDuplicates: () => void;
+  onCopyMissing: () => void;
+  onCopyBoth: () => void;
+  onShareBoth: () => void;
+  onReserve: (
     stickerId: string,
     code: string,
     displayPrefix: string,
     emoji: string,
     copyIndex: number
   ) => void;
-  collectionId?: string;
-  /** All stickers in the active collection — used to look up the
-   *  stickerId from a chip code, so the reserve handler can build a
-   *  complete reservation. */
-  stickers?: Array<{ id: string; code: string; teamId?: string }>;
+  collectionId: string;
+  stickers: Array<{ id: string; code: string; teamId?: string }>;
 }
 
-function OwnSection({
-  title,
-  description,
-  groups,
-  selected,
-  onToggle,
-  copyLabel,
-  copyLabelSelected,
-  onCopy,
-  onSelectAll,
-  onSelectNone,
-  emptyHint,
-  testId,
-  shareDisabled,
-  onReserve,
-  collectionId,
-  stickers,
-}: OwnSectionProps) {
-  const { t } = useTranslation();
-  const totalGroups = groups.length;
-  const hasAny = totalGroups > 0;
+type TabKey = 'duplicates' | 'missing';
 
-  // Render one chip per inventory copy. The `buildOwnList` helper
-  // emits duplicate numbers N times when the user has N copies, so
-  // iterating `g.numbers` already gives us one entry per slot.
-  const chips: OwnChip[] = [];
-  for (const g of groups) {
-    for (let i = 0; i < g.numbers.length; i++) {
-      const n = g.numbers[i];
-      const code = `${g.prefix}${n}`;
-      // Pull the partner label for THIS specific copy index. We can't
-      // get the exact instanceId from the chip alone, so we use the
-      // helper that returns a single label per stickerId (any partner).
-      // Future refinement: thread the instanceId through here.
-      const partner = collectionId
-        ? reservedPartnerFor(
-            useReservationStore.getState().items,
-            collectionId,
-            code
-          )
-        : null;
-      chips.push({
-        code,
-        copyIndex: i,
-        totalCopies: g.numbers.length,
-        reservedPartner: partner,
-      });
+/**
+ * Group chips by (tournament group letter, then by team prefix).
+ *
+ * - When `tournamentGroups` is provided (collections like World Cup
+ *   2026 that have a `tournament` block), chips are nested two levels
+ *   deep: top-level = group letter (A, B, C…), sub-level = team
+ *   prefix (USA, MEX, …).
+ * - When the collection has no tournament, the whole list lives under
+ *   a single synthetic "section" so the UI doesn't have to special-case
+ *   the layout.
+ */
+type OwnListItem = { prefix: string; emoji: string; numbers: string[] };
+type GroupedSection = {
+  /** Either the group letter ("A") or null for the ungrouped fallback. */
+  groupKey: string | null;
+  /** Per-team buckets. */
+  teams: { prefix: string; emoji: string; numbers: string[] }[];
+};
+
+function buildGroupedSections(
+  groups: OwnListItem[],
+  tournamentGroups: TournamentGroup[] | null
+): GroupedSection[] {
+  if (groups.length === 0) return [];
+  const teamByPrefix = new Map<string, { emoji: string }>();
+  for (const g of groups) teamByPrefix.set(g.prefix, { emoji: g.emoji });
+
+  // Map prefix → group letter (if any).
+  const prefixToGroup = new Map<string, string>();
+  if (tournamentGroups) {
+    for (const tg of tournamentGroups) {
+      for (const teamId of tg.teamIds) {
+        prefixToGroup.set(teamId.toUpperCase(), tg.id);
+      }
     }
   }
 
-  return (
-    <section className="card flex flex-col gap-3" data-testid={testId}>
-      <header className="flex flex-col gap-1">
-        <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
-          {title}
-        </h2>
-        <p className="text-body-sm text-on-surface-variant">{description}</p>
-      </header>
+  // Bucket groups by group letter.
+  const byGroup = new Map<string, OwnListItem[]>();
+  const ungrouped: OwnListItem[] = [];
+  for (const g of groups) {
+    const letter = prefixToGroup.get(g.prefix.toUpperCase());
+    if (letter) {
+      if (!byGroup.has(letter)) byGroup.set(letter, []);
+      byGroup.get(letter)!.push(g);
+    } else {
+      ungrouped.push(g);
+    }
+  }
 
-      {hasAny ? (
+  // Build sections in group-letter order, then ungrouped at the end.
+  const sections: GroupedSection[] = [];
+  const orderedLetters = tournamentGroups?.map((g) => g.id) ?? [];
+  for (const letter of orderedLetters) {
+    const teamBuckets = byGroup.get(letter);
+    if (!teamBuckets || teamBuckets.length === 0) continue;
+    sections.push({
+      groupKey: letter,
+      teams: teamBuckets.map((b) => ({
+        prefix: b.prefix,
+        emoji: b.emoji,
+        numbers: b.numbers,
+      })),
+    });
+  }
+  if (ungrouped.length > 0) {
+    sections.push({
+      groupKey: null,
+      teams: ungrouped.map((b) => ({
+        prefix: b.prefix,
+        emoji: b.emoji,
+        numbers: b.numbers,
+      })),
+    });
+  }
+  return sections;
+}
+
+function OwnTabsCard({
+  tournamentGroups,
+  duplicates,
+  missing,
+  duplicatesCount,
+  missingCount,
+  duplicatesSelected,
+  missingSelected,
+  onToggleDuplicate,
+  onToggleMissing,
+  onSelectAllDuplicates,
+  onSelectNoneDuplicates,
+  onSelectAllMissing,
+  onSelectNoneMissing,
+  onCopyDuplicates,
+  onCopyMissing,
+  onCopyBoth,
+  onShareBoth,
+  onReserve,
+  collectionId,
+  stickers,
+}: OwnTabsCardProps) {
+  const { t } = useTranslation();
+  const [tab, setTab] = useState<TabKey>('duplicates');
+
+  const dupSections = useMemo(
+    () => buildGroupedSections(duplicates, tournamentGroups),
+    [duplicates, tournamentGroups]
+  );
+  const missSections = useMemo(
+    () => buildGroupedSections(missing, tournamentGroups),
+    [missing, tournamentGroups]
+  );
+
+  const isDup = tab === 'duplicates';
+  const activeSections = isDup ? dupSections : missSections;
+  const activeSelected = isDup ? duplicatesSelected : missingSelected;
+  const emptyHint = isDup
+    ? t('exchange.noDuplicatesHint')
+    : t('exchange.noMissingHint');
+  const testId = isDup ? 'duplicates-section' : 'missing-section';
+
+  return (
+    <section
+      className="card flex flex-col gap-3"
+      data-testid="own-tabs-card"
+    >
+      <SegmentedControl
+        ariaLabel={t('exchange.tabsLabel')}
+        value={tab}
+        onChange={(v: TabKey) => setTab(v)}
+        options={[
+          {
+            value: 'duplicates',
+            label: (
+              <span className="flex items-center justify-center gap-1.5">
+                <span>{t('exchange.duplicatesTitle')}</span>
+                <span className="rounded-full bg-surface-container-high px-1.5 text-label-sm">
+                  {duplicatesCount}
+                </span>
+              </span>
+            ),
+          },
+          {
+            value: 'missing',
+            label: (
+              <span className="flex items-center justify-center gap-1.5">
+                <span>{t('exchange.missingTitle')}</span>
+                <span className="rounded-full bg-surface-container-high px-1.5 text-label-sm">
+                  {missingCount}
+                </span>
+              </span>
+            ),
+          },
+        ]}
+      />
+
+      <p
+        className="text-body-sm text-on-surface-variant"
+        data-testid={`${testId}-description`}
+      >
+        {isDup
+          ? t('exchange.duplicatesDescription', { count: duplicatesCount })
+          : t('exchange.missingDescription', { count: missingCount })}
+      </p>
+
+      {activeSections.length === 0 ? (
+        <EmptyState title={t('exchange.noItems')} description={emptyHint} />
+      ) : (
         <>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               className="btn-secondary"
-              onClick={onSelectAll}
+              onClick={isDup ? onSelectAllDuplicates : onSelectAllMissing}
               data-testid={`${testId}-select-all`}
             >
               {t('exchange.selectAll')}
@@ -852,103 +921,266 @@ function OwnSection({
             <button
               type="button"
               className="btn-secondary"
-              onClick={onSelectNone}
+              onClick={isDup ? onSelectNoneDuplicates : onSelectNoneMissing}
               data-testid={`${testId}-select-none`}
             >
               {t('exchange.selectNone')}
             </button>
           </div>
 
-          <ul className="flex flex-wrap gap-1.5" data-testid={`${testId}-list`}>
-            {chips.map((chip) => (
-              <li
-                key={`${chip.code}#${chip.copyIndex}`}
-                className="flex flex-col items-start gap-1"
-                data-testid={`${testId}-chip-${chip.code}#${chip.copyIndex}`}
-              >
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => onToggle(chip.code, chip.copyIndex)}
-                    aria-pressed={selected.has(`${chip.code}#${chip.copyIndex}`)}
-                    aria-label={chip.code}
-                    data-selected={selected.has(`${chip.code}#${chip.copyIndex}`)}
-                    className={`flex items-center gap-1 rounded-full border px-2.5
-                      py-1 font-mono text-label-md transition-colors
-                      ${
-                        selected.has(`${chip.code}#${chip.copyIndex}`)
-                          ? 'border-primary bg-primary-container text-on-primary-container'
-                          : 'border-outline-variant bg-surface text-on-surface hover:bg-surface-container'
-                      }`}
-                  >
-                    <span aria-hidden="true">{groups[0]?.emoji || '·'}</span>
-                    <span>{chip.code}</span>
-                  </button>
-                  {onReserve && !chip.reservedPartner && testId === 'duplicates-section' ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        // Resolve stickerId from the first matching
-                        // sticker (we don't track it on the chip — the
-                        // buildOwnList output groups by prefix, so we
-                        // look it up by code in the inventory-derived
-                        // data. The caller will pass the right
-                        // stickerId via the openReserveModal prop.)
-                        const firstSticker = (stickers ?? []).find(
-                          (s) => s.code === chip.code
-                        );
-                        if (firstSticker) {
-                          onReserve(
-                            firstSticker.id,
-                            chip.code,
-                            firstSticker.teamId ?? '',
-                            groups[0]?.emoji ?? '',
-                            chip.copyIndex
-                          );
-                        }
-                      }}
-                      className="rounded-full border border-outline-variant
-                        bg-surface-container px-2 py-0.5 text-label-sm
-                        text-on-surface-variant hover:bg-surface-container-high"
-                      aria-label={t('exchange.reservations.reserveAction')}
-                      title={t('exchange.reservations.reserveAction')}
-                      data-testid={`${testId}-reserve-${chip.code}#${chip.copyIndex}`}
-                    >
-                      {t('exchange.reservations.reserveShort')}
-                    </button>
-                  ) : null}
-                </div>
-                {chip.reservedPartner ? (
-                  <span
-                    className="rounded-full bg-tertiary-container
-                      px-1.5 py-0.5 text-label-sm text-on-tertiary-container"
-                    data-testid={`${testId}-reserved-${chip.code}#${chip.copyIndex}`}
-                  >
-                    {t('exchange.reservations.reservedBadge', {
-                      partner: chip.reservedPartner,
-                    })}
-                  </span>
-                ) : null}
-              </li>
+          <div
+            className="flex flex-col gap-3"
+            data-testid={`${testId}-groups`}
+          >
+            {activeSections.map((section) => (
+              <TeamGroup
+                key={section.groupKey ?? 'ungrouped'}
+                section={section}
+                testId={testId}
+                selected={activeSelected}
+                onToggle={isDup ? onToggleDuplicate : onToggleMissing}
+                onReserve={onReserve}
+                stickers={stickers}
+                collectionId={collectionId}
+                hideTeamHeaders={activeSections.length === 1 && section.groupKey === null}
+              />
             ))}
-          </ul>
+          </div>
 
           <div className="flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
               className="btn-primary flex-1"
-              onClick={onCopy}
-              disabled={shareDisabled}
+              onClick={isDup ? onCopyDuplicates : onCopyMissing}
+              disabled={activeSelected.size === 0}
               data-testid={`${testId}-copy`}
             >
-              {selected.size > 0 ? copyLabelSelected : copyLabel}
+              {activeSelected.size > 0
+                ? isDup
+                  ? t('exchange.copyDuplicatesSelected', {
+                      count: activeSelected.size,
+                    })
+                  : t('exchange.copyMissingSelected', {
+                      count: activeSelected.size,
+                    })
+                : isDup
+                  ? t('exchange.copyDuplicates')
+                  : t('exchange.copyMissing')}
             </button>
           </div>
         </>
-      ) : (
-        <EmptyState title={t('exchange.noItems')} description={emptyHint} />
       )}
+
+      {/* Always-visible footer: copy both + share, even when one tab
+       *  has no items. This is the discoverable entry point for the
+       *  "share both" flow. */}
+      <div className="flex flex-col gap-2 border-t border-outline-variant pt-3 sm:flex-row">
+        <button
+          type="button"
+          className="btn-secondary flex-1"
+          onClick={onCopyBoth}
+          disabled={duplicatesCount === 0 && missingCount === 0}
+          data-testid="share-both-copy"
+        >
+          {t('exchange.copyBoth')}
+        </button>
+        <button
+          type="button"
+          className="btn-secondary flex-1"
+          onClick={onShareBoth}
+          disabled={duplicatesCount === 0 && missingCount === 0}
+          data-testid="share-both-share"
+        >
+          {t('exchange.shareBothShare')}
+        </button>
+      </div>
     </section>
+  );
+}
+
+function TeamGroup({
+  section,
+  testId,
+  selected,
+  onToggle,
+  onReserve,
+  stickers,
+  collectionId,
+  hideTeamHeaders,
+}: {
+  section: GroupedSection;
+  testId: string;
+  selected: Set<string>;
+  onToggle: (code: string, copyIndex: number) => void;
+  onReserve: (
+    stickerId: string,
+    code: string,
+    displayPrefix: string,
+    emoji: string,
+    copyIndex: number
+  ) => void;
+  stickers: Array<{ id: string; code: string; teamId?: string }>;
+  collectionId: string;
+  hideTeamHeaders: boolean;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div
+      className="flex flex-col gap-2"
+      data-testid={`${testId}-group-${section.groupKey ?? 'ungrouped'}`}
+    >
+      {section.groupKey !== null ? (
+        <h3
+          className="text-label-md font-semibold uppercase tracking-wide
+            text-on-surface-variant"
+          data-testid={`${testId}-group-header-${section.groupKey}`}
+        >
+          {t('exchange.groupHeader', { letter: section.groupKey })}
+        </h3>
+      ) : null}
+      <div className="flex flex-col gap-1.5">
+        {section.teams.map((teamBucket) => (
+          <TeamRow
+            key={teamBucket.prefix}
+            testId={testId}
+            prefix={teamBucket.prefix}
+            emoji={teamBucket.emoji}
+            numbers={teamBucket.numbers}
+            selected={selected}
+            onToggle={onToggle}
+            onReserve={onReserve}
+            stickers={stickers}
+            collectionId={collectionId}
+            hideHeader={hideTeamHeaders}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TeamRow({
+  testId,
+  prefix,
+  emoji,
+  numbers,
+  selected,
+  onToggle,
+  onReserve,
+  stickers,
+  collectionId,
+  hideHeader,
+}: {
+  testId: string;
+  prefix: string;
+  emoji: string;
+  numbers: string[];
+  selected: Set<string>;
+  onToggle: (code: string, copyIndex: number) => void;
+  onReserve: (
+    stickerId: string,
+    code: string,
+    displayPrefix: string,
+    emoji: string,
+    copyIndex: number
+  ) => void;
+  stickers: Array<{ id: string; code: string; teamId?: string }>;
+  collectionId: string;
+  hideHeader: boolean;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div
+      className="flex flex-col gap-1"
+      data-testid={`${testId}-team-${prefix}`}
+    >
+      {!hideHeader ? (
+        <p
+          className="text-label-md font-semibold text-on-surface"
+          data-testid={`${testId}-team-header-${prefix}`}
+        >
+          {emoji ? <span aria-hidden="true">{emoji} </span> : null}
+          {prefix}
+        </p>
+      ) : null}
+      <ul className="flex flex-wrap gap-1.5">
+        {numbers.map((n, copyIndex) => {
+          const code = `${prefix}${n}`;
+          const key = `${code}#${copyIndex}`;
+          const partner = reservedPartnerFor(
+            useReservationStore.getState().items,
+            collectionId,
+            code
+          );
+          const isSelected = selected.has(key);
+          return (
+            <li
+              key={key}
+              className="flex flex-col items-start gap-1"
+              data-testid={`${testId}-chip-${key}`}
+            >
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => onToggle(code, copyIndex)}
+                  aria-pressed={isSelected}
+                  aria-label={code}
+                  data-selected={isSelected}
+                  className={`flex items-center gap-1 rounded-full border px-2.5
+                    py-1 font-mono text-label-md transition-colors
+                    ${
+                      isSelected
+                        ? 'border-primary bg-primary-container text-on-primary-container'
+                        : 'border-outline-variant bg-surface text-on-surface hover:bg-surface-container'
+                    }`}
+                >
+                  {emoji ? (
+                    <span aria-hidden="true">{emoji} </span>
+                  ) : null}
+                  <span>{code}</span>
+                </button>
+                {!partner && testId === 'duplicates-section' ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const firstSticker = (stickers ?? []).find(
+                        (s) => s.code === code
+                      );
+                      if (firstSticker) {
+                        onReserve(
+                          firstSticker.id,
+                          code,
+                          prefix,
+                          emoji,
+                          copyIndex
+                        );
+                      }
+                    }}
+                    className="rounded-full border border-outline-variant
+                      bg-surface-container px-2 py-0.5 text-label-sm
+                      text-on-surface-variant hover:bg-surface-container-high"
+                    aria-label={t('exchange.reservations.reserveAction')}
+                    title={t('exchange.reservations.reserveAction')}
+                    data-testid={`${testId}-reserve-${key}`}
+                  >
+                    {t('exchange.reservations.reserveShort')}
+                  </button>
+                ) : null}
+              </div>
+              {partner ? (
+                <span
+                  className="rounded-full bg-tertiary-container
+                    px-1.5 py-0.5 text-label-sm text-on-tertiary-container"
+                  data-testid={`${testId}-reserved-${key}`}
+                >
+                  {t('exchange.reservations.reservedBadge', { partner })}
+                </span>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 
