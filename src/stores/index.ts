@@ -9,6 +9,15 @@ export { useScenarioStore } from './scenarioStore';
 export {
   useReservationStore,
   isReserved,
+  reservedPartnerFor,
   totalReservedFor,
+  totalReservedAcrossTrades,
+  pendingTradesFor,
+  stickerReservationsFor,
 } from './reservationStore';
-export type { Reservation } from './reservationStore';
+export type {
+  ReservationItem,
+  StickerReservation,
+  PendingTrade,
+  TradeStickerRef,
+} from './reservationStore';

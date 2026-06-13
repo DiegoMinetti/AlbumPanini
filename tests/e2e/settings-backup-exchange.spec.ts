@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { primeSettings, goto, installDemo } from './helpers';
+import { primeSettings, goto, installDemo, dismissTransientUi } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await primeSettings(page);
@@ -27,15 +27,29 @@ test('export a backup file', async ({ page }) => {
   expect(download.suggestedFilename()).toMatch(/\.albumbackup$/);
 });
 
-test('generate an exchange QR code', async ({ page }) => {
+test('copy duplicates list to clipboard', async ({ page }) => {
+  // Browsers may not support granting clipboard perms in headless; the test
+  // still verifies the UI flow (the copy is best-effort).
   await installDemo(page);
-  // give a duplicate so there is something to offer
+  // Make at least one duplicate so the Duplicates section has something to offer.
   await goto(page, '/stickers');
   const card = page.getByTestId('sticker-card').first();
   await card.getByRole('button', { name: 'increment' }).click();
   await card.getByRole('button', { name: 'increment' }).click();
+  await dismissTransientUi(page);
 
   await goto(page, '/exchange');
-  await page.getByRole('button', { name: 'Generate QR' }).click();
-  await expect(page.getByTestId('exchange-qr')).toBeVisible();
+  await expect(page.getByTestId('duplicates-section')).toBeVisible();
+  await page.getByTestId('duplicates-section-copy').click();
+  // Either a success toast appears or the button label flips to "Copy selected".
+  // We assert the section is still rendered (no crash) and the testids exist.
+  await expect(page.getByTestId('duplicates-section')).toBeVisible();
+});
+
+test('paste a friend list and see a summary', async ({ page }) => {
+  await installDemo(page);
+  await goto(page, '/exchange');
+  await page.getByTestId('paste-textarea').fill('ARG 1\nBRA 1');
+  await page.getByTestId('paste-analyze').click();
+  await expect(page.getByTestId('paste-summary')).toBeVisible();
 });

@@ -4,6 +4,7 @@ import { db } from '@/db';
 import type { StoredSticker, StoredTeam } from '@/types/collection';
 import { computeStatistics } from '@/services/statsService';
 import { isExtraSticker } from '@/services/filterService';
+import { sortStickersByAlbumOrder } from '@/utils/albumOrder';
 import type { FullStatistics } from '@/types/stats';
 
 export interface CollectionData {
@@ -56,9 +57,12 @@ export function useCollectionData(collectionId: string | null): CollectionData {
   );
   const stickers = useMemo(() => {
     if (!allStickers) return allStickers;
-    return includeExtras
+    // Dexie doesn't preserve insertion order on fetch, so we always
+    // sort by the sticker's `order` field to mirror the album layout.
+    const filtered = includeExtras
       ? allStickers
       : allStickers.filter((s) => !isExtraSticker(s));
+    return sortStickersByAlbumOrder(filtered);
   }, [allStickers, includeExtras]);
   const teams = useLiveQuery<StoredTeam[]>(
     async () =>

@@ -129,7 +129,6 @@ export default defineConfig({
           react: ['react', 'react-dom', 'react-router-dom'],
           charts: ['recharts'],
           ocr: ['tesseract.js'],
-          qr: ['qrcode', 'jsqr'],
         },
       },
     },
