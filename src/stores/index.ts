@@ -10,5 +10,13 @@ export {
   useReservationStore,
   isReserved,
   totalReservedFor,
+  totalReservedAcrossTrades,
+  pendingTradesFor,
+  stickerReservationsFor,
 } from './reservationStore';
-export type { Reservation } from './reservationStore';
+export type {
+  ReservationItem,
+  StickerReservation,
+  PendingTrade,
+  TradeStickerRef,
+} from './reservationStore';

@@ -14,7 +14,18 @@ import { adjustQuantity } from '@/services/inventoryService';
 import { Spinner } from '@/components/feedback/Spinner';
 import { NoActiveCollection } from '@/components/collections/NoActiveCollection';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { PromptModal } from '@/components/ui/PromptModal';
 import { toast } from '@/stores/uiStore';
+import {
+  pendingTradesFor,
+  stickerReservationsFor,
+  totalReservedAcrossTrades,
+  useReservationStore,
+  type PendingTrade,
+  type ReservationItem,
+  type StickerReservation,
+  type TradeStickerRef,
+} from '@/stores/reservationStore';
 
 /** Default partner label used when the user pastes a list without naming someone. */
 const DEFAULT_PARTNER = 'amigo';
@@ -24,13 +35,30 @@ export function ExchangePage() {
   const { active, loading } = useActiveCollection();
   const { stickers, teams, inventory } = useCollectionData(active?.id ?? null);
 
+  // ---- Reservations store (read + write) ----
+  const items = useReservationStore((s) => s.items);
+  const addStickerReservation = useReservationStore((s) => s.addStickerReservation);
+  const removeStickerReservation = useReservationStore(
+    (s) => s.removeStickerReservation
+  );
+  const addPendingTrade = useReservationStore((s) => s.addPendingTrade);
+  const confirmTradeAction = useReservationStore((s) => s.confirmTrade);
+  const cancelTradeAction = useReservationStore((s) => s.cancelTrade);
+
   // ---- Repetidas: sub-selection of which duplicates we'll offer. ----
-  // The user can uncheck stickers from the auto-populated list to narrow
-  // down what they want to copy/share.
   const [offeredDuplicates, setOfferedDuplicates] = useState<Set<string>>(new Set());
   const [offeredMissing, setOfferedMissing] = useState<Set<string>>(new Set());
 
-  // ---- Paste flow state. ----
+  // ---- Reserve sticker modal ----
+  const [reserveModalOpen, setReserveModalOpen] = useState(false);
+  const [reserveTarget, setReserveTarget] = useState<{
+    stickerId: string;
+    code: string;
+    displayPrefix: string;
+    emoji: string;
+  } | null>(null);
+
+  // ---- Paste flow state ----
   const [partner, setPartner] = useState(DEFAULT_PARTNER);
   const [resolved, setResolved] = useState<ResolvedExchange | null>(null);
   const [pastedText, setPastedText] = useState('');
@@ -39,7 +67,7 @@ export function ExchangePage() {
 
   const collectionId = active?.id ?? null;
 
-  // ---- Derive the "Repetidas" / "Faltan" groups from the active collection. ----
+  // ---- Derive "Repetidas" / "Faltan" groups from the active collection. ----
   const ownList = useMemo(
     () =>
       buildOwnList({
@@ -54,9 +82,8 @@ export function ExchangePage() {
     [stickers, teams, inventory]
   );
 
-  // Pre-select all duplicates when the list first loads (or changes due to
-  // a fresh collection). Missing is empty by default — the user has to
-  // explicitly mark which ones they want to ask for.
+  // Pre-select all duplicates when the list first loads. Missing is empty
+  // by default.
   const duplicatesKey = ownList.duplicates
     .map((g) => g.prefix + g.numbers.join(','))
     .join('|');
@@ -75,14 +102,31 @@ export function ExchangePage() {
     setResolved(null);
     setPastedText('');
     setErrorMsg(null);
-    // We intentionally re-seed the selection only when the *shape* of
-    // duplicates/missing changes (captured in `duplicatesKey` / `missingKey`)
-    // — not on every inventory write.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [duplicatesKey, missingKey]);
 
+  // ---- Reservations scoped to the current collection ----
+  const pendingTrades = useMemo(
+    () => (collectionId ? pendingTradesFor(items, collectionId) : []),
+    [items, collectionId]
+  );
+  const stickerReservations = useMemo(
+    () => (collectionId ? stickerReservationsFor(items, collectionId) : []),
+    [items, collectionId]
+  );
+
   if (loading) return <Spinner />;
   if (!active || !collectionId) return <NoActiveCollection />;
+
+  const totalDuplicates = ownList.duplicates.reduce(
+    (sum, g) => sum + g.numbers.length,
+    0
+  );
+  const totalMissing = ownList.missing.reduce((sum, g) => sum + g.numbers.length, 0);
+  const totalOfferedDup = offeredDuplicates.size;
+  const totalOfferedMiss = offeredMissing.size;
+
+  // ---- Handlers ----
 
   const toggleOffered = (
     code: string,
@@ -104,12 +148,7 @@ export function ExchangePage() {
     };
     const duplicates = section === 'duplicates' ? pickSelected(ownList.duplicates, offeredDuplicates) : [];
     const missing = section === 'missing' ? pickSelected(ownList.missing, offeredMissing) : [];
-    const text = buildExchangeText({
-      labels,
-      collectionId,
-      duplicates,
-      missing,
-    });
+    const text = buildExchangeText({ labels, collectionId, duplicates, missing });
     void writeClipboard(text).then((ok) => {
       if (!ok) toast.error(t('toast.error'));
       else toast.success(t('exchange.copied'));
@@ -125,12 +164,7 @@ export function ExchangePage() {
     };
     const duplicates = pickSelected(ownList.duplicates, offeredDuplicates);
     const missing = pickSelected(ownList.missing, offeredMissing);
-    const text = buildExchangeText({
-      labels,
-      collectionId,
-      duplicates,
-      missing,
-    });
+    const text = buildExchangeText({ labels, collectionId, duplicates, missing });
     void writeClipboard(text).then((ok) => {
       if (!ok) toast.error(t('toast.error'));
       else toast.success(t('exchange.copied'));
@@ -146,16 +180,40 @@ export function ExchangePage() {
     };
     const duplicates = pickSelected(ownList.duplicates, offeredDuplicates);
     const missing = pickSelected(ownList.missing, offeredMissing);
-    const text = buildExchangeText({
-      labels,
-      collectionId,
-      duplicates,
-      missing,
-    });
+    const text = buildExchangeText({ labels, collectionId, duplicates, missing });
     const ok = await shareOrCopy(text);
     if (!ok) toast.error(t('toast.error'));
     else toast.success(t('exchange.copied'));
   };
+
+  // ---- Reserve sticker handlers ----
+
+  const openReserveModal = (
+    stickerId: string,
+    code: string,
+    displayPrefix: string,
+    emoji: string
+  ) => {
+    setReserveTarget({ stickerId, code, displayPrefix, emoji });
+    setReserveModalOpen(true);
+  };
+
+  const confirmReserveSticker = (partnerName: string) => {
+    if (!reserveTarget) return;
+    addStickerReservation({
+      collectionId,
+      stickerId: reserveTarget.stickerId,
+      partner: partnerName,
+      code: reserveTarget.code,
+      displayPrefix: reserveTarget.displayPrefix,
+      emoji: reserveTarget.emoji,
+    });
+    toast.success(t('exchange.reservations.reservedToast', { partner: partnerName }));
+    setReserveModalOpen(false);
+    setReserveTarget(null);
+  };
+
+  // ---- Paste handlers ----
 
   const handlePasteFromClipboard = async () => {
     if (typeof navigator === 'undefined' || !navigator.clipboard?.readText) {
@@ -214,39 +272,56 @@ export function ExchangePage() {
     setErrorMsg(null);
   };
 
-  const handleApplyTrade = async () => {
-    if (!resolved) return;
-    // Apply: for every "they give you" → +1; every "you give them" → -1
-    // (only if you have a duplicate to give). The user picks which
-    // duplicates to give via `offeredDuplicates` (already filtered).
-    const received = resolved.missing; // things they have, you need
-    const given = ownList.duplicates
+  // ---- Trade handlers (apply / reserve) ----
+
+  /**
+   * Build the current trade from the paste result and the user's
+   * "offered duplicates" / "offered missing" selections.
+   */
+  const buildCurrentTrade = (): {
+    give: TradeStickerRef[];
+    receive: TradeStickerRef[];
+  } | null => {
+    if (!resolved) return null;
+    // give = duplicates the user has AND the friend has
+    const give = ownList.duplicates
       .flatMap((g) =>
         g.numbers
           .filter((n) => offeredDuplicates.has(`${g.prefix}${n}`))
-          .map((n) => ({ stickerId: `${g.prefix}${n}`, code: `${g.prefix}${n}` }))
+          .map<TradeStickerRef>((n) => ({
+            stickerId: `${g.prefix}${n}`,
+            code: `${g.prefix}${n}`,
+            displayPrefix: g.prefix,
+            emoji: g.emoji,
+          }))
       )
-      // only the ones the friend has (intersection)
-      .filter((d) =>
-        resolved.duplicates.some((r) => r.code === d.code)
-      );
+      .filter((d) => resolved.duplicates.some((r) => r.code === d.code));
+    const receive = resolved.missing.map<TradeStickerRef>((s) => ({
+      stickerId: s.stickerId,
+      code: s.code,
+      displayPrefix: s.prefix,
+      emoji: s.emoji,
+    }));
+    return { give, receive };
+  };
 
-    if (given.length === 0 && received.length === 0) {
+  const handleApplyTrade = async () => {
+    const trade = buildCurrentTrade();
+    if (!trade || (trade.give.length === 0 && trade.receive.length === 0)) {
       toast.error(t('exchange.tradeEmpty'));
       return;
     }
-
     try {
-      for (const g of given) {
+      for (const g of trade.give) {
         await adjustQuantity(collectionId, g.stickerId, -1);
       }
-      for (const r of received) {
+      for (const r of trade.receive) {
         await adjustQuantity(collectionId, r.stickerId, 1);
       }
       toast.success(
         t('exchange.tradeApplied', {
-          give: given.length,
-          receive: received.length,
+          give: trade.give.length,
+          receive: trade.receive.length,
           partner: partner.trim() || t('exchange.partnerDefault'),
         })
       );
@@ -257,13 +332,70 @@ export function ExchangePage() {
     }
   };
 
-  const totalDuplicates = ownList.duplicates.reduce(
-    (sum, g) => sum + g.numbers.length,
-    0
-  );
-  const totalMissing = ownList.missing.reduce((sum, g) => sum + g.numbers.length, 0);
-  const totalOfferedDup = offeredDuplicates.size;
-  const totalOfferedMiss = offeredMissing.size;
+  const handleReserveTrade = () => {
+    const trade = buildCurrentTrade();
+    if (!trade || (trade.give.length === 0 && trade.receive.length === 0)) {
+      toast.error(t('exchange.reservations.reserveTradeEmpty'));
+      return;
+    }
+    addPendingTrade({
+      collectionId,
+      partner: partner.trim() || t('exchange.partnerDefault'),
+      give: trade.give,
+      receive: trade.receive,
+    });
+    toast.success(
+      t('exchange.reservations.tradeReservedToast', {
+        partner: partner.trim() || t('exchange.partnerDefault'),
+      })
+    );
+    setResolved(null);
+    setPastedText('');
+  };
+
+  // ---- Pending trade confirm / cancel ----
+
+  const handleConfirmTrade = async (tradeId: string) => {
+    const trade = confirmTradeAction(tradeId);
+    if (!trade || trade.kind !== 'trade') return;
+    try {
+      for (const g of trade.give) {
+        await adjustQuantity(collectionId, g.stickerId, -1);
+      }
+      for (const r of trade.receive) {
+        await adjustQuantity(collectionId, r.stickerId, 1);
+      }
+      toast.success(
+        t('exchange.reservations.tradeConfirmed', {
+          give: trade.give.length,
+          receive: trade.receive.length,
+          partner: trade.partner,
+        })
+      );
+    } catch {
+      toast.error(t('toast.error'));
+      // Re-add the trade if inventory update failed.
+      addPendingTrade({
+        collectionId,
+        partner: trade.partner,
+        give: trade.give,
+        receive: trade.receive,
+        note: trade.note,
+      });
+    }
+  };
+
+  const handleCancelTrade = (tradeId: string) => {
+    const trade = items.find(
+      (it) => it.kind === 'trade' && it.tradeId === tradeId
+    );
+    cancelTradeAction(tradeId);
+    if (trade && trade.kind === 'trade') {
+      toast.info(
+        t('exchange.reservations.tradeCancelled', { partner: trade.partner })
+      );
+    }
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -290,6 +422,10 @@ export function ExchangePage() {
         emptyHint={t('exchange.noDuplicatesHint')}
         testId="duplicates-section"
         shareDisabled={totalOfferedDup === 0}
+        // Reservation hint for each chip:
+        onReserve={openReserveModal}
+        inventory={inventory}
+        items={items}
       />
 
       {/* ============== 2. FALTAN ============== */}
@@ -319,10 +455,7 @@ export function ExchangePage() {
 
       {/* ============== 3. SHARE BOTH ============== */}
       {(totalDuplicates > 0 || totalMissing > 0) && (
-        <section
-          className="card flex flex-col gap-3"
-          data-testid="share-both-section"
-        >
+        <section className="card flex flex-col gap-3" data-testid="share-both-section">
           <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
             {t('exchange.shareBothTitle')}
           </h2>
@@ -420,31 +553,34 @@ export function ExchangePage() {
 
         {resolved ? (
           <>
-            <ResolvedSummary resolved={resolved} collectionId={collectionId} />
-            <div className="flex gap-2">
+            <ResolvedSummary resolved={resolved} />
+            <div className="flex flex-col gap-2 sm:flex-row">
               <button
                 type="button"
                 className="btn-primary flex-1"
                 onClick={handleApplyTrade}
                 disabled={
                   resolved.missing.length === 0 &&
-                  (ownList.duplicates
-                    .flatMap((g) => g.numbers.map((n) => `${g.prefix}${n}`))
-                    .filter((c) => offeredDuplicates.has(c) &&
-                      resolved.duplicates.some((r) => r.code === c))
-                    .length === 0)
+                  buildCurrentTrade()?.give.length === 0
                 }
                 data-testid="paste-apply"
               >
                 {t('exchange.tradeConfirm', {
-                  give: ownList.duplicates
-                    .flatMap((g) => g.numbers.map((n) => `${g.prefix}${n}`))
-                    .filter((c) =>
-                      offeredDuplicates.has(c) &&
-                      resolved.duplicates.some((r) => r.code === c)
-                    ).length,
+                  give: buildCurrentTrade()?.give.length ?? 0,
                   receive: resolved.missing.length,
                 })}
+              </button>
+              <button
+                type="button"
+                className="btn-secondary flex-1"
+                onClick={handleReserveTrade}
+                disabled={
+                  resolved.missing.length === 0 &&
+                  buildCurrentTrade()?.give.length === 0
+                }
+                data-testid="paste-reserve"
+              >
+                {t('exchange.reservations.reserveForLater')}
               </button>
               <button
                 type="button"
@@ -458,6 +594,31 @@ export function ExchangePage() {
           </>
         ) : null}
       </section>
+
+      {/* ============== 5. RESERVATIONS ============== */}
+      <ReservationsSection
+        pendingTrades={pendingTrades}
+        stickerReservations={stickerReservations}
+        onConfirmTrade={handleConfirmTrade}
+        onCancelTrade={handleCancelTrade}
+        onCancelStickerReservation={(s) =>
+          removeStickerReservation(collectionId, s.stickerId, s.partner)
+        }
+      />
+
+      {/* ============== Reserve sticker modal ============== */}
+      <PromptModal
+        open={reserveModalOpen}
+        title={t('exchange.reservations.reserveTitle')}
+        label={t('exchange.reservations.reserveLabel')}
+        placeholder={t('exchange.reservations.reservePlaceholder')}
+        confirmLabel={t('exchange.reservations.reserveAction')}
+        onConfirm={confirmReserveSticker}
+        onCancel={() => {
+          setReserveModalOpen(false);
+          setReserveTarget(null);
+        }}
+      />
     </div>
   );
 }
@@ -480,6 +641,15 @@ interface OwnSectionProps {
   emptyHint: string;
   testId: string;
   shareDisabled: boolean;
+  /** Optional reservation opener for individual stickers. */
+  onReserve?: (
+    stickerId: string,
+    code: string,
+    displayPrefix: string,
+    emoji: string
+  ) => void;
+  inventory?: Map<string, number>;
+  items?: ReservationItem[];
 }
 
 function OwnSection({
@@ -496,10 +666,34 @@ function OwnSection({
   emptyHint,
   testId,
   shareDisabled,
+  onReserve,
+  inventory,
+  items,
 }: OwnSectionProps) {
   const { t } = useTranslation();
   const totalGroups = groups.length;
   const hasAny = totalGroups > 0;
+
+  // For each sticker code in this section, how many copies does the user
+  // currently have? Used to decide whether a "Reserve" affordance makes
+  // sense (only for duplicates).
+  const qtyByCode = useMemo(() => {
+    const m = new Map<string, number>();
+    if (!inventory || !items) return m;
+    for (const g of groups) {
+      for (const n of g.numbers) {
+        const code = `${g.prefix}${n}`;
+        const total = totalReservedAcrossTrades(items, inventory && 'collectionId' in inventory ? '' : '', code);
+        // We don't actually need the reservation count for *enabling*
+        // the reserve button — we need the inventory count, which is
+        // passed in via `inventory` (the `items` prop is just for
+        // badges). Keep the symbol but read inventory below.
+        void total;
+        m.set(code, inventory.get(code) ?? 0);
+      }
+    }
+    return m;
+  }, [groups, inventory, items]);
 
   return (
     <section className="card flex flex-col gap-3" data-testid={testId}>
@@ -536,8 +730,10 @@ function OwnSection({
               g.numbers.map((n) => {
                 const code = `${g.prefix}${n}`;
                 const isSelected = selected.has(code);
+                const qty = qtyByCode.get(code) ?? 0;
+                const canReserve = onReserve && qty > 1;
                 return (
-                  <li key={code}>
+                  <li key={code} className="flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => onToggle(code)}
@@ -556,6 +752,20 @@ function OwnSection({
                       <span aria-hidden="true">{g.emoji || '·'}</span>
                       <span>{code}</span>
                     </button>
+                    {canReserve ? (
+                      <button
+                        type="button"
+                        onClick={() => onReserve!(g.prefix + n, code, g.prefix, g.emoji)}
+                        className="rounded-full border border-outline-variant
+                          bg-surface-container px-2 py-0.5 text-label-sm
+                          text-on-surface-variant hover:bg-surface-container-high"
+                        aria-label={t('exchange.reservations.reserveAction')}
+                        title={t('exchange.reservations.reserveAction')}
+                        data-testid={`${testId}-reserve-${code}`}
+                      >
+                        {t('exchange.reservations.reserveShort')}
+                      </button>
+                    ) : null}
                   </li>
                 );
               })
@@ -575,10 +785,7 @@ function OwnSection({
           </div>
         </>
       ) : (
-        <EmptyState
-          title={t('exchange.noItems')}
-          description={emptyHint}
-        />
+        <EmptyState title={t('exchange.noItems')} description={emptyHint} />
       )}
     </section>
   );
@@ -588,12 +795,7 @@ function OwnSection({
 /* Resolved summary after a paste                                       */
 /* ------------------------------------------------------------------ */
 
-function ResolvedSummary({
-  resolved,
-}: {
-  resolved: ResolvedExchange;
-  collectionId?: string;
-}) {
+function ResolvedSummary({ resolved }: { resolved: ResolvedExchange }) {
   const { t } = useTranslation();
   const iCanGive = resolved.duplicates.length;
   const iNeed = resolved.missing.length;
@@ -618,6 +820,176 @@ function ResolvedSummary({
           {t('exchange.pasteUnresolved', { count: unresolved })}
         </p>
       ) : null}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Reservations section                                                  */
+/* ------------------------------------------------------------------ */
+
+interface ReservationsSectionProps {
+  pendingTrades: PendingTrade[];
+  stickerReservations: StickerReservation[];
+  onConfirmTrade: (tradeId: string) => void;
+  onCancelTrade: (tradeId: string) => void;
+  onCancelStickerReservation: (s: StickerReservation) => void;
+}
+
+function ReservationsSection({
+  pendingTrades,
+  stickerReservations,
+  onConfirmTrade,
+  onCancelTrade,
+  onCancelStickerReservation,
+}: ReservationsSectionProps) {
+  const { t } = useTranslation();
+  const hasAnything = pendingTrades.length > 0 || stickerReservations.length > 0;
+
+  return (
+    <section className="card flex flex-col gap-3" data-testid="reservations-section">
+      <header className="flex flex-col gap-1">
+        <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
+          {t('exchange.reservations.title')}
+        </h2>
+        <p className="text-body-sm text-on-surface-variant">
+          {t('exchange.reservations.description')}
+        </p>
+      </header>
+
+      {!hasAnything ? (
+        <EmptyState
+          title={t('exchange.reservations.emptyTitle')}
+          description={t('exchange.reservations.emptyHint')}
+        />
+      ) : null}
+
+      {pendingTrades.length > 0 ? (
+        <ul className="flex flex-col gap-2" data-testid="pending-trades-list">
+          {pendingTrades.map((trade) => (
+            <li
+              key={trade.tradeId}
+              className="flex flex-col gap-2 rounded-md border border-outline-variant
+                bg-surface-container-lowest p-2"
+              data-testid={`pending-trade-${trade.tradeId}`}
+            >
+              <header className="flex items-center justify-between gap-2">
+                <p className="text-label-md font-semibold text-on-surface">
+                  {t('exchange.reservations.withPartner', { partner: trade.partner })}
+                </p>
+              </header>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <TradeSide
+                  tone="give"
+                  title={t('exchange.reservations.youGive', {
+                    count: trade.give.length,
+                  })}
+                  items={trade.give}
+                />
+                <TradeSide
+                  tone="receive"
+                  title={t('exchange.reservations.youReceive', {
+                    count: trade.receive.length,
+                  })}
+                  items={trade.receive}
+                />
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  className="btn-primary flex-1"
+                  onClick={() => void onConfirmTrade(trade.tradeId)}
+                  data-testid={`pending-trade-confirm-${trade.tradeId}`}
+                >
+                  {t('exchange.reservations.confirmTrade', {
+                    give: trade.give.length,
+                    receive: trade.receive.length,
+                  })}
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => onCancelTrade(trade.tradeId)}
+                  data-testid={`pending-trade-cancel-${trade.tradeId}`}
+                >
+                  {t('exchange.reservations.cancelTrade')}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {stickerReservations.length > 0 ? (
+        <div className="flex flex-col gap-2" data-testid="sticker-reservations-list">
+          <h3 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
+            {t('exchange.reservations.stickerReservationsTitle')}
+          </h3>
+          <ul className="flex flex-col gap-1">
+            {stickerReservations.map((r) => (
+              <li
+                key={`${r.collectionId}-${r.stickerId}-${r.partner}`}
+                className="flex items-center justify-between gap-2 rounded-md
+                  bg-surface-container-lowest px-2 py-1 text-body-sm"
+                data-testid={`sticker-reservation-${r.stickerId}-${r.partner}`}
+              >
+                <p className="flex items-center gap-1 font-mono">
+                  <span aria-hidden="true">{r.emoji || '·'}</span>
+                  <span>{r.code}</span>
+                  <span className="text-on-surface-variant">×{r.count}</span>
+                  <span className="text-on-surface-variant">—</span>
+                  <span>{r.partner}</span>
+                </p>
+                <button
+                  type="button"
+                  className="text-label-sm text-error underline underline-offset-2"
+                  onClick={() => onCancelStickerReservation(r)}
+                  data-testid={`sticker-reservation-cancel-${r.stickerId}-${r.partner}`}
+                >
+                  {t('exchange.reservations.cancelSticker')}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function TradeSide({
+  tone,
+  title,
+  items,
+}: {
+  tone: 'give' | 'receive';
+  title: string;
+  items: TradeStickerRef[];
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <p
+        className={`text-label-md font-semibold ${
+          tone === 'give' ? 'text-secondary' : 'text-primary'
+        }`}
+      >
+        {title}
+      </p>
+      {items.length === 0 ? (
+        <p className="text-label-sm text-on-surface-variant">—</p>
+      ) : (
+        <ul className="flex flex-wrap gap-1">
+          {items.map((it) => (
+            <li
+              key={`${tone}-${it.stickerId}`}
+              className="rounded-md bg-surface-container px-1.5 py-0.5 font-mono text-label-md text-on-surface"
+            >
+              <span aria-hidden="true">{it.emoji || '·'} </span>
+              {it.code}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

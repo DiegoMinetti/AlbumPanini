@@ -200,7 +200,31 @@
     "tradeConfirm": "Confirmar cambio · {{give}} ↔ {{receive}}",
     "pasteTheyGive": "Te da: {{count}}",
     "pasteYouReceive": "Recibís: {{count}}",
-    "pasteUnresolved": "{{count}} no se pudieron asociar al álbum activo"
+    "pasteUnresolved": "{{count}} no se pudieron asociar al álbum activo",
+    "reservations": {
+      "title": "Reservas pendientes",
+      "description": "Acá quedan guardados los cambios que querés hacer más tarde. Confirmá o cancelá cuando los concretes.",
+      "emptyTitle": "Sin reservas todavía",
+      "emptyHint": "Marcá una figurita como reservada o guardá un cambio desde el portapapeles.",
+      "reserveTitle": "Reservar para un amigo",
+      "reserveLabel": "Nombre del amigo",
+      "reservePlaceholder": "Ej. María",
+      "reserveAction": "Reservar",
+      "reserveShort": "Reservar",
+      "reservedToast": "Figurita reservada para {{partner}}",
+      "tradeReservedToast": "Cambio reservado para {{partner}}",
+      "tradeConfirmed": "Listo: le diste {{give}} y recibiste {{receive}} de {{partner}}.",
+      "tradeCancelled": "Reserva cancelada para {{partner}}",
+      "confirmTrade": "Confirmar cambio · {{give}} ↔ {{receive}}",
+      "cancelTrade": "Cancelar",
+      "cancelSticker": "Quitar reserva",
+      "withPartner": "Con {{partner}}",
+      "youGive": "Le das ({{count}})",
+      "youReceive": "Te da ({{count}})",
+      "stickerReservationsTitle": "Figuritas reservadas",
+      "reserveForLater": "Reservar para después",
+      "reserveTradeEmpty": "No hay nada para reservar todavía."
+    }
   },
 
   "collections": {

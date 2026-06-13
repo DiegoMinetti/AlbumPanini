@@ -7,6 +7,7 @@ interface PromptModalProps {
   title: string;
   label?: string;
   initialValue?: string;
+  placeholder?: string;
   confirmLabel?: string;
   /** Optional checkbox shown under the input. */
   checkboxLabel?: string;
@@ -19,6 +20,7 @@ export function PromptModal({
   title,
   label,
   initialValue = '',
+  placeholder,
   confirmLabel,
   checkboxLabel,
   onConfirm,
@@ -64,6 +66,7 @@ export function PromptModal({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         autoFocus
+        placeholder={placeholder}
         aria-label={label ?? title}
       />
       {checkboxLabel ? (

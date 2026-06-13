@@ -200,7 +200,31 @@
     "tradeConfirm": "Confirm trade · {{give}} ↔ {{receive}}",
     "pasteTheyGive": "They give: {{count}}",
     "pasteYouReceive": "You receive: {{count}}",
-    "pasteUnresolved": "{{count}} couldn't be matched to the active album"
+    "pasteUnresolved": "{{count}} couldn't be matched to the active album",
+    "reservations": {
+      "title": "Pending reservations",
+      "description": "Trades earmarked for later. Confirm or cancel when you meet up.",
+      "emptyTitle": "No reservations yet",
+      "emptyHint": "Mark a sticker as reserved or save a trade from the clipboard.",
+      "reserveTitle": "Reserve for a friend",
+      "reserveLabel": "Friend's name",
+      "reservePlaceholder": "E.g. Maria",
+      "reserveAction": "Reserve",
+      "reserveShort": "Reserve",
+      "reservedToast": "Sticker reserved for {{partner}}",
+      "tradeReservedToast": "Trade reserved for {{partner}}",
+      "tradeConfirmed": "Done: you gave {{give}} and received {{receive}} from {{partner}}.",
+      "tradeCancelled": "Reservation cancelled for {{partner}}",
+      "confirmTrade": "Confirm trade · {{give}} ↔ {{receive}}",
+      "cancelTrade": "Cancel",
+      "cancelSticker": "Remove reservation",
+      "withPartner": "With {{partner}}",
+      "youGive": "You give ({{count}})",
+      "youReceive": "They give ({{count}})",
+      "stickerReservationsTitle": "Stickers reserved",
+      "reserveForLater": "Reserve for later",
+      "reserveTradeEmpty": "Nothing to reserve yet."
+    }
   },
 
   "collections": {
