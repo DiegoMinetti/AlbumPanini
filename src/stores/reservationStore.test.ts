@@ -6,6 +6,8 @@ import {
   totalReservedAcrossTrades,
   isReserved,
   reservedPartnerFor,
+  reservationForSlot,
+  stickerSlotId,
   pendingTradesFor,
   stickerReservationsFor,
 } from './reservationStore';
@@ -21,9 +23,10 @@ describe('reservationStore — sticker reservations (per-copy)', () => {
     const { result } = renderHook(() => useReservationStore());
     act(() => {
       result.current.addStickerReservation({
-        instanceId: 'a',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 1,
         partner: 'María',
         code: 'USA15',
         displayPrefix: 'USA',
@@ -34,22 +37,24 @@ describe('reservationStore — sticker reservations (per-copy)', () => {
     expect(result.current.items[0].kind).toBe('sticker');
   });
 
-  it('treats each copy as independent (different instanceIds)', () => {
+  it('treats each copy as independent (different slots)', () => {
     const { result } = renderHook(() => useReservationStore());
     act(() => {
       result.current.addStickerReservation({
-        instanceId: 'a',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 1,
         partner: 'María',
         code: 'USA15',
         displayPrefix: 'USA',
         emoji: '🇺🇸',
       });
       result.current.addStickerReservation({
-        instanceId: 'b',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 2),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 2,
         partner: 'Juan',
         code: 'USA15',
         displayPrefix: 'USA',
@@ -61,28 +66,32 @@ describe('reservationStore — sticker reservations (per-copy)', () => {
     expect(result.current.items[1].partner).toBe('Juan');
   });
 
-  it('removes a single copy by instanceId', () => {
+  it('removes a single copy by instanceId (slot id)', () => {
     const { result } = renderHook(() => useReservationStore());
     act(() => {
       result.current.addStickerReservation({
-        instanceId: 'a',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 1,
         partner: 'María',
         code: 'USA15',
         displayPrefix: 'USA',
         emoji: '🇺🇸',
       });
       result.current.addStickerReservation({
-        instanceId: 'b',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 2),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 2,
         partner: 'Juan',
         code: 'USA15',
         displayPrefix: 'USA',
         emoji: '🇺🇸',
       });
-      result.current.removeStickerReservationByInstance('a');
+      result.current.removeStickerReservationByInstance(
+        stickerSlotId('wc-2026', 'USA-15', 1)
+      );
     });
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0].partner).toBe('Juan');
@@ -92,18 +101,20 @@ describe('reservationStore — sticker reservations (per-copy)', () => {
     const { result } = renderHook(() => useReservationStore());
     act(() => {
       result.current.addStickerReservation({
-        instanceId: 'a',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 1,
         partner: 'María',
         code: 'USA15',
         displayPrefix: 'USA',
         emoji: '🇺🇸',
       });
       result.current.addStickerReservation({
-        instanceId: 'b',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 2),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 2,
         partner: 'María',
         code: 'USA15',
         displayPrefix: 'USA',
@@ -112,6 +123,34 @@ describe('reservationStore — sticker reservations (per-copy)', () => {
       result.current.removeStickerReservation('wc-2026', 'USA-15', 'María');
     });
     expect(result.current.items).toHaveLength(0);
+  });
+
+  it('is a no-op when the same slot is reserved twice', () => {
+    const { result } = renderHook(() => useReservationStore());
+    act(() => {
+      result.current.addStickerReservation({
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
+        collectionId: 'wc-2026',
+        stickerId: 'USA-15',
+        slotIndex: 1,
+        partner: 'María',
+        code: 'USA15',
+        displayPrefix: 'USA',
+        emoji: '🇺🇸',
+      });
+      result.current.addStickerReservation({
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
+        collectionId: 'wc-2026',
+        stickerId: 'USA-15',
+        slotIndex: 1,
+        partner: 'Juan',
+        code: 'USA15',
+        displayPrefix: 'USA',
+        emoji: '🇺🇸',
+      });
+    });
+    expect(result.current.items).toHaveLength(1);
+    expect(result.current.items[0].partner).toBe('María');
   });
 });
 
@@ -197,18 +236,20 @@ describe('reservationStore — selectors', () => {
     const { result } = renderHook(() => useReservationStore());
     act(() => {
       result.current.addStickerReservation({
-        instanceId: 'a',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 1,
         partner: 'María',
         code: 'USA15',
         displayPrefix: 'USA',
         emoji: '🇺🇸',
       });
       result.current.addStickerReservation({
-        instanceId: 'b',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 2),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 2,
         partner: 'Juan',
         code: 'USA15',
         displayPrefix: 'USA',
@@ -222,9 +263,10 @@ describe('reservationStore — selectors', () => {
     const { result } = renderHook(() => useReservationStore());
     act(() => {
       result.current.addStickerReservation({
-        instanceId: 'a',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 1,
         partner: 'María',
         code: 'USA15',
         displayPrefix: 'USA',
@@ -246,9 +288,10 @@ describe('reservationStore — selectors', () => {
     const { result } = renderHook(() => useReservationStore());
     act(() => {
       result.current.addStickerReservation({
-        instanceId: 'a',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 1,
         partner: 'María',
         code: 'USA15',
         displayPrefix: 'USA',
@@ -259,22 +302,24 @@ describe('reservationStore — selectors', () => {
     expect(isReserved(result.current.items, 'wc-2026', 'ARG-1')).toBe(false);
   });
 
-  it('reservedPartnerFor returns the first partner; joins multiple sorted', () => {
+  it('reservedPartnerFor returns joined partners (legacy helper)', () => {
     const { result } = renderHook(() => useReservationStore());
     act(() => {
       result.current.addStickerReservation({
-        instanceId: 'a',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 1,
         partner: 'María',
         code: 'USA15',
         displayPrefix: 'USA',
         emoji: '🇺🇸',
       });
       result.current.addStickerReservation({
-        instanceId: 'b',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 2),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 2,
         partner: 'Juan',
         code: 'USA15',
         displayPrefix: 'USA',
@@ -284,6 +329,85 @@ describe('reservationStore — selectors', () => {
     expect(
       reservedPartnerFor(result.current.items, 'wc-2026', 'USA-15')
     ).toBe('Juan, María');
+  });
+
+  it('reservationForSlot returns the partner for the exact slot', () => {
+    const { result } = renderHook(() => useReservationStore());
+    act(() => {
+      result.current.addStickerReservation({
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
+        collectionId: 'wc-2026',
+        stickerId: 'USA-15',
+        slotIndex: 1,
+        partner: 'María',
+        code: 'USA15',
+        displayPrefix: 'USA',
+        emoji: '🇺🇸',
+      });
+      result.current.addStickerReservation({
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 2),
+        collectionId: 'wc-2026',
+        stickerId: 'USA-15',
+        slotIndex: 2,
+        partner: 'Juan',
+        code: 'USA15',
+        displayPrefix: 'USA',
+        emoji: '🇺🇸',
+      });
+    });
+    expect(
+      reservationForSlot(result.current.items, 'wc-2026', 'USA-15', 1)?.partner
+    ).toBe('María');
+    expect(
+      reservationForSlot(result.current.items, 'wc-2026', 'USA-15', 2)?.partner
+    ).toBe('Juan');
+    expect(
+      reservationForSlot(result.current.items, 'wc-2026', 'USA-15', 3)
+    ).toBeNull();
+  });
+
+  it('reservationForSlot falls back to a trade partner for a free slot of a traded sticker', () => {
+    const { result } = renderHook(() => useReservationStore());
+    act(() => {
+      result.current.addPendingTrade({
+        collectionId: 'wc-2026',
+        partner: 'Pedro',
+        give: [
+          { stickerId: 'USA-15', code: 'USA15', displayPrefix: 'USA', emoji: '🇺🇸' },
+        ],
+        receive: [],
+      });
+    });
+    const r = reservationForSlot(result.current.items, 'wc-2026', 'USA-15', 1);
+    expect(r?.partner).toBe('Pedro');
+    expect(r?.kind).toBe('trade');
+  });
+
+  it('reservationForSlot prefers a per-chip reservation over a trade', () => {
+    const { result } = renderHook(() => useReservationStore());
+    act(() => {
+      result.current.addStickerReservation({
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
+        collectionId: 'wc-2026',
+        stickerId: 'USA-15',
+        slotIndex: 1,
+        partner: 'María',
+        code: 'USA15',
+        displayPrefix: 'USA',
+        emoji: '🇺🇸',
+      });
+      result.current.addPendingTrade({
+        collectionId: 'wc-2026',
+        partner: 'Pedro',
+        give: [
+          { stickerId: 'USA-15', code: 'USA15', displayPrefix: 'USA', emoji: '🇺🇸' },
+        ],
+        receive: [],
+      });
+    });
+    const r = reservationForSlot(result.current.items, 'wc-2026', 'USA-15', 1);
+    expect(r?.partner).toBe('María');
+    expect(r?.kind).toBe('sticker');
   });
 
   it('pendingTradesFor returns trades sorted newest-first, scoped to collection', () => {
@@ -321,18 +445,20 @@ describe('reservationStore — selectors', () => {
     const { result } = renderHook(() => useReservationStore());
     act(() => {
       result.current.addStickerReservation({
-        instanceId: 'a',
+        instanceId: stickerSlotId('wc-2026', 'USA-15', 1),
         collectionId: 'wc-2026',
         stickerId: 'USA-15',
+        slotIndex: 1,
         partner: 'María',
         code: 'USA15',
         displayPrefix: 'USA',
         emoji: '🇺🇸',
       });
       result.current.addStickerReservation({
-        instanceId: 'b',
+        instanceId: stickerSlotId('pokemon-151', 'PK-25', 1),
         collectionId: 'pokemon-151',
         stickerId: 'PK-25',
+        slotIndex: 1,
         partner: 'Ash',
         code: 'PK25',
         displayPrefix: 'PK',

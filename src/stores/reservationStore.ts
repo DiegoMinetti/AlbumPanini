@@ -40,14 +40,45 @@ export type ReservationItem =
   | StickerReservation
   | PendingTrade;
 
+/**
+ * A single sticker copy is identified by a deterministic slot id built
+ * from the (collection, sticker, slot) triple:
+ *
+ *   slot:<collectionId>:<stickerId>:<slotIndex>
+ *
+ * `slotIndex` is 0-based over the inventory of that sticker. Slot 0 is
+ * the "album copy" and never carries a reservation, so the first
+ * resrvable slot is index 1. Storing the slot id on the reservation
+ * (rather than a random uuid) means the UI can look up "is this visible
+ * chip reserved?" by computing the same slot id from the iteration
+ * index, without needing to keep a parallel map.
+ */
+export function stickerSlotId(
+  collectionId: string,
+  stickerId: string,
+  slotIndex: number
+): string {
+  return `slot:${collectionId}:${stickerId}:${slotIndex}`;
+}
+
 export interface StickerReservation {
   kind: 'sticker';
-  /** Unique id of this specific sticker copy (each copy gets one). */
+  /**
+   * Deterministic id of the sticker copy this reservation binds to
+   * (see `stickerSlotId`). Stored as `instanceId` for back-compat with
+   * the rest of the code that already reads that field.
+   */
   instanceId: string;
   /** Collection this reservation belongs to. */
   collectionId: string;
   /** Sticker id within that collection. */
   stickerId: string;
+  /**
+   * 0-based slot index over the sticker's inventory. Slot 0 is the
+   * album copy and never carries a reservation; reservations always
+   * live on slot 1+.
+   */
+  slotIndex: number;
   /** Free-form partner label (e.g. "María"). */
   partner: string;
   /** Original printed code captured for display (e.g. "USA15"). */
@@ -95,15 +126,16 @@ interface ReservationState {
   // Sticker-level actions
   /**
    * Reserve one specific sticker copy. The UI is responsible for
-   * generating `instanceId` if it wants to identify the copy (e.g. via
-   * `crypto.randomUUID()`). This keeps the store DB-agnostic.
+   * generating the slot-bound `instanceId` via `stickerSlotId(...)`.
+   * This keeps the store DB-agnostic.
    */
   addStickerReservation: (
     input: Omit<StickerReservation, 'kind' | 'createdAt'>
   ) => void;
   /**
-   * Remove a sticker-level reservation by its instance id. Use this
-   * (not the partner+stickerId combo) when freeing a specific copy.
+   * Remove a sticker-level reservation by its instance id (= slot id).
+   * Use this (not the partner+stickerId combo) when freeing a specific
+   * copy.
    */
   removeStickerReservationByInstance: (instanceId: string) => void;
   /**
@@ -130,7 +162,7 @@ interface ReservationState {
 }
 
 const STORAGE_KEY = 'panini-reservations';
-const STORAGE_VERSION = 3; // bump: each sticker copy is its own item (instanceId)
+const STORAGE_VERSION = 4; // bump: instanceId is now a deterministic slot id
 
 // ---------------------------------------------------------------------------
 // Persistence plumbing (copied from the previous version — see git history)
@@ -223,11 +255,19 @@ interface LegacyV2State {
   >;
 }
 
+/** Legacy v3 shape — items[] with random `instanceId` per copy. */
+interface LegacyV3State {
+  items: Array<
+    | (Omit<StickerReservation, 'slotIndex'> & { slotIndex?: number })
+    | PendingTrade
+  >;
+}
+
 function migrateV1ToV2(legacy: LegacyV1State | undefined): ReservationState {
   // v1 had no `instanceId` and no per-copy model. Synthesize a stable
   // instanceId for each legacy reservation so the v2 hydration doesn't
   // trip on the missing field. (count-based reservations will then be
-  // expanded further by the v2 → v3 migration.)
+  // expanded further by the v2 → v3 → v4 migrations.)
   const items: ReservationItem[] = (legacy?.reservations ?? []).map((r) => {
     const count = Math.max(1, r.count ?? 1);
     const out: ReservationItem[] = [];
@@ -237,6 +277,7 @@ function migrateV1ToV2(legacy: LegacyV1State | undefined): ReservationState {
         instanceId: generateInstanceId(),
         collectionId: r.collectionId,
         stickerId: r.stickerId,
+        slotIndex: i + 1, // slot 0 is the album copy
         partner: r.partner,
         code: r.code,
         displayPrefix: r.displayPrefix,
@@ -263,6 +304,7 @@ function migrateV2ToV3(legacy: ReservationState | undefined): ReservationState {
           instanceId: generateInstanceId(),
           collectionId: it.collectionId,
           stickerId: it.stickerId,
+          slotIndex: i + 1, // slot 0 is the album copy
           partner: it.partner,
           code: it.code,
           displayPrefix: it.displayPrefix,
@@ -279,6 +321,52 @@ function migrateV2ToV3(legacy: ReservationState | undefined): ReservationState {
   return { items } as unknown as ReservationState;
 }
 
+/**
+ * v3 → v4: rewrite random `instanceId`s into deterministic slot ids so
+ * the UI can look up "is chip N reserved?" without bookkeeping.
+ *
+ * We bucket reservations per (collectionId, stickerId) sorted by
+ * createdAt and assign slotIndex 1, 2, 3… in chronological order. If a
+ * reservation already carries an explicit `slotIndex` we keep it.
+ */
+function migrateV3ToV4(legacy: ReservationState | undefined): ReservationState {
+  const oldItems = ((legacy?.items ?? []) as LegacyV3State['items']).slice();
+  const grouped = new Map<string, LegacyV3State['items']>();
+  const order: string[] = [];
+  for (const it of oldItems) {
+    if (it.kind !== 'sticker') continue;
+    const key = `${it.collectionId}::${it.stickerId}`;
+    if (!grouped.has(key)) {
+      grouped.set(key, []);
+      order.push(key);
+    }
+    grouped.get(key)!.push(it);
+  }
+  const nextCounters = new Map<string, number>();
+  const rewritten: ReservationItem[] = [];
+  for (const it of oldItems) {
+    if (it.kind !== 'sticker') {
+      rewritten.push(it);
+      continue;
+    }
+    const key = `${it.collectionId}::${it.stickerId}`;
+    const existing = it.slotIndex;
+    const slotIndex =
+      typeof existing === 'number' && existing >= 1
+        ? existing
+        : (nextCounters.get(key) ?? 0) + 1;
+    if (typeof existing !== 'number' || existing < 1) {
+      nextCounters.set(key, slotIndex);
+    }
+    rewritten.push({
+      ...it,
+      slotIndex,
+      instanceId: stickerSlotId(it.collectionId, it.stickerId, slotIndex),
+    });
+  }
+  return { items: rewritten } as unknown as ReservationState;
+}
+
 // ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
@@ -290,11 +378,21 @@ export const useReservationStore = create<ReservationState>()(
 
       addStickerReservation: (input) => {
         set((state) => {
+          // If a reservation already exists for this exact slot, the new
+          // call is a no-op (the chip is already taken). We intentionally
+          // do NOT silently overwrite — that would let a misclick re-
+          // assign someone else's reservation.
+          const duplicate = state.items.some(
+            (it) =>
+              it.kind === 'sticker' && it.instanceId === input.instanceId
+          );
+          if (duplicate) return state;
           const incoming: StickerReservation = {
             kind: 'sticker',
-            instanceId: input.instanceId || generateInstanceId(),
+            instanceId: input.instanceId,
             collectionId: input.collectionId,
             stickerId: input.stickerId,
+            slotIndex: input.slotIndex,
             partner: input.partner,
             code: input.code,
             displayPrefix: input.displayPrefix,
@@ -385,6 +483,9 @@ export const useReservationStore = create<ReservationState>()(
         if (fromVersion < 3) {
           return migrateV2ToV3(persisted as ReservationState);
         }
+        if (fromVersion < 4) {
+          return migrateV3ToV4(persisted as ReservationState);
+        }
         return persisted as ReservationState;
       },
     }
@@ -437,11 +538,62 @@ export function isReserved(
 }
 
 /**
- * Map of `stickerId -> partner label` for the FIRST reservation found.
- * Used by the UI to render the "Reserved: María" badge.
+ * Look up the reservation that occupies a specific slot, if any.
  *
- * Multiple partners for the same sticker get joined with ", " in
- * deterministic order so the badge stays stable across re-renders.
+ * A "slot" is identified by the deterministic `stickerSlotId(...)` that
+ * the UI builds from its iteration index. We also support looking up
+ * by (collection, sticker, slotIndex) directly for code paths that
+ * haven't built the id yet.
+ *
+ * Returns the partner label and the kind of reservation
+ * ('sticker' for a per-chip reservation, 'trade' for a pending trade
+ * that includes this sticker in its `give` list). The UI uses this to
+ * render the "Reserved: María" badge under each chip with the right
+ * partner name and to know whether clicking the chip should release
+ * the reservation or open the trade dialog.
+ */
+export function reservationForSlot(
+  items: ReservationItem[],
+  collectionId: string,
+  stickerId: string,
+  slotIndex: number
+): { partner: string; kind: 'sticker' | 'trade'; instanceId: string } | null {
+  const slotId = stickerSlotId(collectionId, stickerId, slotIndex);
+  // 1) Direct per-chip reservation on this exact slot.
+  const direct = items.find(
+    (it) => it.kind === 'sticker' && it.instanceId === slotId
+  );
+  if (direct && direct.kind === 'sticker') {
+    return {
+      partner: direct.partner,
+      kind: 'sticker',
+      instanceId: direct.instanceId,
+    };
+  }
+  // 2) Trade that includes this sticker in its `give` list. The
+  //    partner badge is shown for the trade as a whole — the trade
+  //    doesn't carry per-slot info, so we surface it on every chip
+  //    of the sticker that's part of the trade.
+  const trade = items.find(
+    (it) =>
+      it.kind === 'trade' &&
+      it.collectionId === collectionId &&
+      it.give.some((g) => g.stickerId === stickerId)
+  );
+  if (trade && trade.kind === 'trade') {
+    return {
+      partner: trade.partner,
+      kind: 'trade',
+      instanceId: trade.tradeId,
+    };
+  }
+  return null;
+}
+
+/**
+ * @deprecated Prefer `reservationForSlot` for new code. Kept for
+ * legacy callers that only know the sticker id. Joins all partners
+ * across slots + trades, sorted, comma-separated.
  */
 export function reservedPartnerFor(
   items: ReservationItem[],

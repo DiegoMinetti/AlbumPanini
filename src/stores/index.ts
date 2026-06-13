@@ -10,6 +10,8 @@ export {
   useReservationStore,
   isReserved,
   reservedPartnerFor,
+  reservationForSlot,
+  stickerSlotId,
   totalReservedFor,
   totalReservedAcrossTrades,
   pendingTradesFor,

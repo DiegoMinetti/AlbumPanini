@@ -19,8 +19,9 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { toast } from '@/stores/uiStore';
 import {
   pendingTradesFor,
-  reservedPartnerFor,
+  reservationForSlot,
   stickerReservationsFor,
+  stickerSlotId,
   useReservationStore,
   type PendingTrade,
   type StickerReservation,
@@ -270,9 +271,14 @@ export function ExchangePage() {
   const confirmReserveSticker = (partnerName: string) => {
     if (!reserveTarget) return;
     addStickerReservation({
-      instanceId: `${collectionId}::${reserveTarget.stickerId}::${reserveTarget.copyIndex}::${Date.now()}`,
+      instanceId: stickerSlotId(
+        collectionId,
+        reserveTarget.stickerId,
+        reserveTarget.copyIndex
+      ),
       collectionId,
       stickerId: reserveTarget.stickerId,
+      slotIndex: reserveTarget.copyIndex,
       partner: partnerName,
       code: reserveTarget.code,
       displayPrefix: reserveTarget.displayPrefix,
@@ -545,8 +551,14 @@ export function ExchangePage() {
         onCopyBoth={handleCopyBoth}
         onShareBoth={handleShareBoth}
         onReserve={openReserveModal}
+        onReleaseSticker={releaseReservation}
         collectionId={collectionId}
-        stickers={stickers.map((s) => ({ id: s.id, code: s.code, teamId: s.teamId }))}
+        stickers={stickers.map((s) => ({
+          id: s.id,
+          code: s.code,
+          normalizedCode: s.normalizedCode,
+          teamId: s.teamId,
+        }))}
       />
 
       {/* ============== 3. PASTE FROM A FRIEND ============== */}
@@ -732,6 +744,7 @@ interface OwnTabsCardProps {
     emoji: string,
     copyIndex: number
   ) => void;
+  onReleaseSticker: (instanceId: string) => void;
   collectionId: string;
   stickers: Array<{ id: string; code: string; teamId?: string }>;
 }
@@ -835,6 +848,7 @@ function OwnTabsCard({
   onCopyBoth,
   onShareBoth,
   onReserve,
+  onReleaseSticker,
   collectionId,
   stickers,
 }: OwnTabsCardProps) {
@@ -937,6 +951,7 @@ function OwnTabsCard({
                 selected={activeSelected}
                 onToggle={isDup ? onToggleDuplicate : onToggleMissing}
                 onReserve={onReserve}
+                onReleaseSticker={onReleaseSticker}
                 stickers={stickers}
                 collectionId={collectionId}
                 hideTeamHeaders={activeSections.length === 1 && section.groupKey === null}
@@ -1001,6 +1016,7 @@ function TeamGroup({
   selected,
   onToggle,
   onReserve,
+  onReleaseSticker,
   stickers,
   collectionId,
   hideTeamHeaders,
@@ -1016,6 +1032,7 @@ function TeamGroup({
     emoji: string,
     copyIndex: number
   ) => void;
+  onReleaseSticker: (instanceId: string) => void;
   stickers: Array<{ id: string; code: string; teamId?: string }>;
   collectionId: string;
   hideTeamHeaders: boolean;
@@ -1046,6 +1063,7 @@ function TeamGroup({
             selected={selected}
             onToggle={onToggle}
             onReserve={onReserve}
+            onReleaseSticker={onReleaseSticker}
             stickers={stickers}
             collectionId={collectionId}
             hideHeader={hideTeamHeaders}
@@ -1064,6 +1082,7 @@ function TeamRow({
   selected,
   onToggle,
   onReserve,
+  onReleaseSticker,
   stickers,
   collectionId,
   hideHeader,
@@ -1081,7 +1100,8 @@ function TeamRow({
     emoji: string,
     copyIndex: number
   ) => void;
-  stickers: Array<{ id: string; code: string; teamId?: string }>;
+  onReleaseSticker: (instanceId: string) => void;
+  stickers: Array<{ id: string; code: string; normalizedCode?: string; teamId?: string }>;
   collectionId: string;
   hideHeader: boolean;
 }) {
@@ -1100,7 +1120,7 @@ function TeamRow({
           {prefix}
         </p>
       ) : null}
-      <ul className="flex flex-wrap gap-1.5">
+      <ul className="flex flex-wrap gap-2">
         {numbers.map((n, copyIndex) => {
           // The first copy (copyIndex 0) of every sticker is the
           // "album copy" — the one that goes into the physical album.
@@ -1109,74 +1129,107 @@ function TeamRow({
           if (copyIndex === 0) return null;
           const code = `${prefix}${n}`;
           const key = `${code}#${copyIndex}`;
-          const partner = reservedPartnerFor(
+          // The displayed `code` is prefix+number with no separator (e.g.
+          // "ARG1"). The stored sticker row keeps the original printed
+          // code (e.g. "ARG 1") and a separate `normalizedCode` for
+          // lookups. Match against either so the lookup survives
+          // collections that don't have `normalizedCode` populated.
+          const firstSticker = (stickers ?? []).find(
+            (s) =>
+              s.code === code ||
+              s.normalizedCode === code ||
+              s.code.replace(/\s+/g, '') === code
+          );
+          const reservation = reservationForSlot(
             useReservationStore.getState().items,
             collectionId,
-            code
+            firstSticker?.id ?? code,
+            copyIndex
           );
+          const partner = reservation?.partner ?? null;
+          const reservationKind = reservation?.kind ?? null;
+          const reservationInstanceId = reservation?.instanceId ?? null;
           const isSelected = selected.has(key);
+          const releaseLabel = t('exchange.reservations.releaseSticker');
           return (
             <li
               key={key}
-              className="flex flex-col items-start gap-1"
               data-testid={`${testId}-chip-${key}`}
+              className={`flex w-20 flex-col items-stretch overflow-hidden
+                rounded-lg border transition-colors
+                ${
+                  isSelected
+                    ? 'border-primary bg-primary-container text-on-primary-container'
+                    : 'border-outline-variant bg-surface text-on-surface'
+                }`}
             >
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => onToggle(code, copyIndex)}
-                  aria-pressed={isSelected}
-                  aria-label={code}
-                  data-selected={isSelected}
-                  className={`flex items-center gap-1 rounded-full border px-2.5
-                    py-1 font-mono text-label-md transition-colors
-                    ${
-                      isSelected
-                        ? 'border-primary bg-primary-container text-on-primary-container'
-                        : 'border-outline-variant bg-surface text-on-surface hover:bg-surface-container'
-                    }`}
-                >
-                  {emoji ? (
-                    <span aria-hidden="true">{emoji} </span>
-                  ) : null}
-                  <span>{code}</span>
-                </button>
-                {!partner && testId === 'duplicates-section' ? (
+              {/* Top: the sticker chip (toggleable selection). */}
+              <button
+                type="button"
+                onClick={() => onToggle(code, copyIndex)}
+                aria-pressed={isSelected}
+                aria-label={code}
+                data-selected={isSelected}
+                className={`flex w-full items-center justify-center gap-1
+                  px-1.5 py-1.5 font-mono text-label-md transition-colors
+                  ${
+                    isSelected
+                      ? 'bg-primary-container text-on-primary-container'
+                      : 'bg-surface text-on-surface hover:bg-surface-container'
+                  }`}
+              >
+                {emoji ? (
+                  <span aria-hidden="true" className="text-base leading-none">
+                    {emoji}
+                  </span>
+                ) : null}
+                <span className="truncate">{code}</span>
+              </button>
+
+              {/* Bottom: reservation action. Either a "Reserve" button
+                  (free copy) or a "Para María" badge (taken copy). The
+                  divider line gives the mini-card a clean two-row look. */}
+              {partner ? (
+                reservationKind === 'sticker' && reservationInstanceId ? (
                   <button
                     type="button"
-                    onClick={() => {
-                      const firstSticker = (stickers ?? []).find(
-                        (s) => s.code === code
-                      );
-                      if (firstSticker) {
-                        onReserve(
-                          firstSticker.id,
-                          code,
-                          prefix,
-                          emoji,
-                          copyIndex
-                        );
-                      }
-                    }}
-                    className="rounded-full border border-outline-variant
-                      bg-surface-container px-2 py-0.5 text-label-sm
-                      text-on-surface-variant hover:bg-surface-container-high"
-                    aria-label={t('exchange.reservations.reserveAction')}
-                    title={t('exchange.reservations.reserveAction')}
-                    data-testid={`${testId}-reserve-${key}`}
+                    onClick={() => onReleaseSticker(reservationInstanceId)}
+                    aria-label={releaseLabel}
+                    title={releaseLabel}
+                    data-testid={`${testId}-reserved-${key}`}
+                    className="w-full truncate border-t border-tertiary/30
+                      bg-tertiary-container px-1.5 py-1 text-center
+                      text-label-sm text-on-tertiary-container
+                      underline-offset-2 hover:underline"
                   >
-                    {t('exchange.reservations.reserveShort')}
+                    {t('exchange.reservations.reservedFor', { partner })}
                   </button>
-                ) : null}
-              </div>
-              {partner ? (
-                <span
-                  className="rounded-full bg-tertiary-container
-                    px-1.5 py-0.5 text-label-sm text-on-tertiary-container"
-                  data-testid={`${testId}-reserved-${key}`}
+                ) : (
+                  <span
+                    data-testid={`${testId}-reserved-${key}`}
+                    className="w-full truncate border-t border-tertiary/30
+                      bg-tertiary-container px-1.5 py-1 text-center
+                      text-label-sm text-on-tertiary-container"
+                  >
+                    {t('exchange.reservations.reservedFor', { partner })}
+                  </span>
+                )
+              ) : testId === 'duplicates-section' && firstSticker ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onReserve(firstSticker.id, code, prefix, emoji, copyIndex);
+                  }}
+                  aria-label={t('exchange.reservations.reserveAction')}
+                  title={t('exchange.reservations.reserveAction')}
+                  data-testid={`${testId}-reserve-${key}`}
+                  className="w-full truncate border-t
+                    border-outline-variant bg-surface-container
+                    px-1.5 py-1 text-center text-label-sm
+                    text-on-surface-variant hover:bg-surface-container-high"
                 >
-                  {t('exchange.reservations.reservedFor', { partner })}
-                </span>
+                  {t('exchange.reservations.reserveShort')}
+                </button>
               ) : null}
             </li>
           );
@@ -1230,11 +1283,13 @@ function ResolvedSummary({
             chipKey: `${r.code}#0`,
             selected: selectedGive.has(`${r.code}#0`),
             onToggle: () => onToggleGive(r.code, 0),
-            reservedPartner: reservedPartnerFor(
-              useReservationStore.getState().items,
-              collectionId,
-              r.code
-            ),
+            reservedPartner:
+              reservationForSlot(
+                useReservationStore.getState().items,
+                collectionId,
+                r.stickerId,
+                0
+              )?.partner ?? null,
           }))}
         />
         <Bucket
