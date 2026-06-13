@@ -178,13 +178,13 @@ describe('buildExchangeText', () => {
         headingDuplicates: 'Tengo repetidas',
         headingMissing: 'Me faltan',
       },
-      collectionId: 'worldcup-2026',
       duplicates: [{ prefix: 'FWC', emoji: '🏆', numbers: ['4', '7'] }],
       missing: [{ prefix: 'MEX', emoji: '🇲🇽', numbers: ['14'] }],
     });
+    // The shared text no longer embeds a deep-link payload, so the
+    // receiver parses it as an external (body-only) format. The
+    // sticker codes are still recovered from the body lines.
     const parsed = parseExchangeText(text);
-    expect(parsed.source).toBe('own');
-    expect(parsed.collectionId).toBe('worldcup-2026');
     expect(parsed.friendHasExtra).toContain('FWC4');
     expect(parsed.friendHasExtra).toContain('FWC7');
     expect(parsed.friendWants).toContain('MEX14');

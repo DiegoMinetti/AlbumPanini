@@ -60,7 +60,7 @@
 import { db } from '@/db';
 import type { StoredSticker, StoredTeam } from '@/types/collection';
 import { normalizeCode } from '@/utils/code';
-import { decodeCompact, encodeCompact } from '@/utils/compression';
+import { decodeCompact } from '@/utils/compression';
 import {
   albumGroupSort,
   albumPrefixOrder,
@@ -118,38 +118,6 @@ export interface ParsedLineSection {
 
 const DEEP_LINK_BASE = 'https://diegominetti.github.io/AlbumPanini/';
 
-/** Section of a list inside a deep link. */
-export type ExchangeSection = 'duplicates' | 'missing';
-
-const SECTION_KEYS: Record<ExchangeSection, 'd' | 'm'> = {
-  duplicates: 'd',
-  missing: 'm',
-};
-
-/** Hard cap on a single chunk's URL length — leaves headroom in chat apps. */
-const CHUNK_MAX_URL_BYTES = 1500;
-
-/**
- * Build a deep link for a given collection + section.
- * The sticker codes are passed through `normalizeCode` to align with the DB.
- */
-export function buildDeepLink(
-  collectionId: string,
-  section: ExchangeSection,
-  stickerCodes: string[]
-): string {
-  const key = SECTION_KEYS[section];
-  const normalized = stickerCodes.map(normalizeCode);
-  const payload: ExchangePayload = {
-    v: EXCHANGE_PAYLOAD_VERSION,
-    c: collectionId,
-    d: key === 'd' ? normalized : [],
-    m: key === 'm' ? normalized : [],
-  };
-  const encoded = encodePayload(payload);
-  return `${DEEP_LINK_BASE}?c=${encodeURIComponent(collectionId)}&s=${key}&d=${encoded}`;
-}
-
 /* ------------------------------------------------------------------ */
 /* Build the user-facing text                                          */
 /* ------------------------------------------------------------------ */
@@ -182,46 +150,30 @@ export function buildExchangeText(args: {
     /** Optional friendly header line (e.g. "World Cup 2026 · Panini Tracker"). */
     headerTitle?: string;
   };
-  collectionId: string;
   /** Stickers the user has duplicates of. Block 1. */
   duplicates: { prefix: string; emoji: string; numbers: string[] }[];
   /** Stickers the user is missing. Block 2. */
   missing: { prefix: string; emoji: string; numbers: string[] }[];
 }): string {
-  const { labels, collectionId, duplicates, missing } = args;
+  const { labels, duplicates, missing } = args;
 
   const dupBody = renderSection(duplicates);
   const missBody = renderSection(missing);
 
-  const dupLink = buildDeepLink(
-    collectionId,
-    'duplicates',
-    flatIds(duplicates)
-  );
-  const missLink = buildDeepLink(
-    collectionId,
-    'missing',
-    flatIds(missing)
-  );
-
-  const allLinks = [dupLink, missLink];
-  const chunked = chunkLinks(allLinks, CHUNK_MAX_URL_BYTES);
-
-  // The shared text used to lead with an "Abrí en la app" label above
-  // the URL. That made the block read like a button caption + link,
-  // which was redundant once the URL is on its own line. We just emit
-  // the URL(s) by themselves; the chat client renders the link
-  // preview automatically.
+  // The link shown in the shared text is the app's home page (no
+  // payload in the query string). The receiver clicks the link to
+  // open the app, then pastes the rest of the message into the
+  // "Paste a friend's list" box to import the stickers. We previously
+  // embedded the entire sticker list as a base64 payload in the URL,
+  // but the resulting links were hundreds of characters long and
+  // dominated the share text. The plain home URL is short, stable
+  // and the parser inside the app still reads the sticker list from
+  // the body of the message — no functionality lost.
+  const hasDup = duplicates.length > 0;
+  const hasMiss = missing.length > 0;
   const linkLines: string[] = [];
-  if (allLinks.length === 1) {
-    linkLines.push(allLinks[0]);
-  } else if (chunked.length === 1) {
-    allLinks.forEach((url) => linkLines.push(url));
-  } else {
-    chunked.forEach((url, idx) => {
-      linkLines.push(url);
-      linkLines.push(`--- ${idx + 1}/${chunked.length} ---`);
-    });
+  if (hasDup || hasMiss) {
+    linkLines.push(`🔗 ${DEEP_LINK_BASE}`);
   }
 
   // Build the text as a stack of "parts" joined by blank lines. We
@@ -250,23 +202,9 @@ function renderSection(
   return lines.join('\n');
 }
 
-function flatIds(groups: { prefix: string; numbers: string[] }[]): string[] {
-  return groups.flatMap((g) => g.numbers.map((n) => `${g.prefix}${n}`));
-}
-
-function chunkLinks(urls: string[], maxBytes: number): string[] {
-  const total = urls.join('\n').length;
-  if (total <= maxBytes) return [urls.join('\n')];
-  return urls.map((u) => u);
-}
-
 /* ------------------------------------------------------------------ */
-/* Compact payload encoding (used inside the deep link)                */
+/* Compact payload decoding (used to read old-style deep links)        */
 /* ------------------------------------------------------------------ */
-
-function encodePayload(payload: ExchangePayload): string {
-  return encodeCompact(payload);
-}
 
 function decodePayload(encoded: string): ExchangePayload {
   const raw = decodeCompact(encoded);
@@ -520,7 +458,11 @@ function parseDeepLink(url: string): DeepLinkParts | null {
     const sectionKey = u.searchParams.get('s');
     const data = u.searchParams.get('d');
     if (!collectionId || !sectionKey || !data) return null;
-    if (sectionKey !== 'd' && sectionKey !== 'm') return null;
+    // `d` = duplicates only, `m` = missing only, `b` = both (combined
+    // link, the default since we emit a single URL).
+    if (sectionKey !== 'd' && sectionKey !== 'm' && sectionKey !== 'b') {
+      return null;
+    }
     const payload = decodePayload(data);
     if (payload.c !== collectionId) return null;
     return {

@@ -7,7 +7,6 @@ import {
   buildOwnList,
   parseExchangeText,
   resolveExchangeText,
-  type ExchangeSection,
   type ResolvedExchange,
 } from '@/services/exchangeService';
 import { adjustQuantity } from '@/services/inventoryService';
@@ -198,7 +197,7 @@ export function ExchangePage() {
     setter(next);
   };
 
-  const handleCopyOwn = (section: ExchangeSection) => {
+  const handleCopyOwn = (section: 'duplicates' | 'missing') => {
     const labels = {
       headingDuplicates: t('exchange.sharedHeadingDuplicates'),
       headingMissing: t('exchange.sharedHeadingMissing'),
@@ -212,7 +211,7 @@ export function ExchangePage() {
         : [];
     const missing =
       section === 'missing' ? pickSelected(ownList.missing, [...shareableMissCodes]) : [];
-    const text = buildExchangeText({ labels, collectionId, duplicates, missing });
+    const text = buildExchangeText({ labels, duplicates, missing });
     void writeClipboard(text).then((ok) => {
       if (!ok) toast.error(t('toast.error'));
       else toast.success(t('exchange.copied'));
@@ -227,9 +226,12 @@ export function ExchangePage() {
         ? t('exchange.sharedHeaderTitle', { album: active.name })
         : t('exchange.sharedHeaderNoAlbum'),
     };
-    const duplicates = pickSelected(ownList.duplicates, [...shareableDupCodes]);
-    const missing = pickSelected(ownList.missing, [...shareableMissCodes]);
-    const text = buildExchangeText({ labels, collectionId, duplicates, missing });
+    // "Copiar todo" must include BOTH the full duplicates list and the
+    // full missing list, regardless of which chips the user toggled in
+    // the UI. (The chip-level filters exist for "Copy selected".)
+    const duplicates = ownList.duplicates;
+    const missing = ownList.missing;
+    const text = buildExchangeText({ labels, duplicates, missing });
     void writeClipboard(text).then((ok) => {
       if (!ok) toast.error(t('toast.error'));
       else toast.success(t('exchange.copied'));
@@ -246,7 +248,7 @@ export function ExchangePage() {
     };
     const duplicates = pickSelected(ownList.duplicates, [...shareableDupCodes]);
     const missing = pickSelected(ownList.missing, [...shareableMissCodes]);
-    const text = buildExchangeText({ labels, collectionId, duplicates, missing });
+    const text = buildExchangeText({ labels, duplicates, missing });
     const ok = await shareOrCopy(text);
     if (!ok) toast.error(t('toast.error'));
     else toast.success(t('exchange.copied'));
@@ -1152,8 +1154,13 @@ function TeamRow({
             <li
               key={key}
               data-testid={`${testId}-chip-${key}`}
-              className={`flex w-[72px] flex-col items-stretch overflow-hidden
-                rounded-lg border transition-colors
+              // `min-w-[5rem]` keeps every card the same minimum width
+              // (so they line up in a row) while still letting the card
+              // grow to fit codes like "BRA 18" or "KSA 15" without
+              // truncating. The chip text uses `whitespace-nowrap` so
+              // the card width always matches the visible content.
+              className={`flex min-w-[5rem] flex-col items-stretch
+                overflow-hidden rounded-lg border transition-colors
                 ${
                   isSelected
                     ? 'border-primary bg-primary-container text-on-primary-container'
@@ -1180,7 +1187,7 @@ function TeamRow({
                     {emoji}
                   </span>
                 ) : null}
-                <span className="truncate">{code}</span>
+                <span className="whitespace-nowrap">{code}</span>
               </button>
 
               {/* Bottom: reservation action. Either a "Reserve" button
