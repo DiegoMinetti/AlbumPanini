@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AlbumPanini — Codebase Atlas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --paper: #f1ebdc;
+        --paper-2: #e9e1cb;
+        --ink: #1a2233;
+        --ink-soft: #3b4866;
+        --rule: #b9a98a;
+        --stamp: #c83d2a;
+        --stamp-ink: #fdf6e3;
+        --gold: #b8893b;
+        --teal: #1d6b6b;
+        --leaf: #4a6a2a;
+        --grid-faint: rgba(26, 34, 51, 0.06);
+        --serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+        --sans: "Inter Tight", system-ui, -apple-system, sans-serif;
+        --mono: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 15px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+      body {
+        background-image:
+          radial-gradient(circle at 18% 8%, rgba(200, 61, 42, 0.06) 0, transparent 40%),
+          radial-gradient(circle at 92% 12%, rgba(29, 107, 107, 0.06) 0, transparent 40%),
+          radial-gradient(circle at 50% 100%, rgba(184, 137, 59, 0.08) 0, transparent 50%),
+          repeating-linear-gradient(
+            0deg,
+            transparent 0,
+            transparent 31px,
+            var(--grid-faint) 31px,
+            var(--grid-faint) 32px
+          );
+        min-height: 100vh;
+      }
+      .atlas {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 56px 40px 96px;
+      }
+
+      /* ---------- HEADER ---------- */
+      header.masthead {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        gap: 32px;
+        padding-bottom: 24px;
+        border-bottom: 2px solid var(--ink);
+        position: relative;
+      }
+      header.masthead::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -8px;
+        border-bottom: 1px solid var(--ink);
+      }
+      .kicker {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        margin-bottom: 12px;
+      }
+      h1.title {
+        font-family: var(--serif);
+        font-weight: 900;
+        font-size: clamp(48px, 7vw, 96px);
+        line-height: 0.9;
+        letter-spacing: -0.04em;
+        margin: 0;
+        font-variation-settings: "opsz" 144;
+      }
+      h1.title em {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--stamp);
+        font-variation-settings: "opsz" 144;
+      }
+      .sub {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 19px;
+        color: var(--ink-soft);
+        margin-top: 18px;
+        max-width: 56ch;
+      }
+      .stamp {
+        width: 130px;
+        height: 150px;
+        background: var(--stamp);
+        color: var(--stamp-ink);
+        display: grid;
+        place-items: center;
+        text-align: center;
+        font-family: var(--serif);
+        font-weight: 800;
+        font-size: 11px;
+        line-height: 1.2;
+        letter-spacing: 0.04em;
+        padding: 14px;
+        transform: rotate(-6deg);
+        box-shadow:
+          inset 0 0 0 2px var(--stamp-ink),
+          inset 0 0 0 4px var(--stamp),
+          2px 4px 0 rgba(0, 0, 0, 0.18);
+        position: relative;
+        text-transform: uppercase;
+      }
+      .stamp::before {
+        content: "";
+        position: absolute;
+        inset: 6px;
+        border: 1.5px dashed var(--stamp-ink);
+      }
+      .stamp strong {
+        font-size: 30px;
+        display: block;
+        font-variation-settings: "opsz" 144;
+      }
+      .meta-row {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+        margin-top: 32px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      .meta-row span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        background: var(--stamp);
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      /* ---------- LAYER DIAGRAM ---------- */
+      .layers {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+        margin: 56px 0 0;
+      }
+      .layer {
+        background: var(--paper-2);
+        border: 1px solid var(--ink);
+        padding: 22px 16px 18px;
+        position: relative;
+        box-shadow: 4px 4px 0 var(--ink);
+        display: flex;
+        flex-direction: column;
+      }
+      .layer .num {
+        position: absolute;
+        top: -14px;
+        left: 14px;
+        background: var(--ink);
+        color: var(--paper);
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 3px 8px;
+        letter-spacing: 0.06em;
+      }
+      .layer h3 {
+        font-family: var(--serif);
+        font-size: 17px;
+        margin: 0 0 6px;
+        font-weight: 700;
+        font-variation-settings: "opsz" 72;
+      }
+      .layer p {
+        margin: 0;
+        font-size: 12.5px;
+        color: var(--ink-soft);
+        line-height: 1.45;
+      }
+      .layer ul {
+        margin: auto 0 0;
+        padding: 0;
+        list-style: none;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--ink);
+      }
+      .layer ul li {
+        padding-left: 12px;
+        text-indent: -12px;
+        margin: 3px 0;
+      }
+      .layer ul li::before {
+        content: "› ";
+        color: var(--stamp);
+      }
+
+      /* ---------- SECTION HEADERS ---------- */
+      .section {
+        margin-top: 72px;
+      }
+      .section-head {
+        display: flex;
+        align-items: baseline;
+        gap: 18px;
+        border-bottom: 1px solid var(--ink);
+        padding-bottom: 8px;
+        margin-bottom: 28px;
+      }
+      .section-head .roman {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 28px;
+        color: var(--stamp);
+        font-weight: 400;
+      }
+      .section-head h2 {
+        font-family: var(--serif);
+        font-size: 32px;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -0.02em;
+        font-variation-settings: "opsz" 144;
+      }
+      .section-head .count {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+
+      /* ---------- TREE / SERVICES ---------- */
+      .tree {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .file {
+        background: var(--paper);
+        border: 1px solid var(--ink);
+        padding: 14px 16px 16px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .file::before {
+        content: "";
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 8px;
+        height: 8px;
+        background: var(--paper-2);
+        border: 1px solid var(--ink);
+      }
+      .file .path {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: var(--ink-soft);
+        word-break: break-all;
+      }
+      .file .name {
+        font-family: var(--serif);
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0;
+      }
+      .file .role {
+        font-size: 12.5px;
+        color: var(--ink);
+        line-height: 1.45;
+        margin: 4px 0 0;
+      }
+      .file .exposes {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed var(--rule);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: #0e4444;
+        line-height: 1.5;
+      }
+      .file .exposes::before {
+        content: "exposes → ";
+        color: var(--ink-soft);
+      }
+      .file .consumes {
+        margin-top: 4px;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: #2a3550;
+      }
+      .file .consumes::before {
+        content: "consumed by → ";
+        color: var(--rule);
+      }
+      .file.test {
+        background: linear-gradient(180deg, var(--paper) 0, var(--paper) 92%, var(--leaf) 92%, var(--leaf) 100%);
+      }
+      .file.test::after {
+        content: "TEST";
+        position: absolute;
+        bottom: -1px;
+        right: -1px;
+        background: var(--leaf);
+        color: var(--paper);
+        font-family: var(--mono);
+        font-size: 9px;
+        padding: 2px 6px;
+        letter-spacing: 0.1em;
+      }
+
+      /* ---------- DATA FLOW ---------- */
+      .dataflow {
+        background: var(--paper-2);
+        border: 1px solid var(--ink);
+        padding: 32px 36px;
+        box-shadow: 6px 6px 0 var(--ink);
+        position: relative;
+      }
+      .dataflow::before {
+        content: "Example · add a sticker";
+        position: absolute;
+        top: -12px;
+        left: 24px;
+        background: var(--paper);
+        padding: 0 10px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      .flow-steps {
+        display: grid;
+        grid-template-columns: 1fr 28px 1fr 28px 1fr 28px 1fr;
+        align-items: center;
+        gap: 0;
+        margin-top: 8px;
+      }
+      .step {
+        background: var(--paper);
+        border: 1px solid var(--ink);
+        padding: 16px 14px;
+        text-align: center;
+      }
+      .step .layer-tag {
+        font-family: var(--mono);
+        font-size: 9.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--stamp);
+      }
+      .step .name {
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: 15px;
+        margin-top: 4px;
+      }
+      .step .detail {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: var(--ink-soft);
+        margin-top: 4px;
+      }
+      .arrow {
+        text-align: center;
+        font-family: var(--serif);
+        font-size: 24px;
+        color: var(--ink);
+      }
+      .arrow::before {
+        content: "→";
+      }
+
+      /* ---------- HEALTH GRID ---------- */
+      .health {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+      }
+      .panel {
+        background: var(--paper);
+        border: 1px solid var(--ink);
+        padding: 22px 22px 24px;
+        position: relative;
+      }
+      .panel.crit {
+        border-color: var(--stamp);
+        box-shadow: 4px 4px 0 var(--stamp);
+      }
+      .panel.warn {
+        box-shadow: 4px 4px 0 var(--gold);
+      }
+      .panel .sev {
+        display: inline-block;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 3px 7px;
+        margin-bottom: 10px;
+      }
+      .panel.crit .sev {
+        background: var(--stamp);
+        color: var(--stamp-ink);
+      }
+      .panel.warn .sev {
+        background: var(--ink);
+        color: var(--gold);
+      }
+      .panel.ok .sev {
+        background: var(--leaf);
+        color: var(--paper);
+      }
+      .panel h4 {
+        font-family: var(--serif);
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 8px;
+        line-height: 1.2;
+      }
+      .panel p {
+        font-size: 13px;
+        margin: 0 0 8px;
+        color: var(--ink);
+      }
+      .panel .id {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: var(--ink-soft);
+      }
+
+      /* ---------- ROADMAP BARS ---------- */
+      .roadmap {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .rm-card {
+        border: 1px solid var(--ink);
+        background: var(--paper);
+        padding: 18px 20px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .rm-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+      }
+      .rm-card.p0::before {
+        background: var(--stamp);
+      }
+      .rm-card.p1::before {
+        background: var(--gold);
+      }
+      .rm-card.p2::before {
+        background: var(--teal);
+      }
+      .rm-card.p3::before {
+        background: var(--rule);
+      }
+      .rm-card .pri {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      .rm-card h4 {
+        font-family: var(--serif);
+        font-size: 17px;
+        font-weight: 700;
+        margin: 0;
+      }
+      .rm-card p {
+        font-size: 12.5px;
+        color: var(--ink);
+        margin: 0;
+      }
+      .rm-card .why {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: var(--ink-soft);
+        border-top: 1px dashed var(--rule);
+        padding-top: 6px;
+        margin-top: 4px;
+      }
+
+      /* ---------- FOOTER ---------- */
+      footer {
+        margin-top: 96px;
+        padding-top: 28px;
+        border-top: 2px solid var(--ink);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      footer .signoff {
+        font-family: var(--serif);
+        font-style: italic;
+        text-transform: none;
+        font-size: 16px;
+        letter-spacing: 0;
+        color: var(--ink);
+      }
+
+      /* ---------- RESPONSIVE ---------- */
+      @media (max-width: 920px) {
+        .layers {
+          grid-template-columns: 1fr 1fr;
+        }
+        .tree {
+          grid-template-columns: 1fr;
+        }
+        .health {
+          grid-template-columns: 1fr;
+        }
+        .roadmap {
+          grid-template-columns: 1fr;
+        }
+        .flow-steps {
+          grid-template-columns: 1fr;
+        }
+        .arrow {
+          transform: rotate(90deg);
+        }
+        header.masthead {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="atlas">
+      <!-- =================== HEADER =================== -->
+      <header class="masthead">
+        <div>
+          <div class="kicker">Codebase Atlas · Vol. I · 2026</div>
+          <h1 class="title">
+            AlbumPanini,<br />
+            <em>a field journal.</em>
+          </h1>
+          <p class="sub">
+            An offline-first PWA for sticker collectors. No backend, no
+            login, no cloud — just IndexedDB, M3 design tokens, and a
+            service worker that actually caches Tesseract. Here is the
+            shape of the code, what every file does, and where it hurts.
+          </p>
+          <div class="meta-row">
+            <span><span class="dot"></span>React 18 · Vite 6 · TS 5.7</span>
+            <span><span class="dot"></span>Dexie 4 · Zustand 5 · Zod 3</span>
+            <span><span class="dot"></span>Workbox PWA · Vitest · Playwright</span>
+            <span><span class="dot"></span>~40 services/hooks/stores</span>
+          </div>
+        </div>
+        <div class="stamp">
+          <span>OFFICIAL<br /><strong>2026</strong><br />PANINI<br />ATLAS</span>
+        </div>
+      </header>
+
+      <!-- =================== LAYERS =================== -->
+      <section class="section">
+        <div class="section-head">
+          <span class="roman">I.</span>
+          <h2>The five layers</h2>
+          <span class="count">Pages → Hooks → Services → DB → Stores</span>
+        </div>
+        <div class="layers">
+          <div class="layer">
+            <span class="num">01</span>
+            <h3>UI</h3>
+            <p>Pages, components, layout. M3 design tokens via Tailwind.</p>
+            <ul>
+              <li>11 pages · 1 router (hash)</li>
+              <li>~50 components</li>
+              <li>Material 3 tokens</li>
+            </ul>
+          </div>
+          <div class="layer">
+            <span class="num">02</span>
+            <h3>Hooks</h3>
+            <p>Reactive bridge between DB and UI. <code>useLiveQuery</code> everywhere except the manifest.</p>
+            <ul>
+              <li>useCollectionData</li>
+              <li>useActiveCollection</li>
+              <li>useTournament</li>
+            </ul>
+          </div>
+          <div class="layer">
+            <span class="num">03</span>
+            <h3>Services</h3>
+            <p>Domain logic. Pure modules are unit-testable, DB-touching ones use fake-indexeddb.</p>
+            <ul>
+              <li>statsService (pure)</li>
+              <li>filterService (pure)</li>
+              <li>backupService / syncService</li>
+            </ul>
+          </div>
+          <div class="layer">
+            <span class="num">04</span>
+            <h3>DB</h3>
+            <p>Dexie schema. Tables namespaced by <code>uid = "${cid}::${localId}"</code>. Migrations append-only.</p>
+            <ul>
+              <li>9 tables · v2</li>
+              <li>dbVersionHistory tracked</li>
+              <li>scenarios + matchResults</li>
+            </ul>
+          </div>
+          <div class="layer">
+            <span class="num">05</span>
+            <h3>Stores</h3>
+            <p>Zustand with <code>persist</code> + a custom safeStorage (localStorage + in-memory fallback).</p>
+            <ul>
+              <li>settingsStore (persisted)</li>
+              <li>uiStore (toasts)</li>
+              <li>scenarioStore · reservationStore</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== DATA FLOW =================== -->
+      <section class="section">
+        <div class="section-head">
+          <span class="roman">II.</span>
+          <h2>What happens when you tap "+"</h2>
+          <span class="count">local-first, no requests, no spinners</span>
+        </div>
+        <div class="dataflow">
+          <div class="flow-steps">
+            <div class="step">
+              <div class="layer-tag">UI</div>
+              <div class="name">StickerCard</div>
+              <div class="detail">QuantityStepper onClick</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="step">
+              <div class="layer-tag">Service</div>
+              <div class="name">inventoryService</div>
+              <div class="detail">adjustQuantity(±1)</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="step">
+              <div class="layer-tag">DB</div>
+              <div class="name">Dexie tx</div>
+              <div class="detail">update inventory + append activity</div>
+            </div>
+            <div class="arrow"></div>
+            <div class="step">
+              <div class="layer-tag">Reactive</div>
+              <div class="name">useLiveQuery</div>
+              <div class="detail">grid, dashboard, stats all rerender</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== SERVICES MAP =================== -->
+      <section class="section">
+        <div class="section-head">
+          <span class="roman">III.</span>
+          <h2>The services (where the logic lives)</h2>
+          <span class="count">13 modules · 6 with unit tests</span>
+        </div>
+        <div class="tree">
+          <article class="file">
+            <p class="path">src/services/collectionService.ts</p>
+            <h3 class="name">collectionService</h3>
+            <p class="role">CRUD de colecciones. Atomic Dexie transactions. Duplicate re-mapea uids.</p>
+            <p class="exposes">listCollections, getCollection, renameCollection, duplicateCollection, deleteCollection</p>
+            <p class="consumes">CollectionsPage, SettingsPage, tests</p>
+          </article>
+          <article class="file">
+            <p class="path">src/services/collectionLoader.ts</p>
+            <h3 class="name">collectionLoader</h3>
+            <p class="role">Fetch + Zod-validate + install packages. seedDefaultCollection = idempotent.</p>
+            <p class="exposes">fetchManifest, fetchPackage, installPackage, seedDefaultCollection</p>
+            <p class="consumes">App.tsx, CollectionsPage, useManifest</p>
+          </article>
+          <article class="file test">
+            <p class="path">src/services/inventoryService.ts</p>
+            <h3 class="name">inventoryService</h3>
+            <p class="role">CRUD de inventory + activity log (cap 200). Bulk import tolera códigos sucios.</p>
+            <p class="exposes">adjustQuantity, addByCodes, resetInventory, getRecentActivity</p>
+            <p class="consumes">StickersPage, ScanPage, ExchangePage, BulkImportModal</p>
+          </article>
+          <article class="file test">
+            <p class="path">src/services/statsService.ts</p>
+            <h3 class="name">statsService</h3>
+            <p class="role">Pure functions. computeOverview, team stats, category stats, most/least repeated.</p>
+            <p class="exposes">computeStatistics (aggregator)</p>
+            <p class="consumes">useCollectionData, Dashboard, Statistics</p>
+          </article>
+          <article class="file test">
+            <p class="path">src/services/filterService.ts</p>
+            <h3 class="name">filterService</h3>
+            <p class="role">Pure. filterStickers + 1-/2-level groupStickers (tournament A..L).</p>
+            <p class="exposes">groupStickersByTournament, ownedInGroup, sectionTotals</p>
+            <p class="consumes">StickersPage, StickerGroups</p>
+          </article>
+          <article class="file">
+            <p class="path">src/services/ocrService.ts</p>
+            <h3 class="name">ocrService</h3>
+            <p class="role">Tesseract.js en Web Worker. Char whitelist [A-Za-z0-9 ]. Lazy singleton.</p>
+            <p class="exposes">recognizeCodes, terminateOcr</p>
+            <p class="consumes">ScanPage</p>
+          </article>
+          <article class="file test">
+            <p class="path">src/services/qrService.ts</p>
+            <h3 class="name">qrService</h3>
+            <p class="role">QR exchange: gzip + base64url + Zod. computeMatch con versionMismatch check.</p>
+            <p class="exposes">buildOwnPosition, encodeExchange, generateExchangeQr, scanQrFromImageData</p>
+            <p class="consumes">ExchangePage</p>
+          </article>
+          <article class="file test">
+            <p class="path">src/services/backupService.ts</p>
+            <h3 class="name">backupService</h3>
+            <p class="role">.albumbackup file. Magic "PANINI-BACKUP", v2, stepwise migrations, self-healing restore.</p>
+            <p class="exposes">exportBackup, parseBackupFile, restoreBackup</p>
+            <p class="consumes">BackupPage</p>
+          </article>
+          <article class="file test">
+            <p class="path">src/services/syncService.ts</p>
+            <h3 class="name">syncService</h3>
+            <p class="role">QR device-to-device sync. Chunks ≤1800B. TTL 10 min. Compact tuples, no full objects.</p>
+            <p class="exposes">buildSyncPayload, chunkSync, buildSyncUrl, applySyncPayload</p>
+            <p class="consumes">BackupPage</p>
+          </article>
+          <article class="file test">
+            <p class="path">src/services/tournamentService.ts</p>
+            <h3 class="name">tournamentService</h3>
+            <p class="role">Pure tournament logic. FIFA tiebreakers, best-third ranking, bracket resolver recursivo.</p>
+            <p class="exposes">computeAllStandings, createBracketResolver, winnerOf</p>
+            <p class="consumes">useTournament, GroupsView, BracketView</p>
+          </article>
+          <article class="file test">
+            <p class="path">src/services/scenarioService.ts</p>
+            <h3 class="name">scenarioService</h3>
+            <p class="role">Scenarios (oficial + simulaciones). ensureOfficial idempotente. delete rechaza oficial.</p>
+            <p class="exposes">setScore (con penalties), setKnockoutPick, renameScenario</p>
+            <p class="consumes">ScenarioBar, MatchScoreRow, KnockoutMatchRow</p>
+          </article>
+          <article class="file test">
+            <p class="path">src/services/figuritasAppParser.ts</p>
+            <h3 class="name">figuritasAppParser</h3>
+            <p class="role">Parser del formato "PREFIX &lt;emoji&gt;: n,n,n". buildDuplicatesList para compartir.</p>
+            <p class="exposes">parseFiguritasAppList, candidateCodes, buildDuplicatesList</p>
+            <p class="consumes">ExchangePage</p>
+          </article>
+          <article class="file test" style="grid-column: 1 / -1; max-width: 50%; margin: 0 auto; width: 100%;">
+            <p class="path">src/services/figuritasAppMatcher.ts</p>
+            <h3 class="name">figuritasAppMatcher</h3>
+            <p class="role">Match entre lista figuritas.app e inventory local. Devuelve iCanGive / iNeed / iOwn / unresolved / byLine.</p>
+            <p class="exposes">matchFiguritasAppList</p>
+            <p class="consumes">ExchangePage</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- =================== HEALTH =================== -->
+      <section class="section">
+        <div class="section-head">
+          <span class="roman">IV.</span>
+          <h2>Where it hurts</h2>
+          <span class="count">23 items · 2 critical · 6 high</span>
+        </div>
+        <div class="health">
+          <article class="panel crit">
+            <span class="sev">P0 · critical</span>
+            <h4>TD-001 — Mismatch test vs ExchangePage</h4>
+            <p>
+              <code>data-testid="exchange-qr"</code> está buscado por un E2E
+              spec pero el código de la sección "My QR" está comentado.
+            </p>
+            <span class="id">src/pages/ExchangePage.tsx · tests/e2e/settings-backup-exchange.spec.ts</span>
+          </article>
+          <article class="panel crit">
+            <span class="sev">P0 · critical</span>
+            <h4>TD-002 — Race en defaultCollectionSeeded</h4>
+            <p>
+              El flag vive en localStorage pero la verdad es
+              <code>isInstalled(id)</code>. Edge case si el usuario borra
+              IndexedDB en modo privado.
+            </p>
+            <span class="id">src/app/App.tsx · src/stores/settingsStore.ts</span>
+          </article>
+          <article class="panel warn">
+            <span class="sev">P1 · high</span>
+            <h4>TD-003/004/007 — Archivos &gt; 17 KB</h4>
+            <p>
+              <code>ExchangePage</code> 34 KB, <code>BackupPage</code> 23 KB,
+              <code>StickersPage</code> 17 KB. Candidatos a refactor en
+              sub-componentes + hook con state machine.
+            </p>
+            <span class="id">src/pages/ExchangePage.tsx · BackupPage.tsx · StickersPage.tsx</span>
+          </article>
+          <article class="panel warn">
+            <span class="sev">P1 · high</span>
+            <h4>TD-008 — reservationStore sin consumidores</h4>
+            <p>
+              Store completo, tipos listos, ningún import en pages. Feature
+              a medias. Decidir: implementar o borrar.
+            </p>
+            <span class="id">src/stores/reservationStore.ts</span>
+          </article>
+          <article class="panel warn">
+            <span class="sev">P1 · high</span>
+            <h4>TD-013 — Cero observabilidad</h4>
+            <p>
+              Si OCR falla o un restore descarrila, no hay forma de saber.
+              Sentry con <code>sendDefaultPii: false</code> es la solución
+              obvia.
+            </p>
+            <span class="id">operational</span>
+          </article>
+          <article class="panel ok">
+            <span class="sev">green</span>
+            <h4>Y el resto…</h4>
+            <p>
+              17 items más en <code>TECHNICAL_DEBT.md</code>: archivos
+              huérfanos, dependencias no usadas, tests dispersos, sin A11y
+              audit, sin bundle analysis. Nada urgente, todo anotado.
+            </p>
+            <span class="id">docs/TECHNICAL_DEBT.md</span>
+          </article>
+        </div>
+      </section>
+
+      <!-- =================== ROADMAP =================== -->
+      <section class="section">
+        <div class="section-head">
+          <span class="roman">V.</span>
+          <h2>Next moves</h2>
+          <span class="count">26 ideas · 4 P0 · 7 P1</span>
+        </div>
+        <div class="roadmap">
+          <article class="rm-card p0">
+            <span class="pri">P0 · higiene</span>
+            <h4>Reactivar "My QR" en ExchangePage</h4>
+            <p>Resolver el mismatch TD-001. qrService.generateExchangeQr ya existe.</p>
+            <span class="why">value: high · cost: S · risk: low</span>
+          </article>
+          <article class="rm-card p0">
+            <span class="pri">P0 · higiene</span>
+            <h4>Fix defaultCollectionSeeded race</h4>
+            <p>Usar isInstalled() como fuente de verdad, el flag es acelerador.</p>
+            <span class="why">value: med · cost: S · risk: low</span>
+          </article>
+          <article class="rm-card p1">
+            <span class="pri">P1 · feature</span>
+            <h4>Reservas de figuritas</h4>
+            <p>Wirear reservationStore a StickerCard (long-press). "Aparté 3 figus para María".</p>
+            <span class="why">value: high · cost: M · risk: low</span>
+          </article>
+          <article class="rm-card p1">
+            <span class="pri">P1 · feature</span>
+            <h4>Sync device-to-device con feedback</h4>
+            <p>Progreso de chunks i/total, animación de scanning, resume desde última chunk.</p>
+            <span class="why">value: high · cost: M · risk: med</span>
+          </article>
+          <article class="rm-card p1">
+            <span class="pri">P1 · UX</span>
+            <h4>Onboarding con preview</h4>
+            <p>Dejar de auto-instalar WC2026. Welcome → pick collection → installed. Skip option.</p>
+            <span class="why">value: high · cost: S · risk: low</span>
+          </article>
+          <article class="rm-card p1">
+            <span class="pri">P1 · perf</span>
+            <h4>Virtualización de la grilla</h4>
+            <p>@tanstack/react-virtual. 396 stickers OK, pero sticky headers en StickerGroups es tricky.</p>
+            <span class="why">value: med · cost: M · risk: low</span>
+          </article>
+          <article class="rm-card p2">
+            <span class="pri">P2 · feature</span>
+            <h4>Autodetección code → teamId</h4>
+            <p>Mapear prefix "ARG" → teamId "ARG" en el package. Mostrar en StickerDetailModal.</p>
+            <span class="why">value: med · cost: S · risk: low</span>
+          </article>
+          <article class="rm-card p3">
+            <span class="pri">P3 · feature</span>
+            <h4>Multi-cuenta (perfiles locales)</h4>
+            <p>Una tablet compartida, varias colecciones. DB v3 con profileId en cada row.</p>
+            <span class="why">value: high · cost: L · risk: med-high</span>
+          </article>
+        </div>
+      </section>
+
+      <!-- =================== FOOTER =================== -->
+      <footer>
+        <div>AlbumPanini · Codebase Atlas · 2026-06-13</div>
+        <div class="signoff">
+          Written with care, sketched with discipline.
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
