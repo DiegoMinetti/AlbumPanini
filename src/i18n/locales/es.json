@@ -164,6 +164,7 @@
     "groupHeader": "Grupo {{letter}}",
     "duplicatesTitle": "Repetidas",
     "duplicatesDescription": "Tenés {{count}} figuritas con más de una copia (sin contar la primera de cada una). Marcá cuáles extras querés compartir.",
+    "missingTitle": "Faltan",
     "missingDescription": "Te faltan {{count}} figuritas. Marcá cuáles querés pedir.",
     "copyDuplicates": "Copiar repetidas",
     "copyDuplicatesSelected": "Copiar seleccionadas ({{count}})",

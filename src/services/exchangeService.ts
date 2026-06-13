@@ -175,7 +175,6 @@ export function buildDeepLink(
 export function buildExchangeText(args: {
   /** Localized labels for the shared text. */
   labels: {
-    openInApp: string;
     /** Section header for the duplicates block (e.g. "Tengo repetidas"). */
     headingDuplicates: string;
     /** Section header for the missing block (e.g. "Me faltan"). */
@@ -208,7 +207,12 @@ export function buildExchangeText(args: {
   const allLinks = [dupLink, missLink];
   const chunked = chunkLinks(allLinks, CHUNK_MAX_URL_BYTES);
 
-  const linkLines: string[] = [labels.openInApp];
+  // The shared text used to lead with an "Abrí en la app" label above
+  // the URL. That made the block read like a button caption + link,
+  // which was redundant once the URL is on its own line. We just emit
+  // the URL(s) by themselves; the chat client renders the link
+  // preview automatically.
+  const linkLines: string[] = [];
   if (allLinks.length === 1) {
     linkLines.push(allLinks[0]);
   } else if (chunked.length === 1) {

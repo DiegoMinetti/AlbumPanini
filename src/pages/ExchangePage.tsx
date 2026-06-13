@@ -200,7 +200,6 @@ export function ExchangePage() {
 
   const handleCopyOwn = (section: ExchangeSection) => {
     const labels = {
-      openInApp: t('exchange.openInApp'),
       headingDuplicates: t('exchange.sharedHeadingDuplicates'),
       headingMissing: t('exchange.sharedHeadingMissing'),
       headerTitle: active
@@ -222,7 +221,6 @@ export function ExchangePage() {
 
   const handleCopyBoth = () => {
     const labels = {
-      openInApp: t('exchange.openInApp'),
       headingDuplicates: t('exchange.sharedHeadingDuplicates'),
       headingMissing: t('exchange.sharedHeadingMissing'),
       headerTitle: active
@@ -240,7 +238,6 @@ export function ExchangePage() {
 
   const handleShareBoth = async () => {
     const labels = {
-      openInApp: t('exchange.openInApp'),
       headingDuplicates: t('exchange.sharedHeadingDuplicates'),
       headingMissing: t('exchange.sharedHeadingMissing'),
       headerTitle: active
@@ -1155,7 +1152,7 @@ function TeamRow({
             <li
               key={key}
               data-testid={`${testId}-chip-${key}`}
-              className={`flex w-20 flex-col items-stretch overflow-hidden
+              className={`flex w-[72px] flex-col items-stretch overflow-hidden
                 rounded-lg border transition-colors
                 ${
                   isSelected
@@ -1171,7 +1168,7 @@ function TeamRow({
                 aria-label={code}
                 data-selected={isSelected}
                 className={`flex w-full items-center justify-center gap-1
-                  px-1.5 py-1.5 font-mono text-label-md transition-colors
+                  px-1.5 py-3 font-mono text-label-md transition-colors
                   ${
                     isSelected
                       ? 'bg-primary-container text-on-primary-container'
@@ -1198,7 +1195,7 @@ function TeamRow({
                     title={releaseLabel}
                     data-testid={`${testId}-reserved-${key}`}
                     className="w-full truncate border-t border-tertiary/30
-                      bg-tertiary-container px-1.5 py-1 text-center
+                      bg-tertiary-container px-1.5 py-2 text-center
                       text-label-sm text-on-tertiary-container
                       underline-offset-2 hover:underline"
                   >
@@ -1208,7 +1205,7 @@ function TeamRow({
                   <span
                     data-testid={`${testId}-reserved-${key}`}
                     className="w-full truncate border-t border-tertiary/30
-                      bg-tertiary-container px-1.5 py-1 text-center
+                      bg-tertiary-container px-1.5 py-1.5 text-center
                       text-label-sm text-on-tertiary-container"
                   >
                     {t('exchange.reservations.reservedFor', { partner })}
@@ -1225,7 +1222,7 @@ function TeamRow({
                   data-testid={`${testId}-reserve-${key}`}
                   className="w-full truncate border-t
                     border-outline-variant bg-surface-container
-                    px-1.5 py-1 text-center text-label-sm
+                    px-1.5 py-2 text-center text-label-sm
                     text-on-surface-variant hover:bg-surface-container-high"
                 >
                   {t('exchange.reservations.reserveShort')}

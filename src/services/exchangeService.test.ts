@@ -123,7 +123,6 @@ describe('buildExchangeText', () => {
   it('emits 2 labelled blocks separated by a blank line, plus a header line and the deep link', () => {
     const text = buildExchangeText({
       labels: {
-        openInApp: 'Abrí en la app',
         headingDuplicates: 'Tengo repetidas',
         headingMissing: 'Me faltan',
         headerTitle: 'World Cup 2026 · Panini Tracker',
@@ -139,15 +138,14 @@ describe('buildExchangeText', () => {
     expect(text).toContain('Me faltan\nMEX 🇲🇽: 14');
     // Blank line between the two sections.
     expect(text).toMatch(/FWC 🏆: 4\n\nMe faltan\nMEX 🇲🇽: 14/);
-    // Open-in-app line + at least one deep link.
-    expect(text).toContain('Abrí en la app');
+    // Deep link is emitted on its own line, no "Abrí en la app" label.
+    expect(text).not.toContain('Abrí en la app');
     expect(text).toContain('https://diegominetti.github.io/AlbumPanini/');
   });
 
   it('omits the duplicates block when the user has no duplicates', () => {
     const text = buildExchangeText({
       labels: {
-        openInApp: 'Abrí en la app',
         headingDuplicates: 'Tengo repetidas',
         headingMissing: 'Me faltan',
       },
@@ -163,7 +161,6 @@ describe('buildExchangeText', () => {
   it('omits the missing block when the user is not missing anything', () => {
     const text = buildExchangeText({
       labels: {
-        openInApp: 'Abrí en la app',
         headingDuplicates: 'Tengo repetidas',
         headingMissing: 'Me faltan',
       },
@@ -178,7 +175,6 @@ describe('buildExchangeText', () => {
   it('produces a parseable round-trip for its own output', () => {
     const text = buildExchangeText({
       labels: {
-        openInApp: 'Abrí en la app',
         headingDuplicates: 'Tengo repetidas',
         headingMissing: 'Me faltan',
       },

@@ -164,6 +164,7 @@
     "groupHeader": "Group {{letter}}",
     "duplicatesTitle": "Duplicates",
     "duplicatesDescription": "You have {{count}} stickers with more than one copy (excluding the first of each). Mark the extras you want to share.",
+    "missingTitle": "Missing",
     "missingDescription": "You're missing {{count}} stickers. Mark the ones you want to ask for.",
     "copyDuplicates": "Copy duplicates",
     "copyDuplicatesSelected": "Copy selected ({{count}})",
