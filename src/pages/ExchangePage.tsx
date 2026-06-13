@@ -9,6 +9,7 @@ import {
   resolveExchangeText,
   type ExchangeSection,
   type ResolvedExchange,
+  type ResolvedSticker,
 } from '@/services/exchangeService';
 import { adjustQuantity } from '@/services/inventoryService';
 import { Spinner } from '@/components/feedback/Spinner';
@@ -255,8 +256,17 @@ export function ExchangePage() {
       setResolved(null);
       return;
     }
-    if (parsed.lines.length === 0 && parsed.duplicates.length === 0 && parsed.missing.length === 0) {
+    if (
+      parsed.lines.length === 0 &&
+      parsed.friendWants.length === 0 &&
+      parsed.friendHasExtra.length === 0
+    ) {
       setErrorMsg(t('exchange.pasteEmpty'));
+      setResolved(null);
+      return;
+    }
+    if (parsed.error === 'no-headers') {
+      setErrorMsg(t('exchange.pasteNoHeaders'));
       setResolved(null);
       return;
     }
@@ -275,32 +285,34 @@ export function ExchangePage() {
   // ---- Trade handlers (apply / reserve) ----
 
   /**
-   * Build the current trade from the paste result and the user's
-   * "offered duplicates" / "offered missing" selections.
+   * Build the current trade from the paste result. The 4-column
+   * classification is computed by `resolveExchangeText`:
+   *
+   *   - `iCanGive`     = the user's duplicates the friend needs
+   *   - `iNeed`        = the friend's duplicates the user needs
+   *   - `myExtras`     = the user's duplicates the friend does NOT need
+   *   - `friendExtras` = the friend's duplicates the user already has
+   *
+   * The actionable trade is `iCanGive` (what the user gives) + `iNeed`
+   * (what the user receives). `myExtras` and `friendExtras` are
+   * informational only.
    */
   const buildCurrentTrade = (): {
     give: TradeStickerRef[];
     receive: TradeStickerRef[];
   } | null => {
     if (!resolved) return null;
-    // give = duplicates the user has AND the friend has
-    const give = ownList.duplicates
-      .flatMap((g) =>
-        g.numbers
-          .filter((n) => offeredDuplicates.has(`${g.prefix}${n}`))
-          .map<TradeStickerRef>((n) => ({
-            stickerId: `${g.prefix}${n}`,
-            code: `${g.prefix}${n}`,
-            displayPrefix: g.prefix,
-            emoji: g.emoji,
-          }))
-      )
-      .filter((d) => resolved.duplicates.some((r) => r.code === d.code));
-    const receive = resolved.missing.map<TradeStickerRef>((s) => ({
-      stickerId: s.stickerId,
-      code: s.code,
-      displayPrefix: s.prefix,
-      emoji: s.emoji,
+    const give: TradeStickerRef[] = resolved.iCanGive.map((r) => ({
+      stickerId: r.stickerId,
+      code: r.code,
+      displayPrefix: r.prefix,
+      emoji: r.emoji,
+    }));
+    const receive: TradeStickerRef[] = resolved.iNeed.map((r) => ({
+      stickerId: r.stickerId,
+      code: r.code,
+      displayPrefix: r.prefix,
+      emoji: r.emoji,
     }));
     return { give, receive };
   };
@@ -560,14 +572,14 @@ export function ExchangePage() {
                 className="btn-primary flex-1"
                 onClick={handleApplyTrade}
                 disabled={
-                  resolved.missing.length === 0 &&
-                  buildCurrentTrade()?.give.length === 0
+                  resolved.iNeed.length === 0 &&
+                  resolved.iCanGive.length === 0
                 }
                 data-testid="paste-apply"
               >
                 {t('exchange.tradeConfirm', {
-                  give: buildCurrentTrade()?.give.length ?? 0,
-                  receive: resolved.missing.length,
+                  give: resolved.iCanGive.length,
+                  receive: resolved.iNeed.length,
                 })}
               </button>
               <button
@@ -575,8 +587,8 @@ export function ExchangePage() {
                 className="btn-secondary flex-1"
                 onClick={handleReserveTrade}
                 disabled={
-                  resolved.missing.length === 0 &&
-                  buildCurrentTrade()?.give.length === 0
+                  resolved.iNeed.length === 0 &&
+                  resolved.iCanGive.length === 0
                 }
                 data-testid="paste-reserve"
               >
@@ -797,29 +809,110 @@ function OwnSection({
 
 function ResolvedSummary({ resolved }: { resolved: ResolvedExchange }) {
   const { t } = useTranslation();
-  const iCanGive = resolved.duplicates.length;
-  const iNeed = resolved.missing.length;
+  const iCanGive = resolved.iCanGive.length;
+  const iNeed = resolved.iNeed.length;
+  const myExtras = resolved.myExtras.length;
+  const friendExtras = resolved.friendExtras.length;
   const unresolved = resolved.unresolved.length;
+  const hasExtras = myExtras > 0 || friendExtras > 0;
 
   return (
     <div
-      className="flex flex-col gap-1 rounded-md bg-surface-container-lowest p-2 text-body-sm"
+      className="flex flex-col gap-2 rounded-md bg-surface-container-lowest p-3 text-body-sm"
       data-testid="paste-summary"
     >
-      <p className="flex items-center justify-between gap-2">
-        <span className="text-secondary">
-          {t('exchange.pasteTheyGive', { count: iCanGive })}
-        </span>
-        <span className="text-on-surface-variant">↔</span>
-        <span className="text-primary">
-          {t('exchange.pasteYouReceive', { count: iNeed })}
-        </span>
-      </p>
+      {/* Main trade line */}
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <Bucket
+          tone="give"
+          title={t('exchange.resolved.iCanGive', { count: iCanGive })}
+          emptyHint={t('exchange.resolved.iCanGiveEmpty')}
+          items={resolved.iCanGive}
+        />
+        <Bucket
+          tone="receive"
+          title={t('exchange.resolved.iNeed', { count: iNeed })}
+          emptyHint={t('exchange.resolved.iNeedEmpty')}
+          items={resolved.iNeed}
+        />
+      </div>
+
+      {/* Extras — informational only */}
+      {hasExtras ? (
+        <details
+          className="rounded-md bg-surface-container-low p-2"
+          data-testid="paste-summary-extras"
+        >
+          <summary className="cursor-pointer text-label-md text-on-surface-variant">
+            {t('exchange.resolved.extrasSummary', {
+              myExtras,
+              friendExtras,
+            })}
+          </summary>
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <Bucket
+              tone="give-extra"
+              title={t('exchange.resolved.myExtras', { count: myExtras })}
+              emptyHint={t('exchange.resolved.myExtrasEmpty')}
+              items={resolved.myExtras}
+            />
+            <Bucket
+              tone="receive-extra"
+              title={t('exchange.resolved.friendExtras', { count: friendExtras })}
+              emptyHint={t('exchange.resolved.friendExtrasEmpty')}
+              items={resolved.friendExtras}
+            />
+          </div>
+        </details>
+      ) : null}
+
       {unresolved > 0 ? (
-        <p className="text-label-sm text-on-surface-variant">
+        <p className="text-label-sm text-on-surface-variant" data-testid="paste-unresolved">
           {t('exchange.pasteUnresolved', { count: unresolved })}
         </p>
       ) : null}
+    </div>
+  );
+}
+
+function Bucket({
+  tone,
+  title,
+  emptyHint,
+  items,
+}: {
+  tone: 'give' | 'receive' | 'give-extra' | 'receive-extra';
+  title: string;
+  emptyHint: string;
+  items: ResolvedSticker[];
+}) {
+  const isGive = tone === 'give' || tone === 'give-extra';
+  const isMain = tone === 'give' || tone === 'receive';
+  const toneClass = !isMain
+    ? 'text-on-surface-variant'
+    : isGive
+      ? 'text-secondary'
+      : 'text-primary';
+  const bgClass = isMain ? 'bg-surface' : 'bg-surface-container-lowest';
+
+  return (
+    <div className={`flex flex-col gap-1 rounded-md ${bgClass} p-2`}>
+      <p className={`text-label-md font-semibold ${toneClass}`}>{title}</p>
+      {items.length === 0 ? (
+        <p className="text-label-sm text-on-surface-variant">{emptyHint}</p>
+      ) : (
+        <ul className="flex flex-wrap gap-1">
+          {items.map((it) => (
+            <li
+              key={it.stickerId}
+              className="rounded-md bg-surface-container px-1.5 py-0.5 font-mono text-label-md text-on-surface"
+              data-testid={`paste-summary-chip-${it.code}`}
+            >
+              {it.code}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

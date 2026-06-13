@@ -16,37 +16,43 @@
  *
  * ## Wire format
  *
- * Our own format is:
+ * Our own format (what we copy/share) is two blocks separated by a blank
+ * line, no headers:
  *
- *   Panini Tracker
- *   <Section title in source language>
+ *   <block 1: lines the user has duplicates of>
  *   PREFIX1: n, n, n
  *   PREFIX2: n
  *
- *   <Section title in source language>
- *   ...
+ *   <block 2: lines the user is missing>
+ *   PREFIX1: n
+ *   PREFIX2: n, n
  *
  *   Abrí en la app
  *   <deep-link URL>
+ *   ...
  *
- *   --- 1/3 ---
- *   <deep-link URL>
- *
- *   (optional chunked continuation)
- *
- * The human-readable lines are the source of truth for clipboard
- * compatibility. The deep link is a compact, gzipped+base64url payload
+ * The two blocks are positional: block 1 = duplicates, block 2 = missing.
+ * The deep link is a compact, gzipped+base64url payload
  * (see `encodePayload` / `decodePayload`) that lets the app open straight
  * into the right collection with the right list pre-filled.
  *
- * ## External format
+ * ## External format (the other app)
  *
+ *   Me faltan
  *   PREFIX <emoji>: n, n, n
+ *   ...
  *
- * One line per prefix. Optional prose around it (titles, banners, "Me
- * faltan" / "Repetidas" labels) is ignored. This format is the lingua
- * franca between Panini-style apps; we accept it as input without
- * complaining about the source.
+ *   Repetidas
+ *   PREFIX <emoji>: n
+ *   ...
+ *
+ *   Descarga la app
+ *   https://www.figuritas.app/es/descargar
+ *
+ * Section headers ("Me faltan" / "Repetidas" / "Missing" / "Duplicates")
+ * are recognized case-insensitively. If a text has no headers, parsing
+ * fails with a clear error — the user can re-share with the headers
+ * intact.
  */
 
 import { db } from '@/db';
@@ -69,9 +75,7 @@ const EXCHANGE_PAYLOAD_VERSION = 1 as const;
 const exchangePayloadSchema = z.object({
   v: z.literal(EXCHANGE_PAYLOAD_VERSION),
   c: z.string().min(1), // collectionId
-  // Sections are identified by a short key. Today only "d" (duplicates) and
-  // "m" (missing) are supported; future versions can add more without
-  // breaking the deep link.
+  // Sections are identified by a short key. `d` = duplicates, `m` = missing.
   d: z.array(z.string()).default([]),
   m: z.array(z.string()).default([]),
 });
@@ -81,15 +85,29 @@ export type ExchangePayload = z.infer<typeof exchangePayloadSchema>;
 /** Where this text came from. Drives the UI labelling. */
 export type ExchangeSource = 'own' | 'external';
 
+/** Result of parsing a friend's text. The friend's perspective, not ours. */
 export interface ParsedExchangeText {
   source: ExchangeSource;
-  collectionId: string | null; // present only for `own`
-  duplicates: string[]; // sticker ids the source has duplicates of
-  missing: string[]; // sticker ids the source is missing
+  collectionId: string | null; // present only for `own` format
+  /** Sticker codes the friend is missing (= what we could give them). */
+  friendWants: string[];
+  /** Sticker codes the friend has duplicates of (= what they could give us). */
+  friendHasExtra: string[];
   /** External-only: lines we couldn't resolve. */
   unresolved: { prefix: string; number: string }[];
   /** Original line list, preserved for the UI. */
   lines: { prefix: string; emoji: string; numbers: string[] }[];
+  /** Per-line breakdown, in source order. */
+  byLine: ParsedLineSection[];
+  /** Friendly error message when parsing is rejected (e.g. no headers). */
+  error: string | null;
+}
+
+export interface ParsedLineSection {
+  /** "Me faltan" / "Repetidas" / "Faltan" / etc. Null if no header was found. */
+  heading: string | null;
+  emoji: string;
+  numbers: string[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -98,7 +116,7 @@ export interface ParsedExchangeText {
 
 const DEEP_LINK_BASE = 'https://albumpanini.app/exchange';
 
-/** Section of a list inside a deep link (or a "Repetidas" / "Faltan" block). */
+/** Section of a list inside a deep link. */
 export type ExchangeSection = 'duplicates' | 'missing';
 
 const SECTION_KEYS: Record<ExchangeSection, 'd' | 'm'> = {
@@ -111,15 +129,15 @@ const CHUNK_MAX_URL_BYTES = 1500;
 
 /**
  * Build a deep link for a given collection + section.
- * The sticker ids are passed through `normalizeCode` to align with the DB.
+ * The sticker codes are passed through `normalizeCode` to align with the DB.
  */
 export function buildDeepLink(
   collectionId: string,
   section: ExchangeSection,
-  stickerIds: string[]
+  stickerCodes: string[]
 ): string {
   const key = SECTION_KEYS[section];
-  const normalized = stickerIds.map(normalizeCode);
+  const normalized = stickerCodes.map(normalizeCode);
   const payload: ExchangePayload = {
     v: EXCHANGE_PAYLOAD_VERSION,
     c: collectionId,
@@ -130,56 +148,60 @@ export function buildDeepLink(
   return `${DEEP_LINK_BASE}?c=${encodeURIComponent(collectionId)}&s=${key}&d=${encoded}`;
 }
 
+/* ------------------------------------------------------------------ */
+/* Build the user-facing text                                          */
+/* ------------------------------------------------------------------ */
+
 /**
- * Build a single text block with both sections + a deep link per chunk.
+ * Build a copy-pasteable text with both sections + a deep link per chunk.
  *
  * Output shape:
- *   <own header>
- *   <Repetidas section>
- *   <lines>
+ *   <Repetidas section>          ← block 1 (no header label, by convention)
+ *   PREFIX1: n, n, n
+ *   PREFIX2: n
  *
- *   <Faltan section>
- *   <lines>
+ *   <Faltan section>             ← block 2 (no header label, by convention)
+ *   PREFIX1: n
  *
  *   Abrí en la app
- *   <deep-link url>     (with all the data in the URL, single chunk)
- *   --- 1/N ---         (only if we needed to chunk)
  *   <deep-link url>
- *   ...
+ *   --- 1/N ---                  ← only if chunked
+ *   <deep-link url>
  */
 export function buildExchangeText(args: {
-  /** Localized "Repetidas" / "Faltan" / "Open in the app" labels. */
+  /** Localized "Open in the app" label. */
   labels: {
-    header: string;
-    duplicatesTitle: string;
-    missingTitle: string;
     openInApp: string;
   };
   collectionId: string;
+  /** Stickers the user has duplicates of. Block 1. */
   duplicates: { prefix: string; emoji: string; numbers: string[] }[];
+  /** Stickers the user is missing. Block 2. */
   missing: { prefix: string; emoji: string; numbers: string[] }[];
 }): string {
   const { labels, collectionId, duplicates, missing } = args;
 
-  const dupBlock = renderSection(labels.duplicatesTitle, duplicates);
-  const missBlock = renderSection(labels.missingTitle, missing);
+  const dupBlock = renderSection(duplicates);
+  const missBlock = renderSection(missing);
 
-  // Encode each section as its own payload so the receiving app can land
-  // directly on the right flow ("Repetidas" → offer duplicates,
-  // "Faltan" → request missing).
-  const dupLink = buildDeepLink(collectionId, 'duplicates', flatIds(duplicates));
-  const missLink = buildDeepLink(collectionId, 'missing', flatIds(missing));
+  const dupLink = buildDeepLink(
+    collectionId,
+    'duplicates',
+    flatIds(duplicates)
+  );
+  const missLink = buildDeepLink(
+    collectionId,
+    'missing',
+    flatIds(missing)
+  );
 
   const allLinks = [dupLink, missLink];
-
   const chunked = chunkLinks(allLinks, CHUNK_MAX_URL_BYTES);
 
   const linkLines: string[] = [labels.openInApp];
   if (allLinks.length === 1) {
     linkLines.push(allLinks[0]);
   } else if (chunked.length === 1) {
-    // Multiple URLs that all fit in one chunk — show on separate lines for
-    // readability and to make each one tappable on mobile.
     allLinks.forEach((url) => linkLines.push(url));
   } else {
     chunked.forEach((url, idx) => {
@@ -188,26 +210,28 @@ export function buildExchangeText(args: {
     });
   }
 
-  return [
-    labels.header,
-    dupBlock,
-    missBlock,
-    '',
-    linkLines.join('\n'),
-  ]
-    .filter((s) => s !== '' || dupBlock === '' || missBlock === '')
-    .join('\n');
+  // The output is built from up to four "parts" joined with a blank
+  // line between them:
+  //   1. duplicates block (empty if the user has no duplicates)
+  //   2. missing block (empty if the user has no missing)
+  //   3. (blank separator — only included if both 1 and 2 are non-empty)
+  //   4. open-in-app block (always included, even if both 1 and 2 are empty)
+  const parts: string[] = [];
+  if (dupBlock) parts.push(dupBlock);
+  if (missBlock) parts.push(missBlock);
+  if (dupBlock && missBlock) parts.push('');
+  parts.push(linkLines.join('\n'));
+  return parts.join('\n');
 }
 
 function renderSection(
-  title: string,
   groups: { prefix: string; emoji: string; numbers: string[] }[]
 ): string {
   if (groups.length === 0) return '';
   const lines = groups.map((g) =>
     g.emoji ? `${g.prefix} ${g.emoji}: ${g.numbers.join(', ')}` : `${g.prefix}: ${g.numbers.join(', ')}`
   );
-  return [title, ...lines].join('\n');
+  return lines.join('\n');
 }
 
 function flatIds(groups: { prefix: string; numbers: string[] }[]): string[] {
@@ -215,10 +239,6 @@ function flatIds(groups: { prefix: string; numbers: string[] }[]): string[] {
 }
 
 function chunkLinks(urls: string[], maxBytes: number): string[] {
-  // Greedy: try to keep all URLs in a single chunk; fall back to one URL
-  // per chunk if any single URL exceeds the cap. With our 1500-byte cap
-  // and 6-byte `?c=&s=&d=` overhead per URL, a single chunk usually fits
-  // a complete payload.
   const total = urls.join('\n').length;
   if (total <= maxBytes) return [urls.join('\n')];
   return urls.map((u) => u);
@@ -244,19 +264,67 @@ function decodePayload(encoded: string): ExchangePayload {
 /** Regex matching a single `PREFIX <emoji>: n, n, n` line. */
 const LINE_RE = /^\s*([A-Za-z]+)\s+([^:]+?):\s*(.+?)\s*$/;
 
+/** A line + its section context, after parsing. */
 interface RawLine {
   prefix: string;
   emoji: string;
   numbers: string[];
+  /** Section heading in effect for this line, or null for the pre-heading prefix. */
+  section: 'wants' | 'extras' | null;
 }
 
-function parseLines(input: string): RawLine[] {
+interface ParsedRawText {
+  /** All `PREFIX <emoji>: n, n, n` lines, with their section context. */
+  lines: RawLine[];
+  /** Section headings found in the text, in order. */
+  sections: { heading: string; kind: 'wants' | 'extras' }[];
+}
+
+const SECTION_HEADERS: { pattern: RegExp; kind: 'wants' | 'extras' }[] = [
+  // Spanish
+  { pattern: /^\s*me\s*faltan\s*$/i, kind: 'wants' },
+  { pattern: /^\s*repetidas?\s*$/i, kind: 'extras' },
+  { pattern: /^\s*repetido\s*$/i, kind: 'extras' },
+  { pattern: /^\s*faltan\s*$/i, kind: 'wants' },
+  // English
+  { pattern: /^\s*missing\s*$/i, kind: 'wants' },
+  { pattern: /^\s*duplicates?\s*$/i, kind: 'extras' },
+  { pattern: /^\s*spare\s*$/i, kind: 'extras' },
+  { pattern: /^\s*spare\s+stickers?\s*$/i, kind: 'extras' },
+  // Portuguese
+  { pattern: /^\s*faltam\s*$/i, kind: 'wants' },
+  { pattern: /^\s*repetidas?\s*$/i, kind: 'extras' },
+];
+
+function detectSectionHeading(line: string): 'wants' | 'extras' | null {
+  for (const s of SECTION_HEADERS) {
+    if (s.pattern.test(line)) return s.kind;
+  }
+  return null;
+}
+
+function parseLinesWithSections(input: string): ParsedRawText {
   const lines: RawLine[] = [];
+  const sections: { heading: string; kind: 'wants' | 'extras' }[] = [];
+  let currentSection: 'wants' | 'extras' | null = null;
+
   for (const rawLine of input.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line) continue;
-    if (line.startsWith('#') || line.startsWith('//')) continue;
-    const m = LINE_RE.exec(line);
+    const trimmed = rawLine.trim();
+    if (!trimmed) continue;
+    if (trimmed.startsWith('#') || trimmed.startsWith('//')) continue;
+
+    // Strip a trailing URL so it doesn't get parsed as a "line" (the
+    // app banner is typically the last line of an external-format paste).
+    if (/^https?:\/\//i.test(trimmed)) continue;
+
+    const headingKind = detectSectionHeading(trimmed);
+    if (headingKind) {
+      currentSection = headingKind;
+      sections.push({ heading: trimmed, kind: headingKind });
+      continue;
+    }
+
+    const m = LINE_RE.exec(trimmed);
     if (!m) continue;
     const prefix = m[1].toUpperCase();
     const emoji = m[2].trim();
@@ -265,96 +333,153 @@ function parseLines(input: string): RawLine[] {
       .map((n) => n.trim())
       .filter((n) => n.length > 0);
     if (numbers.length === 0) continue;
-    lines.push({ prefix, emoji, numbers });
+    lines.push({ prefix, emoji, numbers, section: currentSection });
   }
-  return lines;
+
+  return { lines, sections };
 }
 
 const URL_RE = /(https?:\/\/[^\s]+)/g;
 
-/** Extract every deep link URL present in the text. */
 function extractUrls(input: string): string[] {
   return Array.from(input.matchAll(URL_RE)).map((m) => m[1]);
 }
 
 /**
  * Parse a block of text. Detects whether it's our own format (with a deep
- * link) or an external format. Always returns a structured result; never
- * throws on empty / malformed input.
+ * link) or an external format. Returns the friend's perspective
+ * (friendWants / friendHasExtra) and a per-line breakdown.
  */
 export function parseExchangeText(input: string): ParsedExchangeText {
   if (!input || !input.trim()) {
-    return emptyParsed('external');
+    return emptyParsed('external', null, 'empty');
   }
 
   const urls = extractUrls(input);
-  // Our deep-link host is `albumpanini.app`. Anything else with `?c=...&s=...&d=...`
-  // is treated as unknown and falls back to plain text parsing.
   const ownUrls = urls.filter((u) => u.startsWith(`${DEEP_LINK_BASE}?`));
-  const externalUrls = urls.filter((u) => !ownUrls.includes(u));
 
   if (ownUrls.length > 0) {
     return parseOwnFormat(ownUrls, input);
   }
 
-  // External format: parse the human-readable lines. We discard the URL
-  // lines (they're typically a "Descarga la app" link in the external
-  // format and we don't need them).
-  return parseExternalFormat(input, externalUrls);
+  return parseExternalFormat(input);
 }
 
 function parseOwnFormat(
   ownUrls: string[],
   fullText: string
 ): ParsedExchangeText {
-  const duplicates = new Set<string>();
-  const missing = new Set<string>();
+  const friendWants = new Set<string>();
+  const friendHasExtra = new Set<string>();
   let collectionId: string | null = null;
 
   for (const url of ownUrls) {
     const parsed = parseDeepLink(url);
     if (!parsed) continue;
     if (collectionId === null) collectionId = parsed.collectionId;
-    for (const id of parsed.duplicates) duplicates.add(id);
-    for (const id of parsed.missing) missing.add(id);
+    // In our own format: `d` = duplicates (what the source has extra),
+    // `m` = missing (what the source wants). From the receiver's POV,
+    // the source's extras = friendHasExtra, the source's missing = friendWants.
+    for (const id of parsed.duplicates) friendHasExtra.add(id);
+    for (const id of parsed.missing) friendWants.add(id);
   }
+
+  // Also walk the human-readable lines (if any) to populate byLine.
+  const cleaned = stripUrlLines(fullText);
+  const raw = parseLinesWithSections(cleaned);
 
   return {
     source: 'own',
     collectionId,
-    duplicates: [...duplicates],
-    missing: [...missing],
+    friendWants: [...friendWants],
+    friendHasExtra: [...friendHasExtra],
     unresolved: [],
-    // We also keep the raw line list so the UI can render the text exactly
-    // as the user pasted it (without the URL lines).
-    lines: parseLines(stripUrlLines(fullText)),
+    lines: raw.lines.map((l) => ({ prefix: l.prefix, emoji: l.emoji, numbers: l.numbers })),
+    byLine: groupRawLinesIntoSections(raw),
+    error: null,
   };
 }
 
-function parseExternalFormat(input: string, _externalUrls: string[]): ParsedExchangeText {
+function parseExternalFormat(input: string): ParsedExchangeText {
   const cleaned = stripUrlLines(input);
-  const lines = parseLines(cleaned);
+  const raw = parseLinesWithSections(cleaned);
+
+  if (raw.lines.length === 0) {
+    return emptyParsed('external', null, 'empty');
+  }
+
+  // External format must have at least one section header. Without one
+  // we can't tell which side is which and would silently mis-attribute.
+  if (raw.sections.length === 0) {
+    return {
+      source: 'external',
+      collectionId: null,
+      friendWants: [],
+      friendHasExtra: [],
+      unresolved: [],
+      lines: raw.lines.map((l) => ({ prefix: l.prefix, emoji: l.emoji, numbers: l.numbers })),
+      byLine: [],
+      error: 'no-headers',
+    };
+  }
+
+  const friendWants: string[] = [];
+  const friendHasExtra: string[] = [];
+  const unresolved: { prefix: string; number: string }[] = [];
+
+  for (const l of raw.lines) {
+    if (l.section === null) {
+      // Lines before the first header — we don't know which side they're
+      // on, so they end up in unresolved rather than being silently dropped.
+      for (const n of l.numbers) unresolved.push({ prefix: l.prefix, number: n });
+      continue;
+    }
+    const target = l.section === 'wants' ? friendWants : friendHasExtra;
+    for (const n of l.numbers) target.push(`${l.prefix}${n}`);
+  }
+
   return {
     source: 'external',
     collectionId: null,
-    duplicates: [], // External format doesn't tell us which side is which.
-    missing: [],
-    unresolved: lines.flatMap((l) =>
-      l.numbers.map((n) => ({ prefix: l.prefix, number: n }))
-    ),
-    lines,
+    friendWants,
+    friendHasExtra,
+    unresolved,
+    lines: raw.lines.map((l) => ({ prefix: l.prefix, emoji: l.emoji, numbers: l.numbers })),
+    byLine: groupRawLinesIntoSections(raw),
+    error: null,
   };
+}
+
+function groupRawLinesIntoSections(raw: ParsedRawText): ParsedLineSection[] {
+  return raw.lines.map((l) => ({
+    heading: l.section === null ? null : raw.sections.find((s) => s.kind === l.section)?.heading ?? null,
+    emoji: l.emoji,
+    numbers: l.numbers,
+  }));
 }
 
 function stripUrlLines(input: string): string {
   return input
     .split(/\r?\n/)
-    .filter((line) => !URL_RE.test(line.trim()))
+    .filter((line) => !/^https?:\/\//i.test(line.trim()))
     .join('\n');
 }
 
-function emptyParsed(source: ExchangeSource): ParsedExchangeText {
-  return { source, collectionId: null, duplicates: [], missing: [], unresolved: [], lines: [] };
+function emptyParsed(
+  source: ExchangeSource,
+  collectionId: string | null,
+  _reason: string
+): ParsedExchangeText {
+  return {
+    source,
+    collectionId,
+    friendWants: [],
+    friendHasExtra: [],
+    unresolved: [],
+    lines: [],
+    byLine: [],
+    error: null,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -389,7 +514,7 @@ function parseDeepLink(url: string): DeepLinkParts | null {
 }
 
 /* ------------------------------------------------------------------ */
-/* Resolve parsed text into sticker ids (DB-aware)                      */
+/* Resolve parsed text into sticker rows (DB-aware)                      */
 /* ------------------------------------------------------------------ */
 
 export interface ResolvedSticker {
@@ -401,20 +526,29 @@ export interface ResolvedSticker {
 }
 
 export interface ResolvedExchange {
-  /** Resolved ids in their canonical `code` form. */
-  duplicates: ResolvedSticker[];
-  missing: ResolvedSticker[];
+  /** Mis repetidas ∩ lo que el amigo necesita. Le doy al amigo. */
+  iCanGive: ResolvedSticker[];
+  /** Sus repetidas ∩ lo que yo necesito. El amigo me da. */
+  iNeed: ResolvedSticker[];
+  /** Mis repetidas que el amigo NO necesita (sobran — no se pueden ofrecer). */
+  myExtras: ResolvedSticker[];
+  /** Sus repetidas que yo YA tengo (no me sirven — redundantes). */
+  friendExtras: ResolvedSticker[];
   /** Lines the user pasted that don't correspond to any sticker in this collection. */
   unresolved: { prefix: string; number: string }[];
 }
 
 /**
- * Turn a parsed text into actual sticker rows from the local DB. Used by
- * the "paste friend list" flow to figure out what they have / need.
+ * Turn a parsed text into actual sticker rows from the local DB, then
+ * classify each one into one of four buckets:
  *
- * For our own format, the deep link already carries sticker ids — we
- * look them up directly. For external format, we resolve `(prefix, number)`
- * via the collection's sticker codes.
+ *   - `iCanGive`    = my duplicates ∩ friendWants
+ *   - `iNeed`       = friendHasExtra ∩ my missing
+ *   - `myExtras`    = my duplicates ∖ friendWants  (spare stickers I have)
+ *   - `friendExtras`= friendHasExtra ∖ my missing  (stickers the friend has that I already have)
+ *
+ * The user's tap selections in the UI only ever apply to `iCanGive` /
+ * `iNeed` (the actionable trade). The extras buckets are visual only.
  */
 export async function resolveExchangeText(
   collectionId: string,
@@ -427,11 +561,6 @@ export async function resolveExchangeText(
     .equals(collectionId)
     .toArray();
 
-  // Derive the team order from the stickers themselves (sorted by
-  // their `order` field). Dexie's primary-key ordering doesn't
-  // preserve the package's authorial team order, so we walk the
-  // stickers in `order` and pick the first teamId we see for each
-  // unique team.
   const sortedStickers = sortStickersByAlbumOrder(stickers);
   const teamsFromStickerOrder: StoredTeam[] = [];
   const seenTeam = new Set<string>();
@@ -453,54 +582,92 @@ export async function resolveExchangeText(
   const byCode = new Map<string, StoredSticker>();
   for (const s of stickers) byCode.set(s.normalizedCode, s);
 
-  const dupIds = parsed.source === 'own' ? new Set(parsed.duplicates) : null;
-  const missIds = parsed.source === 'own' ? new Set(parsed.missing) : null;
+  // Friend's resolved lists (one entry per sticker id the friend mentioned)
+  const friendWantsIds = parsed.friendWants;
+  const friendExtrasIds = parsed.friendHasExtra;
 
-  const duplicates: ResolvedSticker[] = [];
-  const missing: ResolvedSticker[] = [];
-  const unresolved: { prefix: string; number: string }[] = [];
+  // Index my inventory once.
+  const inventoryRows = await db.inventory
+    .where('collectionId')
+    .equals(collectionId)
+    .toArray();
+  const myQty = new Map(inventoryRows.map((i) => [i.stickerId, i.quantity]));
 
-  if (parsed.source === 'own') {
-    for (const id of dupIds ?? []) {
-      const s = byCode.get(id);
-      if (s) {
-        duplicates.push(toResolved(s, s.code, ''));
-      } else {
-        unresolved.push({ prefix: '?', number: id });
-      }
+  // ----- Resolve friendWants -> which of those do I have as duplicates?
+  const iCanGive: ResolvedSticker[] = [];
+  const friendWantsResolved: ResolvedSticker[] = [];
+  const friendWantsUnresolved: { prefix: string; number: string }[] = [];
+  for (const code of friendWantsIds) {
+    const s = byCode.get(normalizeCode(code));
+    if (!s) {
+      friendWantsUnresolved.push({ prefix: '?', number: code });
+      continue;
     }
-    for (const id of missIds ?? []) {
-      const s = byCode.get(id);
-      if (s) {
-        missing.push(toResolved(s, s.code, ''));
-      } else {
-        unresolved.push({ prefix: '?', number: id });
-      }
+    const r = toResolved(s, '', '', '');
+    friendWantsResolved.push(r);
+    const qty = myQty.get(s.id) ?? 0;
+    if (qty > 1) iCanGive.push(r);
+  }
+
+  // ----- Resolve friendHasExtra -> which of those do I need?
+  const iNeed: ResolvedSticker[] = [];
+  const friendExtrasResolved: ResolvedSticker[] = [];
+  const friendExtrasUnresolved: { prefix: string; number: string }[] = [];
+  for (const code of friendExtrasIds) {
+    const s = byCode.get(normalizeCode(code));
+    if (!s) {
+      friendExtrasUnresolved.push({ prefix: '?', number: code });
+      continue;
     }
-  } else {
-    // External: resolve from the line list. We don't know which side is
-    // "duplicates" and which is "missing" without a section heading — the
-    // caller decides how to interpret this (defaults to "missing": the
-    // typical "what my friend needs" interpretation).
-    for (const line of parsed.lines) {
-      for (const number of line.numbers) {
-        const candidates = candidateCodes(line.prefix, number);
-        const sticker = candidates
-          .map((c) => byCode.get(normalizeCode(c)))
-          .find((s): s is StoredSticker => Boolean(s));
-        if (!sticker) {
-          unresolved.push({ prefix: line.prefix, number });
-        } else {
-          missing.push(toResolved(sticker, line.prefix, number, line.emoji));
-        }
-      }
-    }
+    const r = toResolved(s, '', '', '');
+    friendExtrasResolved.push(r);
+    const qty = myQty.get(s.id) ?? 0;
+    if (qty === 0) iNeed.push(r);
+  }
+
+  // ----- myExtras: my duplicates that the friend did NOT say they need.
+  // Walk the local sticker set so we surface every duplicate the user
+  // has, even if it never appeared in the pasted text.
+  const friendWantsCodes = new Set(
+    friendWantsResolved.map((r) => r.code.toUpperCase())
+  );
+  const myExtras: ResolvedSticker[] = [];
+  for (const s of sortedStickers) {
+    const qty = myQty.get(s.id) ?? 0;
+    if (qty <= 1) continue;
+    if (friendWantsCodes.has(s.code.toUpperCase())) continue;
+    myExtras.push(toResolved(s, '', '', ''));
+  }
+
+  // ----- friendExtras: the friend's duplicates I already have.
+  const iNeedCodes = new Set(iNeed.map((r) => r.code.toUpperCase()));
+  const friendExtras: ResolvedSticker[] = [];
+  for (const r of friendExtrasResolved) {
+    if (iNeedCodes.has(r.code.toUpperCase())) continue;
+    friendExtras.push(r);
   }
 
   return {
-    duplicates: sortResolvedStickers(duplicates, teamsFromStickerOrder),
-    missing: sortResolvedStickers(missing, teamsFromStickerOrder),
-    unresolved,
+    iCanGive: sortResolvedStickers(iCanGive, teamsFromStickerOrder),
+    iNeed: sortResolvedStickers(iNeed, teamsFromStickerOrder),
+    myExtras: sortResolvedStickers(myExtras, teamsFromStickerOrder),
+    friendExtras: sortResolvedStickers(friendExtras, teamsFromStickerOrder),
+    unresolved: [...friendWantsUnresolved, ...friendExtrasUnresolved, ...parsed.unresolved],
+  };
+}
+
+function toResolved(
+  s: StoredSticker,
+  prefix: string,
+  number: string,
+  emoji: string
+): ResolvedSticker {
+  return {
+    stickerId: s.id,
+    code: s.code,
+    prefix,
+    number,
+    emoji,
   };
 }
 
@@ -516,8 +683,7 @@ function sortResolvedStickers(
   const order = albumPrefixOrder(teams);
   const idx = new Map<string, number>();
   order.forEach((p, i) => idx.set(p, i));
-  // Helper: numeric compare on the trailing digits of a sticker code.
-  // Sorts KOR2 < KOR10 (lexicographic would reverse these).
+
   const numericCmp = (a: ResolvedSticker, b: ResolvedSticker): number => {
     const na = Number.parseInt(a.code.replace(/^\D+/, ''), 10);
     const nb = Number.parseInt(b.code.replace(/^\D+/, ''), 10);
@@ -526,49 +692,17 @@ function sortResolvedStickers(
   };
 
   return [...items].sort((a, b) => {
-    // The resolved items carry `code` (e.g. "USA15"); map back to a
-    // prefix to use the album order index.
     const pa = a.code.replace(/\d.*$/, '').toUpperCase();
     const pb = b.code.replace(/\d.*$/, '').toUpperCase();
     const ai = idx.get(pa);
     const bi = idx.get(pb);
-    // Both known and in the album: order by album prefix, then by
-    // numeric suffix within the same prefix.
     if (ai !== undefined && bi !== undefined) {
       if (ai !== bi) return ai - bi;
       return numericCmp(a, b);
     }
-    // Both unknown: fall back to numeric / string compare.
     if (ai === undefined && bi === undefined) return numericCmp(a, b);
     return ai === undefined ? 1 : -1;
   });
-}
-
-function toResolved(
-  s: StoredSticker,
-  prefix: string,
-  number: string,
-  emoji: string = ''
-): ResolvedSticker {
-  return {
-    stickerId: s.id,
-    code: s.code,
-    prefix,
-    number,
-    emoji,
-  };
-}
-
-/** Build candidate codes for a (prefix, number) pair. Same logic as the
- *  legacy parser, kept here so this service is self-contained. */
-function candidateCodes(prefix: string, number: string): string[] {
-  const trimmedNumber = number.replace(/^0+(?=\d)/, '');
-  const candidates: string[] = [];
-  candidates.push(`${prefix}${trimmedNumber}`);
-  if (number !== trimmedNumber) candidates.push(`${prefix}${number}`);
-  if (number !== trimmedNumber) candidates.push(number);
-  candidates.push(trimmedNumber);
-  return [...new Set(candidates)];
 }
 
 /* ------------------------------------------------------------------ */
@@ -576,9 +710,7 @@ function candidateCodes(prefix: string, number: string): string[] {
 /* ------------------------------------------------------------------ */
 
 export interface OwnListGroups {
-  /** "Repetidas" — every sticker the user has in duplicate (qty > 1). */
   duplicates: { prefix: string; emoji: string; numbers: string[] }[];
-  /** "Faltan" — every sticker the user is missing (qty === 0). */
   missing: { prefix: string; emoji: string; numbers: string[] }[];
 }
 
@@ -596,8 +728,6 @@ export function buildOwnList(args: {
     if (t.flag) teamEmoji.set(t.id.toUpperCase(), t.flag);
   }
 
-  // Map of `code` -> original sticker, so we can recover `order` when
-  // sorting inside each group by the album order.
   const stickerByCode = new Map<string, (typeof args.stickers)[number]>();
   for (const s of args.stickers) stickerByCode.set(s.code, s);
 
@@ -609,13 +739,10 @@ export function buildOwnList(args: {
   for (const s of args.stickers) {
     const qty = args.inventory.get(s.id) ?? 0;
 
-    // Determine the display prefix. Prefer teamId (clean source of truth).
     let prefix: string;
     if (s.teamId && teamEmoji.has(s.teamId.toUpperCase())) {
       prefix = s.teamId.toUpperCase();
     } else {
-      // Synthetic groups: FWC (FIFA World Cup specials), INTRO (Panini
-      // logo, no team).
       const m = s.code.match(/^([A-Za-z]+)?(\d+)$/);
       if (!m || !m[1]) {
         prefix = 'INTRO';
@@ -639,8 +766,6 @@ export function buildOwnList(args: {
         dupOrder.push(prefix);
       }
       dupNumbers.get(prefix)!.push(numeric);
-    } else {
-      // qty === 1: not in either list (one copy is the "owned" baseline).
     }
 
     if (qty === 0) {
@@ -652,10 +777,6 @@ export function buildOwnList(args: {
     }
   }
 
-  // ---- Sort by album order -------------------------------------------
-  // Special prefixes (FWC, INTRO) first, then real teams in the order
-  // they appear in the package's `teams` array. Within each group,
-  // sort by the sticker's `order` field (falls back to numeric suffix).
   const orderByNumber = (a: string, b: string): number => {
     const oa = stickerByCode.get(a)?.order;
     const ob = stickerByCode.get(b)?.order;
@@ -687,7 +808,6 @@ export function buildOwnList(args: {
     numbers: [...missNumbers.get(p)!].sort(orderByNumber),
   }));
 
-  // Use the album helper to sort the groups themselves.
   return {
     duplicates: albumGroupSort(dupGroups, args.teams as StoredTeam[]),
     missing: albumGroupSort(missGroups, args.teams as StoredTeam[]),

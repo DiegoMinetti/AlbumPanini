@@ -201,6 +201,18 @@
     "pasteTheyGive": "They give: {{count}}",
     "pasteYouReceive": "You receive: {{count}}",
     "pasteUnresolved": "{{count}} couldn't be matched to the active album",
+    "pasteNoHeaders": "The text has no section headers ('Missing' / 'Duplicates'). Ask your friend to re-share with the headers.",
+    "resolved": {
+      "iCanGive": "I give ({{count}})",
+      "iCanGiveEmpty": "— I have no duplicates of what they need",
+      "iNeed": "They give ({{count}})",
+      "iNeedEmpty": "— I'm not missing any of their duplicates",
+      "extrasSummary": "Show extra info ({{myExtras}} / {{friendExtras}})",
+      "myExtras": "My spare duplicates ({{count}})",
+      "myExtrasEmpty": "— They need all my duplicates",
+      "friendExtras": "Their duplicates I already have ({{count}})",
+      "friendExtrasEmpty": "— I have none of their duplicates"
+    },
     "reservations": {
       "title": "Pending reservations",
       "description": "Trades earmarked for later. Confirm or cancel when you meet up.",

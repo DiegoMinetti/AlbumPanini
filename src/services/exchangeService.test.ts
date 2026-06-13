@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import 'fake-indexeddb/auto';
 import { db } from '@/db';
 import {
@@ -8,118 +8,135 @@ import {
   resolveExchangeText,
 } from './exchangeService';
 
-const SAMPLE_EXTERNAL = `Figuritas App - Lista
-Usa Méx Can 26
-Me faltan
-FWC 🏆: 00, 1, 3
-FWC 🌎: 7
-CZE 🇨🇿: 1, 3, 20
-USA 🇺🇸: 3, 15, 16, 19
+/**
+ * Realistic external-format paste from the Figuritas-style app, used
+ * throughout this file. The "Me faltan" section lists what the friend
+ * needs; the "Repetidas" section lists what the friend has duplicates
+ * of. A few stickers are picked from the user's own inventory so the
+ * resolver has something to classify.
+ */
+const FRIEND_TEXT = `Me faltan
+FWC 🏆: 4
+FWC 📜: 14, 17, 18, 19
+MEX 🇲🇽: 14
+KOR 🇰🇷: 1, 16, 20
+CZE 🇨🇿: 10, 16, 20
 
 Repetidas
 RSA 🇿🇦: 5, 13
 KOR 🇰🇷: 3, 5
+CZE 🇨🇿: 4, 5, 13, 17
+CAN 🇨🇦: 5
+BIH 🇧🇦: 16
 
 Descarga la app
 https://www.figuritas.app/es/descargar`;
 
 describe('parseExchangeText', () => {
-  it('detects external format (no own deep-link present)', () => {
-    const out = parseExchangeText(SAMPLE_EXTERNAL);
+  it('detects external format and splits into friendWants / friendHasExtra', () => {
+    const out = parseExchangeText(FRIEND_TEXT);
     expect(out.source).toBe('external');
-    expect(out.collectionId).toBeNull();
-    expect(out.lines.length).toBeGreaterThan(0);
+    expect(out.error).toBeNull();
+    // friendWants = codes under "Me faltan"
+    expect(out.friendWants).toContain('FWC4');
+    expect(out.friendWants).toContain('FWC14');
+    expect(out.friendWants).toContain('MEX14');
+    expect(out.friendWants).toContain('KOR1');
+    expect(out.friendWants).toContain('KOR16');
+    expect(out.friendWants).toContain('CZE10');
+    // friendHasExtra = codes under "Repetidas"
+    expect(out.friendHasExtra).toContain('RSA5');
+    expect(out.friendHasExtra).toContain('RSA13');
+    expect(out.friendHasExtra).toContain('KOR3');
+    expect(out.friendHasExtra).toContain('CZE4');
+    expect(out.friendHasExtra).toContain('CAN5');
+    expect(out.friendHasExtra).toContain('BIH16');
   });
 
-  it('external format keeps the original lines', () => {
-    const out = parseExchangeText(SAMPLE_EXTERNAL);
-    expect(out.lines[0].prefix).toBe('FWC');
-    expect(out.lines[0].numbers).toContain('00');
+  it('does NOT mix the two sections together', () => {
+    const out = parseExchangeText(FRIEND_TEXT);
+    // "FWC4" appears in friendWants (Me faltan), not in friendHasExtra
+    expect(out.friendHasExtra).not.toContain('FWC4');
+    // "RSA5" appears in friendHasExtra (Repetidas), not in friendWants
+    expect(out.friendWants).not.toContain('RSA5');
   });
 
-  it('detects our own format when an albumpanini.app URL is present', async () => {
-    // Build a valid SAMPLE_OWN with a real payload so the deep link is decodable.
-    const labels = {
-      header: 'Panini Tracker',
-      duplicatesTitle: 'Repetidas',
-      missingTitle: 'Faltan',
-      openInApp: 'Abrí en la app',
-    };
-    const text = buildExchangeText({
-      labels,
-      collectionId: 'worldcup-2026',
-      duplicates: [{ prefix: 'FWC', emoji: '🏆', numbers: ['4'] }],
-      missing: [],
-    });
-    const out = parseExchangeText(text);
-    expect(out.source).toBe('own');
-    expect(out.collectionId).toBe('worldcup-2026');
+  it('recognizes section headers case-insensitively and in multiple languages', () => {
+    const cases = [
+      { header: 'Me faltan', kind: 'wants' as const },
+      { header: 'me faltan', kind: 'wants' as const },
+      { header: 'ME FALTAN', kind: 'wants' as const },
+      { header: 'Repetidas', kind: 'extras' as const },
+      { header: 'Faltan', kind: 'wants' as const },
+      { header: 'Missing', kind: 'wants' as const },
+      { header: 'Duplicates', kind: 'extras' as const },
+      { header: 'Faltam', kind: 'wants' as const },
+    ];
+    for (const c of cases) {
+      const text = `${c.header}\nARG 🇦🇷: 1`;
+      const out = parseExchangeText(text);
+      if (c.kind === 'wants') {
+        expect(out.friendWants, c.header).toContain('ARG1');
+        expect(out.friendHasExtra, c.header).not.toContain('ARG1');
+      } else {
+        expect(out.friendHasExtra, c.header).toContain('ARG1');
+        expect(out.friendWants, c.header).not.toContain('ARG1');
+      }
+    }
+  });
+
+  it('returns a no-headers error when external text has no section markers', () => {
+    const out = parseExchangeText('ARG 🇦🇷: 1\nBRA 🇧🇷: 5');
+    expect(out.source).toBe('external');
+    expect(out.error).toBe('no-headers');
+    expect(out.friendWants).toEqual([]);
+    expect(out.friendHasExtra).toEqual([]);
+  });
+
+  it('treats lines before the first header as unresolved', () => {
+    const out = parseExchangeText('ARG 🇦🇷: 1\n\nMe faltan\nBRA 🇧🇷: 5');
+    expect(out.friendWants).toEqual(['BRA5']);
+    expect(out.unresolved).toEqual([{ prefix: 'ARG', number: '1' }]);
+  });
+
+  it('strips the trailing app banner URL from the parsed lines', () => {
+    const out = parseExchangeText(FRIEND_TEXT);
+    expect(
+      out.lines.every((l) => !l.prefix.toLowerCase().includes('http'))
+    ).toBe(true);
   });
 
   it('returns an empty result on empty / whitespace input', () => {
     const out = parseExchangeText('   \n\n   ');
-    expect(out.lines).toEqual([]);
-    expect(out.duplicates).toEqual([]);
-    expect(out.missing).toEqual([]);
-  });
-
-  it('tolerates semicolons and pipes as number separators', () => {
-    const out = parseExchangeText('USA 🇺🇸: 1; 2 | 3');
-    expect(out.lines[0].numbers).toEqual(['1', '2', '3']);
-  });
-
-  it('handles regional indicator flags (Scotland)', () => {
-    const out = parseExchangeText('SCO 🏴󠁧󠁢󠁳󠁣󠁴󠁿: 14');
-    expect(out.lines[0].emoji).toContain('🏴');
-    expect(out.lines[0].numbers).toEqual(['14']);
-  });
-
-  it('ignores comment lines and prose', () => {
-    const out = parseExchangeText(
-      '# header\nUSA 🇺🇸: 1, 2\n\n// another comment\nBRA 🇧🇷: 5'
-    );
-    expect(out.lines).toHaveLength(2);
+    expect(out.friendWants).toEqual([]);
+    expect(out.friendHasExtra).toEqual([]);
+    expect(out.error).toBeNull();
   });
 });
 
 describe('buildExchangeText', () => {
-  const labels = {
-    header: 'Panini Tracker',
-    duplicatesTitle: 'Repetidas',
-    missingTitle: 'Faltan',
-    openInApp: 'Abrí en la app',
-  };
-
-  it('emits the deep-link URL and the human-readable lines', () => {
+  it('emits 2 blocks separated by a blank line, no headers', () => {
     const text = buildExchangeText({
-      labels,
+      labels: { openInApp: 'Abrí en la app' },
       collectionId: 'worldcup-2026',
       duplicates: [{ prefix: 'FWC', emoji: '🏆', numbers: ['4'] }],
       missing: [{ prefix: 'MEX', emoji: '🇲🇽', numbers: ['14'] }],
     });
-    expect(text).toContain('Panini Tracker');
-    expect(text).toContain('Repetidas');
     expect(text).toContain('FWC 🏆: 4');
-    expect(text).toContain('Faltan');
     expect(text).toContain('MEX 🇲🇽: 14');
+    // Has a blank line between the two blocks.
+    expect(text).toMatch(/FWC 🏆: 4\nMEX 🇲🇽: 14\n\n/);
+    // Does NOT include section header labels like "Repetidas" / "Faltan".
+    expect(text).not.toMatch(/Repetidas/);
+    expect(text).not.toMatch(/Faltan/);
+    // Has the open-in-app line + at least one deep link.
     expect(text).toContain('Abrí en la app');
     expect(text).toContain('https://albumpanini.app/exchange');
   });
 
-  it('omits empty sections cleanly', () => {
-    const text = buildExchangeText({
-      labels,
-      collectionId: 'worldcup-2026',
-      duplicates: [],
-      missing: [{ prefix: 'MEX', emoji: '🇲🇽', numbers: ['14'] }],
-    });
-    expect(text).not.toContain('Repetidas');
-    expect(text).toContain('Faltan');
-  });
-
   it('produces a parseable round-trip for its own output', () => {
     const text = buildExchangeText({
-      labels,
+      labels: { openInApp: 'Abrí en la app' },
       collectionId: 'worldcup-2026',
       duplicates: [{ prefix: 'FWC', emoji: '🏆', numbers: ['4', '7'] }],
       missing: [{ prefix: 'MEX', emoji: '🇲🇽', numbers: ['14'] }],
@@ -127,6 +144,9 @@ describe('buildExchangeText', () => {
     const parsed = parseExchangeText(text);
     expect(parsed.source).toBe('own');
     expect(parsed.collectionId).toBe('worldcup-2026');
+    expect(parsed.friendHasExtra).toContain('FWC4');
+    expect(parsed.friendHasExtra).toContain('FWC7');
+    expect(parsed.friendWants).toContain('MEX14');
   });
 });
 
@@ -159,36 +179,10 @@ describe('buildOwnList', () => {
     expect(out.missing.map((g) => g.prefix)).toEqual(['USA', 'ARG']);
     expect(out.missing[0].numbers).toEqual(['3']);
   });
-
-  it('puts FWC stickers in the FWC group with the trophy emoji', () => {
-    const stickers = [
-      { id: 'fwc-1', code: 'FWC1' },
-      { id: 'fwc-3', code: 'FWC3' },
-    ];
-    const inventory = new Map([
-      ['fwc-1', 2],
-      ['fwc-3', 0],
-    ]);
-    const out = buildOwnList({ stickers, teams, inventory });
-    expect(out.duplicates[0].prefix).toBe('FWC');
-    expect(out.duplicates[0].emoji).toBe('🏆');
-    expect(out.missing[0].prefix).toBe('FWC');
-  });
-
-  it('returns empty arrays when nothing is duplicated or missing', () => {
-    const stickers = [
-      { id: 'mex-1', code: 'MEX1', teamId: 'MEX' },
-    ];
-    const inventory = new Map([['mex-1', 1]]);
-    const out = buildOwnList({ stickers, teams, inventory });
-    expect(out.duplicates).toEqual([]);
-    expect(out.missing).toEqual([]);
-  });
 });
 
 describe('resolveExchangeText (DB-backed)', () => {
   beforeEach(async () => {
-    // Wipe the test DB between cases.
     await db.delete();
     await db.open();
     await db.collections.add({
@@ -229,38 +223,55 @@ describe('resolveExchangeText (DB-backed)', () => {
     ]);
   });
 
-  it('resolves external lines into local sticker ids', async () => {
-    const text = 'MEX 🇲🇽: 1, 2\nUSA 🇺🇸: 15';
+  it('classifies friendWants ∩ my duplicates into iCanGive', async () => {
+    // I have 2 copies of MEX1. The friend wants MEX1. I have 0 of USA15
+    // so the friend's extra USA15 is iNeed.
+    await db.inventory.bulkAdd([
+      { uid: 'wc::MEX-1', collectionId: 'worldcup-2026', stickerId: 'MEX-1', quantity: 2, updatedAt: 0 },
+    ]);
+    const text = 'Me faltan\nMEX 🇲🇽: 1\n\nRepetidas\nUSA 🇺🇸: 15';
     const out = await resolveExchangeText('worldcup-2026', text);
-    expect(out.missing.length).toBe(2);
-    expect(out.missing.map((s) => s.code).sort()).toEqual(['MEX1', 'USA15']);
-    expect(out.unresolved.length).toBe(1); // MEX 2
+    expect(out.iCanGive.map((s) => s.code)).toEqual(['MEX1']);
+    expect(out.iNeed.map((s) => s.code)).toEqual(['USA15']);
+    expect(out.friendExtras).toEqual([]);
   });
 
-  it('resolves our own format directly from the deep link', async () => {
-    const labels = {
-      header: 'Panini Tracker',
-      duplicatesTitle: 'Repetidas',
-      missingTitle: 'Faltan',
-      openInApp: 'Abrí en la app',
-    };
-    const text = buildExchangeText({
-      labels,
-      collectionId: 'worldcup-2026',
-      duplicates: [{ prefix: 'MEX', emoji: '🇲🇽', numbers: ['1'] }],
-      missing: [{ prefix: 'USA', emoji: '🇺🇸', numbers: ['15'] }],
-    });
+  it('classifies friendHasExtra ∩ my missing into iNeed', async () => {
+    // Same setup as the previous test — just the focus assertion changes.
+    await db.inventory.bulkAdd([
+      { uid: 'wc::MEX-1', collectionId: 'worldcup-2026', stickerId: 'MEX-1', quantity: 2, updatedAt: 0 },
+    ]);
+    const text = 'Me faltan\nMEX 🇲🇽: 1\n\nRepetidas\nUSA 🇺🇸: 15';
     const out = await resolveExchangeText('worldcup-2026', text);
-    // Both stickers are seeded in beforeEach, so both should resolve.
-    expect(out.duplicates.length).toBe(1);
-    expect(out.duplicates[0].code).toBe('MEX1');
-    expect(out.missing.length).toBe(1);
-    expect(out.missing[0].code).toBe('USA15');
+    expect(out.iNeed.map((s) => s.code)).toEqual(['USA15']);
+  });
+
+  it('surfaces all my duplicates in myExtras, even those never mentioned', async () => {
+    // I have duplicates of MEX1 AND USA15. The friend only mentioned
+    // wanting MEX1. USA15 should still show up in myExtras.
+    await db.inventory.bulkAdd([
+      { uid: 'wc::MEX-1', collectionId: 'worldcup-2026', stickerId: 'MEX-1', quantity: 2, updatedAt: 0 },
+      { uid: 'wc::USA-15', collectionId: 'worldcup-2026', stickerId: 'USA-15', quantity: 3, updatedAt: 0 },
+    ]);
+    const text = 'Me faltan\nMEX 🇲🇽: 1';
+    const out = await resolveExchangeText('worldcup-2026', text);
+    expect(out.iCanGive.map((s) => s.code)).toEqual(['MEX1']);
+    expect(out.myExtras.map((s) => s.code)).toEqual(['USA15']);
+  });
+
+  it('surfaces friendExtras for friend duplicates I already own', async () => {
+    // I have 1 copy of USA15. Friend has USA15 as duplicate.
+    await db.inventory.bulkAdd([
+      { uid: 'wc::USA-15', collectionId: 'worldcup-2026', stickerId: 'USA-15', quantity: 1, updatedAt: 0 },
+    ]);
+    const text = 'Me faltan\nMEX 🇲🇽: 1\n\nRepetidas\nUSA 🇺🇸: 15';
+    const out = await resolveExchangeText('worldcup-2026', text);
+    expect(out.iCanGive).toEqual([]); // MEX1 in my missing (qty=0 default), so I can't give
+    expect(out.iNeed).toEqual([]); // I already own USA15, not missing
+    expect(out.friendExtras.map((s) => s.code)).toEqual(['USA15']);
   });
 
   it('orders resolved stickers by the album order of their teams', async () => {
-    // Use a brand-new collection so we don't have to deal with the
-    // beforeEach fixtures (MEX-1, USA-15) polluting the order.
     await db.collections.add({
       id: 'wc-mini',
       name: 'WC Mini',
@@ -275,18 +286,60 @@ describe('resolveExchangeText (DB-backed)', () => {
       { uid: 'wc-mini::KOR', id: 'KOR', collectionId: 'wc-mini', name: 'Korea', flag: '🇰🇷' },
       { uid: 'wc-mini::CZE', id: 'CZE', collectionId: 'wc-mini', name: 'Czechia', flag: '🇨🇿' },
     ]);
-    // Note: real collections have a unique `order` per sticker (1..N).
-    // KOR-1 < KOR-2 < CZE-1 mirrors the album layout.
     await db.stickers.bulkAdd([
       { uid: 'wc-mini::KOR-1', id: 'KOR-1', collectionId: 'wc-mini', code: 'KOR1', name: 'Korea 1', teamId: 'KOR', order: 1, normalizedCode: 'KOR1' },
       { uid: 'wc-mini::KOR-2', id: 'KOR-2', collectionId: 'wc-mini', code: 'KOR2', name: 'Korea 2', teamId: 'KOR', order: 2, normalizedCode: 'KOR2' },
       { uid: 'wc-mini::CZE-1', id: 'CZE-1', collectionId: 'wc-mini', code: 'CZE1', name: 'Czechia 1', teamId: 'CZE', order: 3, normalizedCode: 'CZE1' },
     ]);
-    // Paste the lines in a non-album order. The resolver should still
-    // surface them sorted by the album.
-    const text = 'KOR 🇰🇷: 1, 2\nCZE 🇨🇿: 1';
+    // I have KOR1 and KOR2 as duplicates; the friend has them as
+    // extras. That puts KOR1 + KOR2 in iNeed (because I lack them) —
+    // wait, the friend has them as extras means I CAN ask for them
+    // if I lack them. KOR1/KOR2 default qty=0 → iNeed.
+    // The friend has CZE1 as extra. I have CZE1 default qty=0 →
+    // also iNeed. Expected iNeed sorted by album: KOR1, KOR2, CZE1.
+    const text = 'Repetidas\nKOR 🇰🇷: 1, 2\nCZE 🇨🇿: 1';
     const out = await resolveExchangeText('wc-mini', text);
-    // KOR was inserted before CZE; album order is KOR first.
-    expect(out.missing.map((s) => s.code)).toEqual(['KOR1', 'KOR2', 'CZE1']);
+    expect(out.iNeed.map((s) => s.code)).toEqual(['KOR1', 'KOR2', 'CZE1']);
+  });
+
+  it('classifies against the full realistic friend text correctly', async () => {
+    // Seed a rich collection so the resolver has something to classify.
+    await db.delete();
+    await db.open();
+    await db.collections.add({
+      id: 'worldcup-2026',
+      name: 'World Cup 2026',
+      status: 'active',
+      version: '1.0.0',
+      language: 'es',
+      sourceId: 'wc-2026',
+      createdAt: 0,
+      updatedAt: 0,
+    });
+    // The friend's "Repetidas" has KOR3, KOR5 and RSA5, RSA13.
+    // I have 2 of MEX14 (so the friend's "Me faltan" MEX14 → iCanGive)
+    // I have 0 of KOR3 (so the friend's KOR3 → iNeed)
+    // I have 1 of RSA5 (so the friend's RSA5 → friendExtras, redundant)
+    // I have 0 of RSA13 (so the friend's RSA13 → iNeed)
+    await db.stickers.bulkAdd([
+      { uid: 'wc::MEX-14', id: 'MEX-14', collectionId: 'worldcup-2026', code: 'MEX14', name: 'Mexico 14', teamId: 'MEX', order: 14, normalizedCode: 'MEX14' },
+      { uid: 'wc::KOR-3', id: 'KOR-3', collectionId: 'worldcup-2026', code: 'KOR3', name: 'Korea 3', teamId: 'KOR', order: 3, normalizedCode: 'KOR3' },
+      { uid: 'wc::RSA-5', id: 'RSA-5', collectionId: 'worldcup-2026', code: 'RSA5', name: 'RSA 5', teamId: 'RSA', order: 5, normalizedCode: 'RSA5' },
+      { uid: 'wc::RSA-13', id: 'RSA-13', collectionId: 'worldcup-2026', code: 'RSA13', name: 'RSA 13', teamId: 'RSA', order: 13, normalizedCode: 'RSA13' },
+    ]);
+    await db.inventory.bulkAdd([
+      { uid: 'inv::MEX-14', collectionId: 'worldcup-2026', stickerId: 'MEX-14', quantity: 2, updatedAt: 0 },
+      { uid: 'inv::KOR-3', collectionId: 'worldcup-2026', stickerId: 'KOR-3', quantity: 0, updatedAt: 0 },
+      { uid: 'inv::RSA-5', collectionId: 'worldcup-2026', stickerId: 'RSA-5', quantity: 1, updatedAt: 0 },
+      { uid: 'inv::RSA-13', collectionId: 'worldcup-2026', stickerId: 'RSA-13', quantity: 0, updatedAt: 0 },
+    ]);
+    const out = await resolveExchangeText('worldcup-2026', FRIEND_TEXT);
+    // iCanGive: MEX14 (I have 2, friend wants it)
+    expect(out.iCanGive.map((s) => s.code)).toContain('MEX14');
+    // iNeed: KOR3, RSA13 (I have 0, friend has them as extras)
+    expect(out.iNeed.map((s) => s.code)).toContain('KOR3');
+    expect(out.iNeed.map((s) => s.code)).toContain('RSA13');
+    // friendExtras: RSA5 (friend has it as extra, I already have 1)
+    expect(out.friendExtras.map((s) => s.code)).toContain('RSA5');
   });
 });

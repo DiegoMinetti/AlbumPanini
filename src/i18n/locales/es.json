@@ -201,6 +201,18 @@
     "pasteTheyGive": "Te da: {{count}}",
     "pasteYouReceive": "Recibís: {{count}}",
     "pasteUnresolved": "{{count}} no se pudieron asociar al álbum activo",
+    "pasteNoHeaders": "El texto no tiene secciones ('Me faltan' / 'Repetidas'). Pedile a tu amigo que vuelva a compartirlo con los encabezados.",
+    "resolved": {
+      "iCanGive": "Yo le doy ({{count}})",
+      "iCanGiveEmpty": "— No tengo repetidas de lo que necesita",
+      "iNeed": "Él me da ({{count}})",
+      "iNeedEmpty": "— No me falta nada de sus repetidas",
+      "extrasSummary": "Ver info extra ({{myExtras}} / {{friendExtras}})",
+      "myExtras": "Mis repetidas demás ({{count}})",
+      "myExtrasEmpty": "— Todas mis repetidas las necesita",
+      "friendExtras": "Sus repetidas que ya tengo ({{count}})",
+      "friendExtrasEmpty": "— Ninguna de sus repetidas la tengo"
+    },
     "reservations": {
       "title": "Reservas pendientes",
       "description": "Acá quedan guardados los cambios que querés hacer más tarde. Confirmá o cancelá cuando los concretes.",
