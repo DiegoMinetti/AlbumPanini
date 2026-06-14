@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-14T06:31:50.193Z",
+  "generatedAt": "2026-06-14T12:56:12.787Z",
   "matches": [
     {
       "id": "m1",
@@ -196,8 +196,11 @@
     },
     {
       "id": "m20",
-      "status": "SCHEDULED",
+      "homeGoals": 2,
+      "awayGoals": 0,
+      "status": "FT",
       "kickoff": "2026-06-13T21:00:00.000-07:00",
+      "finishedAt": "2026-06-13T21:00:00.000-07:00",
       "venue": "Vancouver",
       "group": "D",
       "stage": "group",
