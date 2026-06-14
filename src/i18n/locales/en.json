@@ -415,6 +415,14 @@
       "sf": "Semi-finals",
       "third": "Third place",
       "final": "Final"
+    },
+    "locked": "Prediction locked",
+    "official": "Official",
+    "verdict": {
+      "exact": "Exact",
+      "sign": "Result",
+      "wrong": "Miss",
+      "pending": "Pending"
     }
   },
   "pwaInstall": {

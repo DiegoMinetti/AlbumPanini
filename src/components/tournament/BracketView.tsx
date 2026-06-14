@@ -6,6 +6,7 @@ import type {
 } from '@/services/tournamentService';
 import type { StoredTeam } from '@/types/collection';
 import type { MatchStage, TournamentMatch } from '@/types/tournament';
+import type { StoredOfficialResult } from '@/types/prediction';
 import { KnockoutMatchRow } from './KnockoutMatchRow';
 
 interface BracketViewProps {
@@ -13,6 +14,7 @@ interface BracketViewProps {
   resolver: BracketResolver;
   teamsById: Map<string, StoredTeam>;
   results: Map<string, IndexedMatchResult>;
+  officialResults: Map<string, StoredOfficialResult>;
   scenarioId: string;
 }
 
@@ -39,6 +41,7 @@ export function BracketView({
   resolver,
   teamsById,
   results,
+  officialResults,
   scenarioId,
 }: BracketViewProps) {
   const { t } = useTranslation();
@@ -73,13 +76,14 @@ export function BracketView({
                 return (
                   <KnockoutMatchRow
                     key={m.id}
+                    match={m}
                     scenarioId={scenarioId}
-                    matchId={m.id}
                     home={homeTeamId ? teamsById.get(homeTeamId) : undefined}
                     away={awayTeamId ? teamsById.get(awayTeamId) : undefined}
                     homeLabel={m.homeSlot}
                     awayLabel={m.awaySlot}
                     result={results.get(m.id)}
+                    official={officialResults.get(m.id)}
                   />
                 );
               })}

@@ -31,6 +31,7 @@ export function TournamentPage() {
     standings,
     resolver,
     results,
+    officialResults,
     loading: loadingTournament,
   } = useTournament(active?.id ?? null);
 
@@ -73,6 +74,7 @@ export function TournamentPage() {
           standings={standings}
           teamsById={teamsById}
           results={results}
+          officialResults={officialResults}
           scenarioId={activeScenarioId}
         />
       ) : (
@@ -81,6 +83,7 @@ export function TournamentPage() {
           resolver={resolver}
           teamsById={teamsById}
           results={results}
+          officialResults={officialResults}
           scenarioId={activeScenarioId}
         />
       )}

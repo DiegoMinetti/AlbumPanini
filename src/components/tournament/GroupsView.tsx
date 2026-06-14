@@ -5,6 +5,7 @@ import type {
 } from '@/services/tournamentService';
 import type { StoredTeam } from '@/types/collection';
 import type { Tournament } from '@/types/tournament';
+import type { StoredOfficialResult } from '@/types/prediction';
 import { GroupCard } from './GroupCard';
 
 interface GroupsViewProps {
@@ -12,6 +13,7 @@ interface GroupsViewProps {
   standings: AllStandings;
   teamsById: Map<string, StoredTeam>;
   results: Map<string, IndexedMatchResult>;
+  officialResults: Map<string, StoredOfficialResult>;
   scenarioId: string;
 }
 
@@ -27,6 +29,7 @@ export function GroupsView({
   standings,
   teamsById,
   results,
+  officialResults,
   scenarioId,
 }: GroupsViewProps) {
   const { t } = useTranslation();
@@ -53,6 +56,7 @@ export function GroupsView({
           standings={standings.byGroup.get(group.id) ?? []}
           teamsById={teamsById}
           results={results}
+          officialResults={officialResults}
           perGroup={tournament.qualifiers.perGroup}
           qualifiedThirds={qualifiedThirds}
           scenarioId={scenarioId}

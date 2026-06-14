@@ -64,6 +64,45 @@ adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   fixture (PR3) y lo trata como `official_results`, separado de las
   `predictions` del usuario.
 
+### Added (PR3 — separar predictions / official + bloqueo por kickoff)
+- Migración Dexie v3: agrega tablas `predictions`, `knockoutPredictions` y
+  `officialResults`. Copia los datos existentes de `matchResults` y
+  `knockoutPicks` a las nuevas tablas; las viejas quedan definidas para
+  back-compat de backups pero ya no las usa el app.
+- `src/types/prediction.ts` — `StoredPrediction`, `StoredKnockoutPrediction`,
+  `StoredOfficialResult`.
+- `src/services/predictionService.ts` — CRUD paralelo a `scenarioService`
+  que escribe a las tablas v3+ y aplica el lock: `setPrediction` rechaza
+  escrituras con `PredictionLockedError` cuando `match.kickoff <= now`.
+  El lock se evalúa contra el `kickoff` exacto (sin margen), según
+  decisión del usuario.
+- `src/services/officialResultsService.ts` + `src/hooks/useOfficialResults.ts`
+  — descarga el JSON estático al primer mount del TournamentPage, valida
+  con zod-in-style y guarda en IndexedDB. Re-fetch es idempotente (bulkPut
+  por `matchId`).
+- `src/utils/prediction.ts` — `isLockedForPrediction(match, now)` y
+  `isPredictionCorrect(prediction, official)`. La segunda devuelve un
+  veredicto `exact | sign | wrong | pending | official-missing` (el signo
+  compara goles en regulation; los partidos con `status: 'PEN'` se evalúan
+  sobre los penales, como manda FIFA).
+- `useTournament` ahora lee de `predictions` / `knockoutPredictions` y
+  expone `officialResults` + `officialSyncedAt`.
+- `MatchScoreRow` y `KnockoutMatchRow`: el input de goles se deshabilita
+  tras el kickoff y se muestra (a) el resultado oficial FIFA con su
+  veredicto, o (b) un texto "Predicción cerrada" si el partido arrancó
+  pero la Action aún no sincronizó.
+- `i18n` (es/en): agregadas claves `tournament.locked`, `tournament.official`,
+  `tournament.verdict.{exact,sign,wrong,pending}`.
+- `public/official/worldcup-2026-results.json` — placeholder vacío. La
+  Action lo sobreescribe con datos reales. Mientras tanto, el UI muestra
+  sólo la predicción del usuario.
+- Backup format bumpeado a v3: incluye `officialResults` por colección.
+  El restore las persiste en la tabla `officialResults` y replica las
+  predicciones a ambas tablas (legacy + v3) para back-compat de clientes
+  viejos.
+- 163/163 tests pasan; typecheck limpio; build OK (PWA pre-cachéa 25
+  entries, +1 por el nuevo JSON).
+
 ---
 
 ## [1.0.0] — 2026-06-13

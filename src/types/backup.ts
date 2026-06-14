@@ -8,7 +8,7 @@ import { settingsSchema } from './settings';
  * Current backup format version. Bump whenever the on-disk backup shape
  * changes; `restoreService` migrates older versions up to this one.
  */
-export const BACKUP_VERSION = 2;
+export const BACKUP_VERSION = 3;
 
 /** File extension / magic used by the export feature. */
 export const BACKUP_EXTENSION = '.albumbackup';
@@ -30,6 +30,19 @@ export const backupKnockoutPickSchema = z.object({
   slot: z.string(),
   teamId: z.string(),
   updatedAt: z.number(),
+});
+
+/** FIFA-official finished result carried in the backup (v3+). */
+export const backupOfficialResultSchema = z.object({
+  matchId: z.string(),
+  homeGoals: z.number(),
+  awayGoals: z.number(),
+  homePens: z.number().optional(),
+  awayPens: z.number().optional(),
+  status: z.enum(['FT', 'AET', 'PEN']),
+  finishedAt: z.string(),
+  apiFootballFixtureId: z.number(),
+  syncedAt: z.number(),
 });
 
 /** A backed-up tournament scenario with its results + picks. */
@@ -60,6 +73,11 @@ export const backupCollectionSchema = collectionMetaSchema.extend({
    * re-hydrating from the bundled package. See `restoreBackup`.
    */
   tournament: tournamentSchema.optional(),
+  /**
+   * v3+: FIFA-official finished results that the user had locally cached.
+   * Optional so older backups (pre-v3) remain readable.
+   */
+  officialResults: z.array(backupOfficialResultSchema).default([]),
 });
 export type BackupCollection = z.infer<typeof backupCollectionSchema>;
 
