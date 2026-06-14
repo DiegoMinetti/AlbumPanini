@@ -11,8 +11,9 @@ import { ROOT } from './config.js';
  *     comunicados oficiales de FIFA.
  *   - Gratis, sin key, sin rate limit. Se descarga con `fetch` una vez por run.
  *   - Cubre los 104 partidos con grupos + eliminatorias.
- *   - Sólo emite partidos con `score.ft` ya cargado (los demás se
- *     consideran "aún no finalizados" y se omiten).
+ *   - Emite TODOS los partidos. Para los que ya se jugaron trae los goles
+ *     finales (`status: 'FT' | 'AET' | 'PEN'`); para los pendientes solo
+ *     lleva metadatos (`status: 'SCHEDULED'`, sin goles).
  *
  * Plan B: si openfootball devuelve 404, error de red, o un payload que
  * no valida, este script falla con un mensaje claro. La GitHub Action
@@ -45,12 +46,22 @@ const OPENFOOTBALL_URL =
 
 const officialResultSchema = z.object({
   id: z.string().min(1),
-  homeGoals: z.number().int().nonnegative(),
-  awayGoals: z.number().int().nonnegative(),
+  homeGoals: z.number().int().nonnegative().optional(),
+  awayGoals: z.number().int().nonnegative().optional(),
   homePens: z.number().int().nonnegative().optional(),
   awayPens: z.number().int().nonnegative().optional(),
-  status: z.enum(['FT', 'AET', 'PEN']),
-  finishedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T/),
+  // 'SCHEDULED' = partido pendiente (no tiene goles). 'FT'/'AET'/'PEN' = finalizado.
+  status: z.enum(['FT', 'AET', 'PEN', 'SCHEDULED']),
+  /** ISO 8601 with offset (ej. "2026-06-11T13:00:00.000-06:00"). */
+  kickoff: z.string().regex(/^\d{4}-\d{2}-\d{2}T/),
+  /** Optional: solo presente en partidos ya finalizados. */
+  finishedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T/).optional(),
+  /** Estadio. openfootball incluye "city (suburb)" o solo city; dejamos el string crudo. */
+  venue: z.string().optional(),
+  /** Group letter (A..L) for group-stage matches; absent for knockout. */
+  group: z.string().optional(),
+  /** Stage: 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'third' | 'final'. */
+  stage: z.string().optional(),
   apiFootballFixtureId: z.number().int().positive(),
 });
 export type OfficialMatchResult = z.infer<typeof officialResultSchema>;
@@ -201,8 +212,16 @@ async function loadFixture(): Promise<Fixture> {
  */
 function joinMatch(m: OpenfootballMatch, fx: Fixture): string | null {
   if (!m.team1 || !m.team2) return null;
-  if (m.team1.startsWith('W') || m.team1.startsWith('L')) return null;
-  if (m.team2.startsWith('W') || m.team2.startsWith('L')) return null;
+  // Filter slot placeholders that openfootball uses for knockout games:
+  //   "W99" (winner of m99), "L101" (loser of m101),
+  //   "1A"/"2B" (group winner/runner-up),
+  //   "3A/B/C/D/F" (best third place across a set of groups).
+  // The fixture in our app only knows about group-stage teams and
+  // symbolic slots ("1A", "2B", "T3", "W73", "L101") — it doesn't
+  // materialise "3A/B/C/D/F" into a concrete team until the standings
+  // are computed. So we skip these entries: only group games with
+  // two real team names make it through.
+  if (!isRealTeamName(m.team1) || !isRealTeamName(m.team2)) return null;
   const homeFifa = mapName(m.team1);
   const awayFifa = mapName(m.team2);
   if (!homeFifa || !awayFifa) return null;
@@ -219,6 +238,20 @@ function joinMatch(m: OpenfootballMatch, fx: Fixture): string | null {
     return fx.byGroup.get(gk) ?? null;
   }
   return null;
+}
+
+/**
+ * True when the given string is a concrete team name (not a slot
+ * placeholder). Used to filter openfootball entries for knockout
+ * games — those use symbolic placeholders that the fixture's static
+ * join index can't match.
+ */
+function isRealTeamName(s: string): boolean {
+  if (s.startsWith('W') || s.startsWith('L')) return false;
+  if (/^[123][A-L]$/.test(s)) return false; // "1A", "2B", "3A"
+  if (s.includes('/')) return false; // "3A/B/C/D/F" sets
+  if (s.includes('T') && /T\d/.test(s)) return false; // "T3" best-third
+  return true;
 }
 
 interface Fetched {
@@ -243,8 +276,6 @@ export async function fetchOfficialResults(): Promise<Fetched> {
   }
   const results: OfficialMatchResult[] = [];
   for (const m of raw.matches) {
-    const ft = m.score?.ft;
-    if (!ft) continue; // partido no finalizado
     const matchId = joinMatch(m, fx);
     if (!matchId) {
       console.warn(
@@ -252,36 +283,71 @@ export async function fetchOfficialResults(): Promise<Fetched> {
       );
       continue;
     }
-    // Build an ISO `finishedAt` from `date` + `time` (e.g. "20:00 UTC-6").
-    const finishedAt = composeFinishedAt(m.date, m.time);
-    if (!finishedAt) {
-      console.warn(`[skip] m${matchId} cannot compose finishedAt`);
+    // Build an ISO kickoff string from `date` + `time` (e.g. "20:00 UTC-6").
+    const kickoff = composeFinishedAt(m.date, m.time);
+    if (!kickoff) {
+      console.warn(`[skip] m${matchId} cannot compose kickoff`);
       continue;
     }
+    const ft = m.score?.ft;
     const pens = m.score?.pens;
     const aet = m.score?.aet;
-    const status: 'FT' | 'AET' | 'PEN' = pens
-      ? 'PEN'
-      : aet
-        ? 'AET'
-        : 'FT';
+    const finished = !!(ft && (pens || aet || ft[0] !== ft[1] || true));
+    // Match status: 'SCHEDULED' if no final score, otherwise FT/AET/PEN.
+    const status: 'FT' | 'AET' | 'PEN' | 'SCHEDULED' = !ft
+      ? 'SCHEDULED'
+      : pens
+        ? 'PEN'
+        : aet
+          ? 'AET'
+          : 'FT';
     const out: OfficialMatchResult = {
       id: matchId,
-      homeGoals: ft[0],
-      awayGoals: ft[1],
       status,
-      finishedAt,
-      // The id is internal; we don't have a real api-football id anymore.
-      // Encode a stable hash so the field is still unique per match.
+      kickoff,
       apiFootballFixtureId: hashId(matchId),
     };
-    if (pens) {
+    if (ft) {
+      out.homeGoals = ft[0];
+      out.awayGoals = ft[1];
+      out.finishedAt = kickoff; // for finished games, the local kickoff is also the finished-at
+    }
+    if (pens && ft) {
       out.homePens = pens[0];
       out.awayPens = pens[1];
     }
+    if (m.ground) out.venue = m.ground;
+    if (m.group) {
+      const g = m.group.replace('Group ', '').trim();
+      if (g) out.group = g;
+    }
+    if (m.round) {
+      const stage = roundToStage(m.round);
+      if (stage) out.stage = stage;
+    }
     results.push(out);
+    void finished;
   }
   return { generatedAt: new Date().toISOString(), results };
+}
+
+/**
+ * Map openfootball round names to our canonical stage values used in
+ * `tournamentService.MATCH_STAGES`. The fixture is the source of truth
+ * for "which slot is which", but we carry the stage here too for UIs
+ * that want to render the schedule without rehydrating the full
+ * fixture (e.g. a future "next matches" widget).
+ */
+function roundToStage(round: string): string | undefined {
+  const r = round.toLowerCase();
+  if (r.includes('matchday')) return 'group';
+  if (r.includes('round of 32') || r.includes('16') || r.includes('r32')) return 'r32';
+  if (r.includes('round of 16') || r.includes('octavos') || r.includes('r16')) return 'r16';
+  if (r.includes('quarter') || r.includes('cuartos') || r.includes('qf')) return 'qf';
+  if (r.includes('semi') || r.includes('sf')) return 'sf';
+  if (r.includes('third') || r.includes('3rd')) return 'third';
+  if (r.includes('final')) return 'final';
+  return undefined;
 }
 
 /**

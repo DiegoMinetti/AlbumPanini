@@ -82,8 +82,10 @@ function verdictOf(
   // result is always a draw. We compare against the user's pens if they
   // entered any; if not, they implicitly picked a regulation result and
   // get 0 on a penalty game (it's a different question).
-  const ph = pens ? (official.homePens ?? 0) : official.homeGoals;
-  const pa = pens ? (official.awayPens ?? 0) : official.awayGoals;
+  // The verdictOf() guard above already ensured these are defined when
+  // we get here (SCHEDULED + missing fields return 'pending' early).
+  const ph = pens ? (official.homePens ?? 0) : (official.homeGoals ?? 0);
+  const pa = pens ? (official.awayPens ?? 0) : (official.awayGoals ?? 0);
   const pp = pens ? (prediction.homePens ?? 0) : prediction.homeGoals;
   const pa_ = pens ? (prediction.awayPens ?? 0) : prediction.awayGoals;
   if (ph === pp && pa === pa_) return 'exact';
@@ -197,6 +199,7 @@ function pickWinnerSlot(
   m: TournamentMatch,
   o: StoredOfficialResult
 ): string | undefined {
+  if (o.homeGoals == null || o.awayGoals == null) return undefined;
   if (o.status === 'PEN') {
     const hp = o.homePens ?? 0;
     const ap = o.awayPens ?? 0;
