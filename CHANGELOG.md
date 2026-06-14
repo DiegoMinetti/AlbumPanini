@@ -35,6 +35,20 @@ adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   candidatos.
 - `CHANGELOG.md` — este archivo.
 
+### Changed (PR1 — fixture oficial FIFA)
+- `enrichment/src/build-fixture.ts` — fechas de la fase de grupos
+  reemplazadas por las oficiales FIFA (sorteo 5-dic-2025): A 11/18/24 jun,
+  B 12/18/24, C 13/19/24, D 12/19/25, E-F 14/20/25, G-H 15/21/26, I 16/22/26,
+  J 16/22/27, K-L 17/23/27 jun. Eliminatorias 28 jun – 19 jul.
+- `enrichment/src/build-fixture.ts` — cada partido de grupo ahora trae
+  `kickoff` (ISO-8601 UTC) y `kickoffTz` (IANA tz de la sede, no DST-hardcoded).
+  Franjas FIFA reales: 12:00 / 15:00 / 18:00 / 21:00 hora local del estadio.
+- `enrichment/src/build-fixture.ts` — agregada `tz` a `HOST_CITIES` para que
+  la GitHub Action (PR2) pueda regenerar `kickoff` con offset real.
+- `public/collections/worldcup-2026.json` — `tournament.matches` regenerado
+  con las fechas/kickoffs oficiales. Estructura, IDs y orden de equipos
+  inalterados → no rompe `tournamentService` ni el bracket UI.
+
 ---
 
 ## [1.0.0] — 2026-06-13
