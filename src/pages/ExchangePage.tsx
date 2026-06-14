@@ -39,7 +39,9 @@ export function ExchangePage() {
 
   // ---- Reservations store (read + write) ----
   const items = useReservationStore((s) => s.items);
-  const addStickerReservation = useReservationStore((s) => s.addStickerReservation);
+  const addStickerReservation = useReservationStore(
+    (s) => s.addStickerReservation
+  );
   const removeStickerReservationByInstance = useReservationStore(
     (s) => s.removeStickerReservationByInstance
   );
@@ -71,7 +73,9 @@ export function ExchangePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   // Per-resolved-sticker sub-selection. Default: all selected.
   const [selectedGive, setSelectedGive] = useState<Set<string>>(new Set());
-  const [selectedReceive, setSelectedReceive] = useState<Set<string>>(new Set());
+  const [selectedReceive, setSelectedReceive] = useState<Set<string>>(
+    new Set()
+  );
 
   const collectionId = active?.id ?? null;
 
@@ -180,7 +184,10 @@ export function ExchangePage() {
     (sum, g) => sum + Math.max(0, g.numbers.length - 1),
     0
   );
-  const totalMissing = ownList.missing.reduce((sum, g) => sum + g.numbers.length, 0);
+  const totalMissing = ownList.missing.reduce(
+    (sum, g) => sum + g.numbers.length,
+    0
+  );
 
   // ---- Handlers ----
 
@@ -210,7 +217,9 @@ export function ExchangePage() {
         ? pickSelected(ownList.duplicates, [...shareableDupCodes])
         : [];
     const missing =
-      section === 'missing' ? pickSelected(ownList.missing, [...shareableMissCodes]) : [];
+      section === 'missing'
+        ? pickSelected(ownList.missing, [...shareableMissCodes])
+        : [];
     const text = buildExchangeText({ labels, duplicates, missing });
     void writeClipboard(text).then((ok) => {
       if (!ok) toast.error(t('toast.error'));
@@ -283,7 +292,9 @@ export function ExchangePage() {
       displayPrefix: reserveTarget.displayPrefix,
       emoji: reserveTarget.emoji,
     });
-    toast.success(t('exchange.reservations.reservedToast', { partner: partnerName }));
+    toast.success(
+      t('exchange.reservations.reservedToast', { partner: partnerName })
+    );
     setReserveModalOpen(false);
     setReserveTarget(null);
   };
@@ -330,7 +341,11 @@ export function ExchangePage() {
 
   const analyzeText = async (text: string) => {
     const parsed = parseExchangeText(text);
-    if (parsed.source === 'own' && parsed.collectionId && parsed.collectionId !== collectionId) {
+    if (
+      parsed.source === 'own' &&
+      parsed.collectionId &&
+      parsed.collectionId !== collectionId
+    ) {
       setErrorMsg(t('exchange.sameCollectionRequired'));
       setResolved(null);
       return;
@@ -875,10 +890,7 @@ function OwnTabsCard({
   const testId = isDup ? 'duplicates-section' : 'missing-section';
 
   return (
-    <section
-      className="card flex flex-col gap-3"
-      data-testid={sectionTestId}
-    >
+    <section className="card flex flex-col gap-3" data-testid={sectionTestId}>
       <SegmentedControl
         ariaLabel={t('exchange.tabsLabel')}
         value={tab}
@@ -941,10 +953,7 @@ function OwnTabsCard({
             </button>
           </div>
 
-          <div
-            className="flex flex-col gap-3"
-            data-testid={`${testId}-groups`}
-          >
+          <div className="flex flex-col gap-3" data-testid={`${testId}-groups`}>
             {activeSections.map((section) => (
               <TeamGroup
                 key={section.groupKey ?? 'ungrouped'}
@@ -956,7 +965,9 @@ function OwnTabsCard({
                 onReleaseSticker={onReleaseSticker}
                 stickers={stickers}
                 collectionId={collectionId}
-                hideTeamHeaders={activeSections.length === 1 && section.groupKey === null}
+                hideTeamHeaders={
+                  activeSections.length === 1 && section.groupKey === null
+                }
               />
             ))}
           </div>
@@ -1103,7 +1114,12 @@ function TeamRow({
     copyIndex: number
   ) => void;
   onReleaseSticker: (instanceId: string) => void;
-  stickers: Array<{ id: string; code: string; normalizedCode?: string; teamId?: string }>;
+  stickers: Array<{
+    id: string;
+    code: string;
+    normalizedCode?: string;
+    teamId?: string;
+  }>;
   collectionId: string;
   hideHeader: boolean;
 }) {
@@ -1339,7 +1355,9 @@ function ResolvedSummary({
             />
             <Bucket
               tone="receive-extra"
-              title={t('exchange.resolved.friendExtras', { count: friendExtras })}
+              title={t('exchange.resolved.friendExtras', {
+                count: friendExtras,
+              })}
               emptyHint={t('exchange.resolved.friendExtrasEmpty')}
               items={resolved.friendExtras.map((r) => ({
                 ...r,
@@ -1354,7 +1372,10 @@ function ResolvedSummary({
       ) : null}
 
       {unresolved > 0 ? (
-        <p className="text-label-sm text-on-surface-variant" data-testid="paste-unresolved">
+        <p
+          className="text-label-sm text-on-surface-variant"
+          data-testid="paste-unresolved"
+        >
           {t('exchange.pasteUnresolved', { count: unresolved })}
         </p>
       ) : null}
@@ -1467,10 +1488,14 @@ function ReservationsSection({
   onReleaseSticker,
 }: ReservationsSectionProps) {
   const { t } = useTranslation();
-  const hasAnything = pendingTrades.length > 0 || stickerReservations.length > 0;
+  const hasAnything =
+    pendingTrades.length > 0 || stickerReservations.length > 0;
 
   return (
-    <section className="card flex flex-col gap-3" data-testid="reservations-section">
+    <section
+      className="card flex flex-col gap-3"
+      data-testid="reservations-section"
+    >
       <header className="flex flex-col gap-1">
         <h2 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
           {t('exchange.reservations.title')}
@@ -1498,7 +1523,9 @@ function ReservationsSection({
             >
               <header className="flex items-center justify-between gap-2">
                 <p className="text-label-md font-semibold text-on-surface">
-                  {t('exchange.reservations.withPartner', { partner: trade.partner })}
+                  {t('exchange.reservations.withPartner', {
+                    partner: trade.partner,
+                  })}
                 </p>
               </header>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -1544,7 +1571,10 @@ function ReservationsSection({
       ) : null}
 
       {stickerReservations.length > 0 ? (
-        <div className="flex flex-col gap-2" data-testid="sticker-reservations-list">
+        <div
+          className="flex flex-col gap-2"
+          data-testid="sticker-reservations-list"
+        >
           <h3 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
             {t('exchange.reservations.stickerReservationsTitle')}
           </h3>

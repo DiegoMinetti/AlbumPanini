@@ -145,11 +145,17 @@ export function albumStickerSort(
  * by the sticker's `order` field. Useful for `buildOwnList` outputs.
  */
 export function sortGroupsByAlbum<
-  G extends { prefix: string; numbers: number[]; orderOfNumber?: (n: number) => number },
+  G extends {
+    prefix: string;
+    numbers: number[];
+    orderOfNumber?: (n: number) => number;
+  },
 >(groups: G[], teams: StoredTeam[]): G[] {
   return albumGroupSort(groups, teams).map((g) => {
     if (typeof g.orderOfNumber === 'function') {
-      const sorted = [...g.numbers].sort((a, b) => g.orderOfNumber!(a) - g.orderOfNumber!(b));
+      const sorted = [...g.numbers].sort(
+        (a, b) => g.orderOfNumber!(a) - g.orderOfNumber!(b)
+      );
       return { ...g, numbers: sorted };
     }
     return g;

@@ -197,7 +197,9 @@ function renderSection(
 ): string {
   if (groups.length === 0) return '';
   const lines = groups.map((g) =>
-    g.emoji ? `${g.prefix} ${g.emoji}: ${g.numbers.join(', ')}` : `${g.prefix}: ${g.numbers.join(', ')}`
+    g.emoji
+      ? `${g.prefix} ${g.emoji}: ${g.numbers.join(', ')}`
+      : `${g.prefix}: ${g.numbers.join(', ')}`
   );
   return lines.join('\n');
 }
@@ -352,7 +354,11 @@ function parseOwnFormat(
     friendWants: [...friendWants],
     friendHasExtra: [...friendHasExtra],
     unresolved: [],
-    lines: raw.lines.map((l) => ({ prefix: l.prefix, emoji: l.emoji, numbers: l.numbers })),
+    lines: raw.lines.map((l) => ({
+      prefix: l.prefix,
+      emoji: l.emoji,
+      numbers: l.numbers,
+    })),
     byLine: groupRawLinesIntoSections(raw),
     error: null,
   };
@@ -375,7 +381,11 @@ function parseExternalFormat(input: string): ParsedExchangeText {
       friendWants: [],
       friendHasExtra: [],
       unresolved: [],
-      lines: raw.lines.map((l) => ({ prefix: l.prefix, emoji: l.emoji, numbers: l.numbers })),
+      lines: raw.lines.map((l) => ({
+        prefix: l.prefix,
+        emoji: l.emoji,
+        numbers: l.numbers,
+      })),
       byLine: [],
       error: 'no-headers',
     };
@@ -389,7 +399,8 @@ function parseExternalFormat(input: string): ParsedExchangeText {
     if (l.section === null) {
       // Lines before the first header — we don't know which side they're
       // on, so they end up in unresolved rather than being silently dropped.
-      for (const n of l.numbers) unresolved.push({ prefix: l.prefix, number: n });
+      for (const n of l.numbers)
+        unresolved.push({ prefix: l.prefix, number: n });
       continue;
     }
     const target = l.section === 'wants' ? friendWants : friendHasExtra;
@@ -402,7 +413,11 @@ function parseExternalFormat(input: string): ParsedExchangeText {
     friendWants,
     friendHasExtra,
     unresolved,
-    lines: raw.lines.map((l) => ({ prefix: l.prefix, emoji: l.emoji, numbers: l.numbers })),
+    lines: raw.lines.map((l) => ({
+      prefix: l.prefix,
+      emoji: l.emoji,
+      numbers: l.numbers,
+    })),
     byLine: groupRawLinesIntoSections(raw),
     error: null,
   };
@@ -410,7 +425,10 @@ function parseExternalFormat(input: string): ParsedExchangeText {
 
 function groupRawLinesIntoSections(raw: ParsedRawText): ParsedLineSection[] {
   return raw.lines.map((l) => ({
-    heading: l.section === null ? null : raw.sections.find((s) => s.kind === l.section)?.heading ?? null,
+    heading:
+      l.section === null
+        ? null
+        : (raw.sections.find((s) => s.kind === l.section)?.heading ?? null),
     emoji: l.emoji,
     numbers: l.numbers,
   }));
@@ -614,7 +632,11 @@ export async function resolveExchangeText(
     iNeed: sortResolvedStickers(iNeed, teamsFromStickerOrder),
     myExtras: sortResolvedStickers(myExtras, teamsFromStickerOrder),
     friendExtras: sortResolvedStickers(friendExtras, teamsFromStickerOrder),
-    unresolved: [...friendWantsUnresolved, ...friendExtrasUnresolved, ...parsed.unresolved],
+    unresolved: [
+      ...friendWantsUnresolved,
+      ...friendExtrasUnresolved,
+      ...parsed.unresolved,
+    ],
   };
 }
 
@@ -700,7 +722,9 @@ export function chipKey(code: string, copyIndex: number): string {
  * Parse a chip key back into its components. Returns null if the key
  * doesn't follow the `<code>#<copyIndex>` convention.
  */
-export function parseChipKey(key: string): { code: string; copyIndex: number } | null {
+export function parseChipKey(
+  key: string
+): { code: string; copyIndex: number } | null {
   const idx = key.lastIndexOf('#');
   if (idx <= 0) return null;
   const code = key.slice(0, idx);
@@ -746,7 +770,8 @@ export function pickTradeableGroups(
       if (i === 0) continue; // copyIndex 0 is never tradable
       if (selectedKeys.has(chipKey(`${g.prefix}${n}`, i))) kept.push(n);
     }
-    if (kept.length > 0) out.push({ prefix: g.prefix, emoji: g.emoji, numbers: kept });
+    if (kept.length > 0)
+      out.push({ prefix: g.prefix, emoji: g.emoji, numbers: kept });
   }
   return out;
 }
@@ -756,7 +781,9 @@ export function pickTradeableGroups(
  * buckets, ready to render as text. Source order is preserved.
  */
 export function buildOwnList(args: {
-  stickers: Array<Pick<StoredSticker, 'id' | 'code'> & { teamId?: string; order?: number }>;
+  stickers: Array<
+    Pick<StoredSticker, 'id' | 'code'> & { teamId?: string; order?: number }
+  >;
   teams: Array<Pick<StoredTeam, 'id'> & { flag?: string }>;
   inventory: Map<string, number>;
 }): OwnListGroups {

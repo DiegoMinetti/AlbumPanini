@@ -240,8 +240,20 @@ describe('resolveExchangeText (DB-backed)', () => {
       updatedAt: 0,
     });
     await db.teams.bulkAdd([
-      { uid: 'worldcup-2026::USA', id: 'USA', collectionId: 'worldcup-2026', name: 'USA', flag: '🇺🇸' },
-      { uid: 'worldcup-2026::MEX', id: 'MEX', collectionId: 'worldcup-2026', name: 'Mexico', flag: '🇲🇽' },
+      {
+        uid: 'worldcup-2026::USA',
+        id: 'USA',
+        collectionId: 'worldcup-2026',
+        name: 'USA',
+        flag: '🇺🇸',
+      },
+      {
+        uid: 'worldcup-2026::MEX',
+        id: 'MEX',
+        collectionId: 'worldcup-2026',
+        name: 'Mexico',
+        flag: '🇲🇽',
+      },
     ]);
     await db.stickers.bulkAdd([
       {
@@ -271,7 +283,13 @@ describe('resolveExchangeText (DB-backed)', () => {
     // I have 2 copies of MEX1. The friend wants MEX1. I have 0 of USA15
     // so the friend's extra USA15 is iNeed.
     await db.inventory.bulkAdd([
-      { uid: 'wc::MEX-1', collectionId: 'worldcup-2026', stickerId: 'MEX-1', quantity: 2, updatedAt: 0 },
+      {
+        uid: 'wc::MEX-1',
+        collectionId: 'worldcup-2026',
+        stickerId: 'MEX-1',
+        quantity: 2,
+        updatedAt: 0,
+      },
     ]);
     const text = 'Me faltan\nMEX 🇲🇽: 1\n\nRepetidas\nUSA 🇺🇸: 15';
     const out = await resolveExchangeText('worldcup-2026', text);
@@ -283,7 +301,13 @@ describe('resolveExchangeText (DB-backed)', () => {
   it('classifies friendHasExtra ∩ my missing into iNeed', async () => {
     // Same setup as the previous test — just the focus assertion changes.
     await db.inventory.bulkAdd([
-      { uid: 'wc::MEX-1', collectionId: 'worldcup-2026', stickerId: 'MEX-1', quantity: 2, updatedAt: 0 },
+      {
+        uid: 'wc::MEX-1',
+        collectionId: 'worldcup-2026',
+        stickerId: 'MEX-1',
+        quantity: 2,
+        updatedAt: 0,
+      },
     ]);
     const text = 'Me faltan\nMEX 🇲🇽: 1\n\nRepetidas\nUSA 🇺🇸: 15';
     const out = await resolveExchangeText('worldcup-2026', text);
@@ -294,8 +318,20 @@ describe('resolveExchangeText (DB-backed)', () => {
     // I have duplicates of MEX1 AND USA15. The friend only mentioned
     // wanting MEX1. USA15 should still show up in myExtras.
     await db.inventory.bulkAdd([
-      { uid: 'wc::MEX-1', collectionId: 'worldcup-2026', stickerId: 'MEX-1', quantity: 2, updatedAt: 0 },
-      { uid: 'wc::USA-15', collectionId: 'worldcup-2026', stickerId: 'USA-15', quantity: 3, updatedAt: 0 },
+      {
+        uid: 'wc::MEX-1',
+        collectionId: 'worldcup-2026',
+        stickerId: 'MEX-1',
+        quantity: 2,
+        updatedAt: 0,
+      },
+      {
+        uid: 'wc::USA-15',
+        collectionId: 'worldcup-2026',
+        stickerId: 'USA-15',
+        quantity: 3,
+        updatedAt: 0,
+      },
     ]);
     const text = 'Me faltan\nMEX 🇲🇽: 1';
     const out = await resolveExchangeText('worldcup-2026', text);
@@ -306,7 +342,13 @@ describe('resolveExchangeText (DB-backed)', () => {
   it('surfaces friendExtras for friend duplicates I already own', async () => {
     // I have 1 copy of USA15. Friend has USA15 as duplicate.
     await db.inventory.bulkAdd([
-      { uid: 'wc::USA-15', collectionId: 'worldcup-2026', stickerId: 'USA-15', quantity: 1, updatedAt: 0 },
+      {
+        uid: 'wc::USA-15',
+        collectionId: 'worldcup-2026',
+        stickerId: 'USA-15',
+        quantity: 1,
+        updatedAt: 0,
+      },
     ]);
     const text = 'Me faltan\nMEX 🇲🇽: 1\n\nRepetidas\nUSA 🇺🇸: 15';
     const out = await resolveExchangeText('worldcup-2026', text);
@@ -327,13 +369,52 @@ describe('resolveExchangeText (DB-backed)', () => {
       updatedAt: 0,
     });
     await db.teams.bulkAdd([
-      { uid: 'wc-mini::KOR', id: 'KOR', collectionId: 'wc-mini', name: 'Korea', flag: '🇰🇷' },
-      { uid: 'wc-mini::CZE', id: 'CZE', collectionId: 'wc-mini', name: 'Czechia', flag: '🇨🇿' },
+      {
+        uid: 'wc-mini::KOR',
+        id: 'KOR',
+        collectionId: 'wc-mini',
+        name: 'Korea',
+        flag: '🇰🇷',
+      },
+      {
+        uid: 'wc-mini::CZE',
+        id: 'CZE',
+        collectionId: 'wc-mini',
+        name: 'Czechia',
+        flag: '🇨🇿',
+      },
     ]);
     await db.stickers.bulkAdd([
-      { uid: 'wc-mini::KOR-1', id: 'KOR-1', collectionId: 'wc-mini', code: 'KOR1', name: 'Korea 1', teamId: 'KOR', order: 1, normalizedCode: 'KOR1' },
-      { uid: 'wc-mini::KOR-2', id: 'KOR-2', collectionId: 'wc-mini', code: 'KOR2', name: 'Korea 2', teamId: 'KOR', order: 2, normalizedCode: 'KOR2' },
-      { uid: 'wc-mini::CZE-1', id: 'CZE-1', collectionId: 'wc-mini', code: 'CZE1', name: 'Czechia 1', teamId: 'CZE', order: 3, normalizedCode: 'CZE1' },
+      {
+        uid: 'wc-mini::KOR-1',
+        id: 'KOR-1',
+        collectionId: 'wc-mini',
+        code: 'KOR1',
+        name: 'Korea 1',
+        teamId: 'KOR',
+        order: 1,
+        normalizedCode: 'KOR1',
+      },
+      {
+        uid: 'wc-mini::KOR-2',
+        id: 'KOR-2',
+        collectionId: 'wc-mini',
+        code: 'KOR2',
+        name: 'Korea 2',
+        teamId: 'KOR',
+        order: 2,
+        normalizedCode: 'KOR2',
+      },
+      {
+        uid: 'wc-mini::CZE-1',
+        id: 'CZE-1',
+        collectionId: 'wc-mini',
+        code: 'CZE1',
+        name: 'Czechia 1',
+        teamId: 'CZE',
+        order: 3,
+        normalizedCode: 'CZE1',
+      },
     ]);
     // I have KOR1 and KOR2 as duplicates; the friend has them as
     // extras. That puts KOR1 + KOR2 in iNeed (because I lack them) —
@@ -366,16 +447,76 @@ describe('resolveExchangeText (DB-backed)', () => {
     // I have 1 of RSA5 (so the friend's RSA5 → friendExtras, redundant)
     // I have 0 of RSA13 (so the friend's RSA13 → iNeed)
     await db.stickers.bulkAdd([
-      { uid: 'wc::MEX-14', id: 'MEX-14', collectionId: 'worldcup-2026', code: 'MEX14', name: 'Mexico 14', teamId: 'MEX', order: 14, normalizedCode: 'MEX14' },
-      { uid: 'wc::KOR-3', id: 'KOR-3', collectionId: 'worldcup-2026', code: 'KOR3', name: 'Korea 3', teamId: 'KOR', order: 3, normalizedCode: 'KOR3' },
-      { uid: 'wc::RSA-5', id: 'RSA-5', collectionId: 'worldcup-2026', code: 'RSA5', name: 'RSA 5', teamId: 'RSA', order: 5, normalizedCode: 'RSA5' },
-      { uid: 'wc::RSA-13', id: 'RSA-13', collectionId: 'worldcup-2026', code: 'RSA13', name: 'RSA 13', teamId: 'RSA', order: 13, normalizedCode: 'RSA13' },
+      {
+        uid: 'wc::MEX-14',
+        id: 'MEX-14',
+        collectionId: 'worldcup-2026',
+        code: 'MEX14',
+        name: 'Mexico 14',
+        teamId: 'MEX',
+        order: 14,
+        normalizedCode: 'MEX14',
+      },
+      {
+        uid: 'wc::KOR-3',
+        id: 'KOR-3',
+        collectionId: 'worldcup-2026',
+        code: 'KOR3',
+        name: 'Korea 3',
+        teamId: 'KOR',
+        order: 3,
+        normalizedCode: 'KOR3',
+      },
+      {
+        uid: 'wc::RSA-5',
+        id: 'RSA-5',
+        collectionId: 'worldcup-2026',
+        code: 'RSA5',
+        name: 'RSA 5',
+        teamId: 'RSA',
+        order: 5,
+        normalizedCode: 'RSA5',
+      },
+      {
+        uid: 'wc::RSA-13',
+        id: 'RSA-13',
+        collectionId: 'worldcup-2026',
+        code: 'RSA13',
+        name: 'RSA 13',
+        teamId: 'RSA',
+        order: 13,
+        normalizedCode: 'RSA13',
+      },
     ]);
     await db.inventory.bulkAdd([
-      { uid: 'inv::MEX-14', collectionId: 'worldcup-2026', stickerId: 'MEX-14', quantity: 2, updatedAt: 0 },
-      { uid: 'inv::KOR-3', collectionId: 'worldcup-2026', stickerId: 'KOR-3', quantity: 0, updatedAt: 0 },
-      { uid: 'inv::RSA-5', collectionId: 'worldcup-2026', stickerId: 'RSA-5', quantity: 1, updatedAt: 0 },
-      { uid: 'inv::RSA-13', collectionId: 'worldcup-2026', stickerId: 'RSA-13', quantity: 0, updatedAt: 0 },
+      {
+        uid: 'inv::MEX-14',
+        collectionId: 'worldcup-2026',
+        stickerId: 'MEX-14',
+        quantity: 2,
+        updatedAt: 0,
+      },
+      {
+        uid: 'inv::KOR-3',
+        collectionId: 'worldcup-2026',
+        stickerId: 'KOR-3',
+        quantity: 0,
+        updatedAt: 0,
+      },
+      {
+        uid: 'inv::RSA-5',
+        collectionId: 'worldcup-2026',
+        stickerId: 'RSA-5',
+        quantity: 1,
+        updatedAt: 0,
+      },
+      {
+        uid: 'inv::RSA-13',
+        collectionId: 'worldcup-2026',
+        stickerId: 'RSA-13',
+        quantity: 0,
+        updatedAt: 0,
+      },
     ]);
     const out = await resolveExchangeText('worldcup-2026', FRIEND_TEXT);
     // iCanGive: MEX14 (I have 2, friend wants it)
@@ -458,4 +599,3 @@ describe('chip helpers (album copy rule)', () => {
     });
   });
 });
-

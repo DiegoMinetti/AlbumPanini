@@ -15,11 +15,39 @@ const wcTeams: StoredTeam[] = [
 ];
 
 const wcStickers: StoredSticker[] = [
-  { uid: 'wc::KOR-1', id: 'KOR-1', collectionId: 'wc', code: 'KOR1', teamId: 'KOR', order: 1 },
-  { uid: 'wc::MEX-1', id: 'MEX-1', collectionId: 'wc', code: 'MEX1', teamId: 'MEX', order: 1 },
+  {
+    uid: 'wc::KOR-1',
+    id: 'KOR-1',
+    collectionId: 'wc',
+    code: 'KOR1',
+    teamId: 'KOR',
+    order: 1,
+  },
+  {
+    uid: 'wc::MEX-1',
+    id: 'MEX-1',
+    collectionId: 'wc',
+    code: 'MEX1',
+    teamId: 'MEX',
+    order: 1,
+  },
   { uid: 'wc::FWC-1', id: 'FWC-1', collectionId: 'wc', code: 'FWC1', order: 1 },
-  { uid: 'wc::CZE-1', id: 'CZE-1', collectionId: 'wc', code: 'CZE1', teamId: 'CZE', order: 1 },
-  { uid: 'wc::MEX-2', id: 'MEX-2', collectionId: 'wc', code: 'MEX2', teamId: 'MEX', order: 2 },
+  {
+    uid: 'wc::CZE-1',
+    id: 'CZE-1',
+    collectionId: 'wc',
+    code: 'CZE1',
+    teamId: 'CZE',
+    order: 1,
+  },
+  {
+    uid: 'wc::MEX-2',
+    id: 'MEX-2',
+    collectionId: 'wc',
+    code: 'MEX2',
+    teamId: 'MEX',
+    order: 2,
+  },
   { uid: 'wc::FWC-2', id: 'FWC-2', collectionId: 'wc', code: 'FWC2', order: 2 },
   { uid: 'wc::00', id: '00', collectionId: 'wc', code: '00', order: 0 },
 ];
@@ -102,9 +130,27 @@ describe('albumStickerSort', () => {
 
   it('falls back to numeric suffix when `order` is missing', () => {
     const noOrder: StoredSticker[] = [
-      { uid: 'a::KOR-9', id: 'KOR-9', collectionId: 'a', code: 'KOR9', teamId: 'KOR' },
-      { uid: 'a::KOR-1', id: 'KOR-1', collectionId: 'a', code: 'KOR1', teamId: 'KOR' },
-      { uid: 'a::KOR-3', id: 'KOR-3', collectionId: 'a', code: 'KOR3', teamId: 'KOR' },
+      {
+        uid: 'a::KOR-9',
+        id: 'KOR-9',
+        collectionId: 'a',
+        code: 'KOR9',
+        teamId: 'KOR',
+      },
+      {
+        uid: 'a::KOR-1',
+        id: 'KOR-1',
+        collectionId: 'a',
+        code: 'KOR1',
+        teamId: 'KOR',
+      },
+      {
+        uid: 'a::KOR-3',
+        id: 'KOR-3',
+        collectionId: 'a',
+        code: 'KOR3',
+        teamId: 'KOR',
+      },
     ];
     const out = albumStickerSort(noOrder, wcTeams);
     expect(out.map((s) => s.id)).toEqual(['KOR-1', 'KOR-3', 'KOR-9']);

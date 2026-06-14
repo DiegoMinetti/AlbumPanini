@@ -36,9 +36,7 @@ import {
  * pending trades with María" without having to know which kind it is.
  */
 
-export type ReservationItem =
-  | StickerReservation
-  | PendingTrade;
+export type ReservationItem = StickerReservation | PendingTrade;
 
 /**
  * A single sticker copy is identified by a deterministic slot id built
@@ -383,8 +381,7 @@ export const useReservationStore = create<ReservationState>()(
           // do NOT silently overwrite — that would let a misclick re-
           // assign someone else's reservation.
           const duplicate = state.items.some(
-            (it) =>
-              it.kind === 'sticker' && it.instanceId === input.instanceId
+            (it) => it.kind === 'sticker' && it.instanceId === input.instanceId
           );
           if (duplicate) return state;
           const incoming: StickerReservation = {
@@ -622,7 +619,8 @@ export function pendingTradesFor(
 ): PendingTrade[] {
   return items
     .filter(
-      (it): it is PendingTrade => it.kind === 'trade' && it.collectionId === collectionId
+      (it): it is PendingTrade =>
+        it.kind === 'trade' && it.collectionId === collectionId
     )
     .sort((a, b) => b.createdAt - a.createdAt);
 }

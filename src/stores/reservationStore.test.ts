@@ -165,10 +165,20 @@ describe('reservationStore — pending trades', () => {
         collectionId: 'wc-2026',
         partner: 'María',
         give: [
-          { stickerId: 'USA-15', code: 'USA15', displayPrefix: 'USA', emoji: '🇺🇸' },
+          {
+            stickerId: 'USA-15',
+            code: 'USA15',
+            displayPrefix: 'USA',
+            emoji: '🇺🇸',
+          },
         ],
         receive: [
-          { stickerId: 'MEX-1', code: 'MEX1', displayPrefix: 'MEX', emoji: '🇲🇽' },
+          {
+            stickerId: 'MEX-1',
+            code: 'MEX1',
+            displayPrefix: 'MEX',
+            emoji: '🇲🇽',
+          },
         ],
       });
     });
@@ -185,10 +195,20 @@ describe('reservationStore — pending trades', () => {
         collectionId: 'wc-2026',
         partner: 'María',
         give: [
-          { stickerId: 'USA-15', code: 'USA15', displayPrefix: 'USA', emoji: '🇺🇸' },
+          {
+            stickerId: 'USA-15',
+            code: 'USA15',
+            displayPrefix: 'USA',
+            emoji: '🇺🇸',
+          },
         ],
         receive: [
-          { stickerId: 'MEX-1', code: 'MEX1', displayPrefix: 'MEX', emoji: '🇲🇽' },
+          {
+            stickerId: 'MEX-1',
+            code: 'MEX1',
+            displayPrefix: 'MEX',
+            emoji: '🇲🇽',
+          },
         ],
       });
     });
@@ -276,12 +296,19 @@ describe('reservationStore — selectors', () => {
         collectionId: 'wc-2026',
         partner: 'Juan',
         give: [
-          { stickerId: 'USA-15', code: 'USA15', displayPrefix: 'USA', emoji: '🇺🇸' },
+          {
+            stickerId: 'USA-15',
+            code: 'USA15',
+            displayPrefix: 'USA',
+            emoji: '🇺🇸',
+          },
         ],
         receive: [],
       });
     });
-    expect(totalReservedAcrossTrades(result.current.items, 'wc-2026', 'USA-15')).toBe(2);
+    expect(
+      totalReservedAcrossTrades(result.current.items, 'wc-2026', 'USA-15')
+    ).toBe(2);
   });
 
   it('isReserved is true when any copy is reserved', () => {
@@ -326,9 +353,9 @@ describe('reservationStore — selectors', () => {
         emoji: '🇺🇸',
       });
     });
-    expect(
-      reservedPartnerFor(result.current.items, 'wc-2026', 'USA-15')
-    ).toBe('Juan, María');
+    expect(reservedPartnerFor(result.current.items, 'wc-2026', 'USA-15')).toBe(
+      'Juan, María'
+    );
   });
 
   it('reservationForSlot returns the partner for the exact slot', () => {
@@ -373,7 +400,12 @@ describe('reservationStore — selectors', () => {
         collectionId: 'wc-2026',
         partner: 'Pedro',
         give: [
-          { stickerId: 'USA-15', code: 'USA15', displayPrefix: 'USA', emoji: '🇺🇸' },
+          {
+            stickerId: 'USA-15',
+            code: 'USA15',
+            displayPrefix: 'USA',
+            emoji: '🇺🇸',
+          },
         ],
         receive: [],
       });
@@ -400,7 +432,12 @@ describe('reservationStore — selectors', () => {
         collectionId: 'wc-2026',
         partner: 'Pedro',
         give: [
-          { stickerId: 'USA-15', code: 'USA15', displayPrefix: 'USA', emoji: '🇺🇸' },
+          {
+            stickerId: 'USA-15',
+            code: 'USA15',
+            displayPrefix: 'USA',
+            emoji: '🇺🇸',
+          },
         ],
         receive: [],
       });
