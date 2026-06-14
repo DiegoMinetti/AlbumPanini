@@ -380,7 +380,10 @@ export async function restoreBackup(
           await db.matchResults.where('scenarioId').equals(s.id).delete();
           await db.knockoutPicks.where('scenarioId').equals(s.id).delete();
           await db.predictions.where('scenarioId').equals(s.id).delete();
-          await db.knockoutPredictions.where('scenarioId').equals(s.id).delete();
+          await db.knockoutPredictions
+            .where('scenarioId')
+            .equals(s.id)
+            .delete();
         }
       }
       await db.collections.bulkPut(collections);

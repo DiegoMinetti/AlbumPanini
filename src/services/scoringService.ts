@@ -82,10 +82,10 @@ function verdictOf(
   // result is always a draw. We compare against the user's pens if they
   // entered any; if not, they implicitly picked a regulation result and
   // get 0 on a penalty game (it's a different question).
-  const ph = pens ? official.homePens ?? 0 : official.homeGoals;
-  const pa = pens ? official.awayPens ?? 0 : official.awayGoals;
-  const pp = pens ? prediction.homePens ?? 0 : prediction.homeGoals;
-  const pa_ = pens ? prediction.awayPens ?? 0 : prediction.awayGoals;
+  const ph = pens ? (official.homePens ?? 0) : official.homeGoals;
+  const pa = pens ? (official.awayPens ?? 0) : official.awayGoals;
+  const pp = pens ? (prediction.homePens ?? 0) : prediction.homeGoals;
+  const pa_ = pens ? (prediction.awayPens ?? 0) : prediction.awayGoals;
   if (ph === pp && pa === pa_) return 'exact';
   if (pens) return 'wrong';
   if (regulationSign(ph, pa) === regulationSign(pp, pa_)) return 'sign';

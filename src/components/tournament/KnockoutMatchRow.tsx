@@ -140,9 +140,7 @@ export function KnockoutMatchRow({
       });
     } catch (err) {
       if (err instanceof PredictionLockedError) {
-        console.warn(
-          `[prediction] rejected edit on ${err.matchId}: locked`,
-        );
+        console.warn(`[prediction] rejected edit on ${err.matchId}: locked`);
       } else {
         throw err;
       }
@@ -179,7 +177,9 @@ export function KnockoutMatchRow({
             aria-label={`${home?.name ?? homeLabel ?? 'home'} goals`}
             disabled={!editable}
             value={homeGoals}
-            onChange={(e) => safeSetPrediction({ homeGoals: parse(e.target.value) })}
+            onChange={(e) =>
+              safeSetPrediction({ homeGoals: parse(e.target.value) })
+            }
             className={goalInputCls}
           />
           <span className="text-on-surface-variant">-</span>
@@ -190,7 +190,9 @@ export function KnockoutMatchRow({
             aria-label={`${away?.name ?? awayLabel ?? 'away'} goals`}
             disabled={!editable}
             value={awayGoals}
-            onChange={(e) => safeSetPrediction({ awayGoals: parse(e.target.value) })}
+            onChange={(e) =>
+              safeSetPrediction({ awayGoals: parse(e.target.value) })
+            }
             className={goalInputCls}
           />
         </div>
@@ -217,7 +219,9 @@ export function KnockoutMatchRow({
             min={0}
             aria-label={`${home?.name ?? 'home'} penalties`}
             value={homePens}
-            onChange={(e) => safeSetPrediction({ homePens: parse(e.target.value) })}
+            onChange={(e) =>
+              safeSetPrediction({ homePens: parse(e.target.value) })
+            }
             className={penInputCls}
           />
           <span className="text-on-tertiary-container/70">-</span>
@@ -227,7 +231,9 @@ export function KnockoutMatchRow({
             min={0}
             aria-label={`${away?.name ?? 'away'} penalties`}
             value={awayPens}
-            onChange={(e) => safeSetPrediction({ awayPens: parse(e.target.value) })}
+            onChange={(e) =>
+              safeSetPrediction({ awayPens: parse(e.target.value) })
+            }
             className={penInputCls}
           />
         </div>
@@ -240,7 +246,9 @@ export function KnockoutMatchRow({
           </span>
           <span className="tabular-nums font-semibold text-on-surface">
             {official.homeGoals}-{official.awayGoals}
-            {official.status === 'PEN' && official.homePens != null && official.awayPens != null
+            {official.status === 'PEN' &&
+            official.homePens != null &&
+            official.awayPens != null
               ? ` (${official.homePens}-${official.awayPens} pen)`
               : ''}
           </span>
@@ -264,10 +272,22 @@ function VerdictChip({
 }) {
   const { t } = useTranslation();
   const map = {
-    exact: { label: t('tournament.verdict.exact'), cls: 'bg-primary/15 text-primary' },
-    sign: { label: t('tournament.verdict.sign'), cls: 'bg-secondary/15 text-secondary' },
-    wrong: { label: t('tournament.verdict.wrong'), cls: 'bg-error/15 text-error' },
-    pending: { label: t('tournament.verdict.pending'), cls: 'bg-outline-variant/30 text-on-surface-variant' },
+    exact: {
+      label: t('tournament.verdict.exact'),
+      cls: 'bg-primary/15 text-primary',
+    },
+    sign: {
+      label: t('tournament.verdict.sign'),
+      cls: 'bg-secondary/15 text-secondary',
+    },
+    wrong: {
+      label: t('tournament.verdict.wrong'),
+      cls: 'bg-error/15 text-error',
+    },
+    pending: {
+      label: t('tournament.verdict.pending'),
+      cls: 'bg-outline-variant/30 text-on-surface-variant',
+    },
     'official-missing': { label: '', cls: '' },
   } as const;
   const v = map[verdict];
