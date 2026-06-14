@@ -55,6 +55,29 @@ export async function installByName(page: Page, name: string): Promise<void> {
 }
 
 /**
+ * Create a custom (non-official) scenario for the active collection via the
+ * UI, then select it. The default selection on /tournament is the official
+ * scenario, whose score inputs are read-only (FIFA auto-fills the results);
+ * tests that want to exercise the user's own prediction flow need to be on a
+ * custom scenario first.
+ *
+ * Must be called after `installByName` and while /tournament is open (or
+ * anywhere the ScenarioBar is mounted).
+ */
+export async function createCustomScenario(
+  page: Page,
+  name: string
+): Promise<void> {
+  await page.getByRole('button', { name: 'New scenario' }).click();
+  const input = page.getByRole('dialog').getByRole('textbox');
+  await input.fill(name);
+  await page.getByRole('dialog').getByRole('button', { name: 'Create' }).click();
+  // The select updates to the newly-created scenario id; the dialog must
+  // close, which we observe by waiting for it to disappear.
+  await page.getByRole('dialog').waitFor({ state: 'detached' });
+}
+
+/**
  * Clear anything floating above the app that could intercept clicks on
  * bottom-anchored controls (FAB, bottom-nav). This includes:
  *  - Toasts (notifications region at `z-50 bottom-20`)

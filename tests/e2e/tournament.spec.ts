@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { primeSettings, goto, installByName } from './helpers';
+import {
+  primeSettings,
+  goto,
+  installByName,
+  createCustomScenario,
+} from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await primeSettings(page);
@@ -10,6 +15,12 @@ test('group stage shows groups and a score updates the standings', async ({
 }) => {
   await installByName(page, 'FIFA World Cup 2026');
   await goto(page, '/tournament');
+
+  // Switch to a custom scenario first: the default selection is the
+  // official scenario, whose score inputs are read-only because FIFA
+  // auto-fills the real results. The test exercises the user prediction
+  // path, which only works on a custom scenario.
+  await createCustomScenario(page, 'Test sim');
 
   // Twelve groups A..L are rendered.
   await expect(page.getByText('Group A', { exact: true })).toBeVisible();
