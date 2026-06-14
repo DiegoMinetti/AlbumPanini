@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-14T21:28:45.921Z",
+  "generatedAt": "2026-06-14T22:26:01.383Z",
   "matches": [
     {
       "id": "m1",
@@ -301,8 +301,11 @@
     },
     {
       "id": "m31",
-      "status": "SCHEDULED",
+      "homeGoals": 2,
+      "awayGoals": 2,
+      "status": "FT",
       "kickoff": "2026-06-14T15:00:00.000-05:00",
+      "finishedAt": "2026-06-14T15:00:00.000-05:00",
       "venue": "Dallas (Arlington)",
       "group": "F",
       "stage": "group",
