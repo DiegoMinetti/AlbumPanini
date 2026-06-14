@@ -1,13 +1,17 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-14T03:46:20.122Z",
+  "generatedAt": "2026-06-14T03:56:18.378Z",
   "matches": [
     {
       "id": "m1",
       "homeGoals": 2,
       "awayGoals": 0,
       "status": "FT",
+      "kickoff": "2026-06-11T13:00:00.000-06:00",
       "finishedAt": "2026-06-11T13:00:00.000-06:00",
+      "venue": "Mexico City",
+      "group": "A",
+      "stage": "group",
       "apiFootballFixtureId": 3428
     },
     {
@@ -15,15 +19,59 @@
       "homeGoals": 2,
       "awayGoals": 1,
       "status": "FT",
+      "kickoff": "2026-06-11T20:00:00.000-06:00",
       "finishedAt": "2026-06-11T20:00:00.000-06:00",
+      "venue": "Guadalajara (Zapopan)",
+      "group": "A",
+      "stage": "group",
       "apiFootballFixtureId": 3429
+    },
+    {
+      "id": "m4",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-18T12:00:00.000-04:00",
+      "venue": "Atlanta",
+      "group": "A",
+      "stage": "group",
+      "apiFootballFixtureId": 3431
+    },
+    {
+      "id": "m3",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-18T19:00:00.000-06:00",
+      "venue": "Guadalajara (Zapopan)",
+      "group": "A",
+      "stage": "group",
+      "apiFootballFixtureId": 3430
+    },
+    {
+      "id": "m5",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-24T19:00:00.000-06:00",
+      "venue": "Mexico City",
+      "group": "A",
+      "stage": "group",
+      "apiFootballFixtureId": 3432
+    },
+    {
+      "id": "m6",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-24T19:00:00.000-06:00",
+      "venue": "Monterrey (Guadalupe)",
+      "group": "A",
+      "stage": "group",
+      "apiFootballFixtureId": 3433
     },
     {
       "id": "m7",
       "homeGoals": 1,
       "awayGoals": 1,
       "status": "FT",
+      "kickoff": "2026-06-12T15:00:00.000-04:00",
       "finishedAt": "2026-06-12T15:00:00.000-04:00",
+      "venue": "Toronto",
+      "group": "B",
+      "stage": "group",
       "apiFootballFixtureId": 3434
     },
     {
@@ -31,24 +79,594 @@
       "homeGoals": 1,
       "awayGoals": 1,
       "status": "FT",
+      "kickoff": "2026-06-13T12:00:00.000-07:00",
       "finishedAt": "2026-06-13T12:00:00.000-07:00",
+      "venue": "San Francisco Bay Area (Santa Clara)",
+      "group": "B",
+      "stage": "group",
       "apiFootballFixtureId": 3435
+    },
+    {
+      "id": "m10",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-18T12:00:00.000-07:00",
+      "venue": "Los Angeles (Inglewood)",
+      "group": "B",
+      "stage": "group",
+      "apiFootballFixtureId": 106316
+    },
+    {
+      "id": "m9",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-18T15:00:00.000-07:00",
+      "venue": "Vancouver",
+      "group": "B",
+      "stage": "group",
+      "apiFootballFixtureId": 3436
+    },
+    {
+      "id": "m11",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-24T12:00:00.000-07:00",
+      "venue": "Vancouver",
+      "group": "B",
+      "stage": "group",
+      "apiFootballFixtureId": 106317
+    },
+    {
+      "id": "m12",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-24T12:00:00.000-07:00",
+      "venue": "Seattle",
+      "group": "B",
+      "stage": "group",
+      "apiFootballFixtureId": 106318
     },
     {
       "id": "m13",
       "homeGoals": 1,
       "awayGoals": 1,
       "status": "FT",
+      "kickoff": "2026-06-13T18:00:00.000-04:00",
       "finishedAt": "2026-06-13T18:00:00.000-04:00",
+      "venue": "New York/New Jersey (East Rutherford)",
+      "group": "C",
+      "stage": "group",
       "apiFootballFixtureId": 106319
+    },
+    {
+      "id": "m14",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-13T21:00:00.000-04:00",
+      "venue": "Boston (Foxborough)",
+      "group": "C",
+      "stage": "group",
+      "apiFootballFixtureId": 106320
+    },
+    {
+      "id": "m16",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-19T18:00:00.000-04:00",
+      "venue": "Boston (Foxborough)",
+      "group": "C",
+      "stage": "group",
+      "apiFootballFixtureId": 106322
+    },
+    {
+      "id": "m15",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-19T20:30:00.000-04:00",
+      "venue": "Philadelphia",
+      "group": "C",
+      "stage": "group",
+      "apiFootballFixtureId": 106321
+    },
+    {
+      "id": "m17",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-24T18:00:00.000-04:00",
+      "venue": "Miami (Miami Gardens)",
+      "group": "C",
+      "stage": "group",
+      "apiFootballFixtureId": 106323
+    },
+    {
+      "id": "m18",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-24T18:00:00.000-04:00",
+      "venue": "Atlanta",
+      "group": "C",
+      "stage": "group",
+      "apiFootballFixtureId": 106324
     },
     {
       "id": "m19",
       "homeGoals": 4,
       "awayGoals": 1,
       "status": "FT",
+      "kickoff": "2026-06-12T18:00:00.000-07:00",
       "finishedAt": "2026-06-12T18:00:00.000-07:00",
+      "venue": "Los Angeles (Inglewood)",
+      "group": "D",
+      "stage": "group",
       "apiFootballFixtureId": 106325
+    },
+    {
+      "id": "m20",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-13T21:00:00.000-07:00",
+      "venue": "Vancouver",
+      "group": "D",
+      "stage": "group",
+      "apiFootballFixtureId": 106347
+    },
+    {
+      "id": "m21",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-19T12:00:00.000-07:00",
+      "venue": "Seattle",
+      "group": "D",
+      "stage": "group",
+      "apiFootballFixtureId": 106348
+    },
+    {
+      "id": "m22",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-19T20:00:00.000-07:00",
+      "venue": "San Francisco Bay Area (Santa Clara)",
+      "group": "D",
+      "stage": "group",
+      "apiFootballFixtureId": 106349
+    },
+    {
+      "id": "m23",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-25T19:00:00.000-07:00",
+      "venue": "Los Angeles (Inglewood)",
+      "group": "D",
+      "stage": "group",
+      "apiFootballFixtureId": 106350
+    },
+    {
+      "id": "m24",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-25T19:00:00.000-07:00",
+      "venue": "San Francisco Bay Area (Santa Clara)",
+      "group": "D",
+      "stage": "group",
+      "apiFootballFixtureId": 106351
+    },
+    {
+      "id": "m25",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-14T12:00:00.000-05:00",
+      "venue": "Houston",
+      "group": "E",
+      "stage": "group",
+      "apiFootballFixtureId": 106352
+    },
+    {
+      "id": "m26",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-14T19:00:00.000-04:00",
+      "venue": "Philadelphia",
+      "group": "E",
+      "stage": "group",
+      "apiFootballFixtureId": 106353
+    },
+    {
+      "id": "m27",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-20T16:00:00.000-04:00",
+      "venue": "Toronto",
+      "group": "E",
+      "stage": "group",
+      "apiFootballFixtureId": 106354
+    },
+    {
+      "id": "m28",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-20T19:00:00.000-05:00",
+      "venue": "Kansas City",
+      "group": "E",
+      "stage": "group",
+      "apiFootballFixtureId": 106355
+    },
+    {
+      "id": "m30",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-25T16:00:00.000-04:00",
+      "venue": "Philadelphia",
+      "group": "E",
+      "stage": "group",
+      "apiFootballFixtureId": 106378
+    },
+    {
+      "id": "m29",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-25T16:00:00.000-04:00",
+      "venue": "New York/New Jersey (East Rutherford)",
+      "group": "E",
+      "stage": "group",
+      "apiFootballFixtureId": 106356
+    },
+    {
+      "id": "m31",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-14T15:00:00.000-05:00",
+      "venue": "Dallas (Arlington)",
+      "group": "F",
+      "stage": "group",
+      "apiFootballFixtureId": 106379
+    },
+    {
+      "id": "m32",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-14T20:00:00.000-06:00",
+      "venue": "Monterrey (Guadalupe)",
+      "group": "F",
+      "stage": "group",
+      "apiFootballFixtureId": 106380
+    },
+    {
+      "id": "m33",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-20T12:00:00.000-05:00",
+      "venue": "Houston",
+      "group": "F",
+      "stage": "group",
+      "apiFootballFixtureId": 106381
+    },
+    {
+      "id": "m34",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-20T22:00:00.000-06:00",
+      "venue": "Monterrey (Guadalupe)",
+      "group": "F",
+      "stage": "group",
+      "apiFootballFixtureId": 106382
+    },
+    {
+      "id": "m36",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-25T18:00:00.000-05:00",
+      "venue": "Dallas (Arlington)",
+      "group": "F",
+      "stage": "group",
+      "apiFootballFixtureId": 106384
+    },
+    {
+      "id": "m35",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-25T18:00:00.000-05:00",
+      "venue": "Kansas City",
+      "group": "F",
+      "stage": "group",
+      "apiFootballFixtureId": 106383
+    },
+    {
+      "id": "m37",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-15T12:00:00.000-07:00",
+      "venue": "Seattle",
+      "group": "G",
+      "stage": "group",
+      "apiFootballFixtureId": 106385
+    },
+    {
+      "id": "m38",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-15T18:00:00.000-07:00",
+      "venue": "Los Angeles (Inglewood)",
+      "group": "G",
+      "stage": "group",
+      "apiFootballFixtureId": 106386
+    },
+    {
+      "id": "m39",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-21T12:00:00.000-07:00",
+      "venue": "Los Angeles (Inglewood)",
+      "group": "G",
+      "stage": "group",
+      "apiFootballFixtureId": 106387
+    },
+    {
+      "id": "m40",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-21T18:00:00.000-07:00",
+      "venue": "Vancouver",
+      "group": "G",
+      "stage": "group",
+      "apiFootballFixtureId": 106409
+    },
+    {
+      "id": "m42",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-26T20:00:00.000-07:00",
+      "venue": "Seattle",
+      "group": "G",
+      "stage": "group",
+      "apiFootballFixtureId": 106411
+    },
+    {
+      "id": "m41",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-26T20:00:00.000-07:00",
+      "venue": "Vancouver",
+      "group": "G",
+      "stage": "group",
+      "apiFootballFixtureId": 106410
+    },
+    {
+      "id": "m43",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-15T12:00:00.000-04:00",
+      "venue": "Atlanta",
+      "group": "H",
+      "stage": "group",
+      "apiFootballFixtureId": 106412
+    },
+    {
+      "id": "m44",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-15T18:00:00.000-04:00",
+      "venue": "Miami (Miami Gardens)",
+      "group": "H",
+      "stage": "group",
+      "apiFootballFixtureId": 106413
+    },
+    {
+      "id": "m45",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-21T12:00:00.000-04:00",
+      "venue": "Atlanta",
+      "group": "H",
+      "stage": "group",
+      "apiFootballFixtureId": 106414
+    },
+    {
+      "id": "m46",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-21T18:00:00.000-04:00",
+      "venue": "Miami (Miami Gardens)",
+      "group": "H",
+      "stage": "group",
+      "apiFootballFixtureId": 106415
+    },
+    {
+      "id": "m48",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-26T19:00:00.000-05:00",
+      "venue": "Houston",
+      "group": "H",
+      "stage": "group",
+      "apiFootballFixtureId": 106417
+    },
+    {
+      "id": "m47",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-26T18:00:00.000-06:00",
+      "venue": "Guadalajara (Zapopan)",
+      "group": "H",
+      "stage": "group",
+      "apiFootballFixtureId": 106416
+    },
+    {
+      "id": "m49",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-16T15:00:00.000-04:00",
+      "venue": "New York/New Jersey (East Rutherford)",
+      "group": "I",
+      "stage": "group",
+      "apiFootballFixtureId": 106418
+    },
+    {
+      "id": "m50",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-16T18:00:00.000-04:00",
+      "venue": "Boston (Foxborough)",
+      "group": "I",
+      "stage": "group",
+      "apiFootballFixtureId": 106440
+    },
+    {
+      "id": "m51",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-22T17:00:00.000-04:00",
+      "venue": "Philadelphia",
+      "group": "I",
+      "stage": "group",
+      "apiFootballFixtureId": 106441
+    },
+    {
+      "id": "m52",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-22T20:00:00.000-04:00",
+      "venue": "New York/New Jersey (East Rutherford)",
+      "group": "I",
+      "stage": "group",
+      "apiFootballFixtureId": 106442
+    },
+    {
+      "id": "m53",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-26T15:00:00.000-04:00",
+      "venue": "Boston (Foxborough)",
+      "group": "I",
+      "stage": "group",
+      "apiFootballFixtureId": 106443
+    },
+    {
+      "id": "m54",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-26T15:00:00.000-04:00",
+      "venue": "Toronto",
+      "group": "I",
+      "stage": "group",
+      "apiFootballFixtureId": 106444
+    },
+    {
+      "id": "m55",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-16T20:00:00.000-05:00",
+      "venue": "Kansas City",
+      "group": "J",
+      "stage": "group",
+      "apiFootballFixtureId": 106445
+    },
+    {
+      "id": "m56",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-16T21:00:00.000-07:00",
+      "venue": "San Francisco Bay Area (Santa Clara)",
+      "group": "J",
+      "stage": "group",
+      "apiFootballFixtureId": 106446
+    },
+    {
+      "id": "m57",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-22T12:00:00.000-05:00",
+      "venue": "Dallas (Arlington)",
+      "group": "J",
+      "stage": "group",
+      "apiFootballFixtureId": 106447
+    },
+    {
+      "id": "m58",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-22T20:00:00.000-07:00",
+      "venue": "San Francisco Bay Area (Santa Clara)",
+      "group": "J",
+      "stage": "group",
+      "apiFootballFixtureId": 106448
+    },
+    {
+      "id": "m60",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-27T21:00:00.000-05:00",
+      "venue": "Kansas City",
+      "group": "J",
+      "stage": "group",
+      "apiFootballFixtureId": 106471
+    },
+    {
+      "id": "m59",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-27T21:00:00.000-05:00",
+      "venue": "Dallas (Arlington)",
+      "group": "J",
+      "stage": "group",
+      "apiFootballFixtureId": 106449
+    },
+    {
+      "id": "m61",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-17T12:00:00.000-05:00",
+      "venue": "Houston",
+      "group": "K",
+      "stage": "group",
+      "apiFootballFixtureId": 106472
+    },
+    {
+      "id": "m62",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-17T20:00:00.000-06:00",
+      "venue": "Mexico City",
+      "group": "K",
+      "stage": "group",
+      "apiFootballFixtureId": 106473
+    },
+    {
+      "id": "m63",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-23T12:00:00.000-05:00",
+      "venue": "Houston",
+      "group": "K",
+      "stage": "group",
+      "apiFootballFixtureId": 106474
+    },
+    {
+      "id": "m64",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-23T20:00:00.000-06:00",
+      "venue": "Guadalajara (Zapopan)",
+      "group": "K",
+      "stage": "group",
+      "apiFootballFixtureId": 106475
+    },
+    {
+      "id": "m65",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-27T19:30:00.000-04:00",
+      "venue": "Miami (Miami Gardens)",
+      "group": "K",
+      "stage": "group",
+      "apiFootballFixtureId": 106476
+    },
+    {
+      "id": "m66",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-27T19:30:00.000-04:00",
+      "venue": "Atlanta",
+      "group": "K",
+      "stage": "group",
+      "apiFootballFixtureId": 106477
+    },
+    {
+      "id": "m67",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-17T15:00:00.000-05:00",
+      "venue": "Dallas (Arlington)",
+      "group": "L",
+      "stage": "group",
+      "apiFootballFixtureId": 106478
+    },
+    {
+      "id": "m68",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-17T19:00:00.000-04:00",
+      "venue": "Toronto",
+      "group": "L",
+      "stage": "group",
+      "apiFootballFixtureId": 106479
+    },
+    {
+      "id": "m69",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-23T16:00:00.000-04:00",
+      "venue": "Boston (Foxborough)",
+      "group": "L",
+      "stage": "group",
+      "apiFootballFixtureId": 106480
+    },
+    {
+      "id": "m70",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-23T19:00:00.000-04:00",
+      "venue": "Toronto",
+      "group": "L",
+      "stage": "group",
+      "apiFootballFixtureId": 106502
+    },
+    {
+      "id": "m71",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-27T17:00:00.000-04:00",
+      "venue": "New York/New Jersey (East Rutherford)",
+      "group": "L",
+      "stage": "group",
+      "apiFootballFixtureId": 106503
+    },
+    {
+      "id": "m72",
+      "status": "SCHEDULED",
+      "kickoff": "2026-06-27T17:00:00.000-04:00",
+      "venue": "Philadelphia",
+      "group": "L",
+      "stage": "group",
+      "apiFootballFixtureId": 106504
     }
   ]
 }

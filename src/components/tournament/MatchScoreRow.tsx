@@ -143,7 +143,7 @@ export function MatchScoreRow({
         <TeamSide team={away} label={awayLabel} align="right" />
       </div>
 
-      {official ? (
+      {official && official.status !== 'SCHEDULED' ? (
         <div className="flex items-center justify-end gap-1.5 text-label-sm text-on-surface-variant">
           <span className="uppercase tracking-wide">
             {t('tournament.official')}

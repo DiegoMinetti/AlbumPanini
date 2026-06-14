@@ -32,15 +32,23 @@ export const backupKnockoutPickSchema = z.object({
   updatedAt: z.number(),
 });
 
-/** FIFA-official finished result carried in the backup (v3+). */
+/**
+ * FIFA-official result carried in the backup (v3+). Mirrors the runtime
+ * StoredOfficialResult shape, including the optional fields that exist
+ * because we now also carry scheduled (not-yet-played) matches.
+ */
 export const backupOfficialResultSchema = z.object({
   matchId: z.string(),
-  homeGoals: z.number(),
-  awayGoals: z.number(),
+  homeGoals: z.number().optional(),
+  awayGoals: z.number().optional(),
   homePens: z.number().optional(),
   awayPens: z.number().optional(),
-  status: z.enum(['FT', 'AET', 'PEN']),
-  finishedAt: z.string(),
+  status: z.enum(['FT', 'AET', 'PEN', 'SCHEDULED']),
+  kickoff: z.string(),
+  finishedAt: z.string().optional(),
+  venue: z.string().optional(),
+  group: z.string().optional(),
+  stage: z.string().optional(),
   apiFootballFixtureId: z.number(),
   syncedAt: z.number(),
 });

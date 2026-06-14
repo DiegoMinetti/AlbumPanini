@@ -30,6 +30,10 @@ interface RawMatch {
   awayPens?: unknown;
   status?: unknown;
   finishedAt?: unknown;
+  kickoff?: unknown;
+  venue?: unknown;
+  group?: unknown;
+  stage?: unknown;
   apiFootballFixtureId?: unknown;
 }
 
@@ -68,34 +72,46 @@ export function parseOfficialResultsPayload(
   return r.matches.map((m, i) => {
     const match = m as RawMatch;
     const id = asString(match.id);
-    const homeGoals = asNumber(match.homeGoals);
-    const awayGoals = asNumber(match.awayGoals);
     const status = asString(match.status);
-    const finishedAt = asString(match.finishedAt);
+    const kickoff = asString(match.kickoff);
     const apiFootballFixtureId = asNumber(match.apiFootballFixtureId);
     if (!id) throw new Error(`matches[${i}].id missing`);
-    if (homeGoals == null) throw new Error(`matches[${i}].homeGoals missing`);
-    if (awayGoals == null) throw new Error(`matches[${i}].awayGoals missing`);
-    if (status !== 'FT' && status !== 'AET' && status !== 'PEN') {
+    if (status !== 'FT' && status !== 'AET' && status !== 'PEN' && status !== 'SCHEDULED') {
       throw new Error(`matches[${i}].status invalid: ${String(status)}`);
     }
-    if (!finishedAt) throw new Error(`matches[${i}].finishedAt missing`);
+    if (!kickoff) throw new Error(`matches[${i}].kickoff missing`);
     if (apiFootballFixtureId == null) {
       throw new Error(`matches[${i}].apiFootballFixtureId missing`);
     }
     const out: StoredOfficialResult = {
       matchId: id,
-      homeGoals,
-      awayGoals,
       status,
-      finishedAt,
+      kickoff,
       apiFootballFixtureId,
       syncedAt,
     };
+    // homeGoals/awayGoals are only required for finished matches.
+    if (status !== 'SCHEDULED') {
+      const homeGoals = asNumber(match.homeGoals);
+      const awayGoals = asNumber(match.awayGoals);
+      if (homeGoals == null) throw new Error(`matches[${i}].homeGoals missing`);
+      if (awayGoals == null) throw new Error(`matches[${i}].awayGoals missing`);
+      out.homeGoals = homeGoals;
+      out.awayGoals = awayGoals;
+      const finishedAt = asString(match.finishedAt);
+      if (finishedAt) out.finishedAt = finishedAt;
+      else out.finishedAt = kickoff;
+    }
     const hp = asOptNumber(match.homePens);
     const ap = asOptNumber(match.awayPens);
     if (hp != null) out.homePens = hp;
     if (ap != null) out.awayPens = ap;
+    const venue = asString(match.venue);
+    if (venue) out.venue = venue;
+    const group = asString(match.group);
+    if (group) out.group = group;
+    const stage = asString(match.stage);
+    if (stage) out.stage = stage;
     return out;
   });
 }

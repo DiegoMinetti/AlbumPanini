@@ -121,17 +121,28 @@ export async function createBackupPayload(
         picks,
       };
     }),
-    officialResults: officialResults.map((o) => ({
-      matchId: o.matchId,
-      homeGoals: o.homeGoals,
-      awayGoals: o.awayGoals,
-      homePens: o.homePens,
-      awayPens: o.awayPens,
-      status: o.status,
-      finishedAt: o.finishedAt,
-      apiFootballFixtureId: o.apiFootballFixtureId,
-      syncedAt: o.syncedAt,
-    })),
+    officialResults: officialResults.map((o) => {
+      // New shape (PR5+): always carries kickoff + optional schedule fields.
+      // Old shape (PR3-era): no kickoff. Backfill it from finishedAt as a
+      // best-effort so the v3 backup schema still validates when an old
+      // client had only finished matches cached.
+      const kickoff = o.kickoff ?? o.finishedAt ?? '1970-01-01T00:00:00.000Z';
+      return {
+        matchId: o.matchId,
+        homeGoals: o.homeGoals,
+        awayGoals: o.awayGoals,
+        homePens: o.homePens,
+        awayPens: o.awayPens,
+        status: o.status,
+        kickoff,
+        finishedAt: o.finishedAt,
+        venue: o.venue,
+        group: o.group,
+        stage: o.stage,
+        apiFootballFixtureId: o.apiFootballFixtureId,
+        syncedAt: o.syncedAt,
+      };
+    }),
   }));
 
   return {
