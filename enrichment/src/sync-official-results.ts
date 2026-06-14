@@ -1,46 +1,28 @@
-/**
- * Sync oficial de resultados del Mundial 2026 desde API-Football.
- *
- * Pensado para correr dentro de la GitHub Action
- * `.github/workflows/sync-official-results.yml`. La Action commitea el JSON
- * resultante a `public/official/worldcup-2026-results.json`, y el frontend lo
- * descarga al abrir el fixture (ver PR3).
- *
- * Rate limit del tier free de API-Football: 100 req/día. La Action distribuye
- * los runs entre 13hs Arg (cuando arranca el primer partido del día) y 02hs
- * Arg del día siguiente (cuando termina el último), con la frecuencia ajustada
- * para no superar ese presupuesto. Ver `.github/workflows/sync-official-results.yml`
- * para la lógica de crons por día.
- *
- * Mapeo de IDs:
- *  - El endpoint `/fixtures?league=1&season=2026&round=…` no está disponible
- *    para el Mundial 2026 hasta que FIFA asigne IDs de API-Football. Usamos
- *    `/fixtures?league=1&season=2026` (sin round) y matcheamos por
- *    `(homeTeamId, awayTeamId, date)`.
- *  - La season-key de API-Football para el Mundial 2026 es "2026".
- *  - El league-id es 1 (World Cup).
- *
- * Salida (`OfficialResultsPayload`):
- *  {
- *    source: "api-football",
- *    generatedAt: "2026-06-13T…Z",
- *    matches: [
- *      { id: "m12", homeGoals: 2, awayGoals: 1, status: "FT", … }
- *    ]
- *  }
- *  Solo emitimos partidos que ya terminaron (`status.short === "FT"` o
- *  `"AET"` o `"PEN"`). El resto se omite para mantener el JSON chico y la
- *  lógica de "oficial" estricta.
- *
- * Ejecución:
- *  tsx src/sync-official-results.ts            # usa API_FOOTBALL_KEY del env
- *  tsx src/sync-official-results.ts --dry-run  # imprime el JSON a stdout
- */
-
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
 import { ROOT } from './config.js';
+
+/**
+ * Sincroniza los resultados oficiales del Mundial 2026 desde openfootball.
+ *
+ * Fuente: https://github.com/openfootball/worldcup.json/blob/master/2026/worldcup.json
+ *   - Repo público, JSON estático, mantenido por la comunidad a partir de
+ *     comunicados oficiales de FIFA.
+ *   - Gratis, sin key, sin rate limit. Se descarga con `fetch` una vez por run.
+ *   - Cubre los 104 partidos con grupos + eliminatorias.
+ *   - Sólo emite partidos con `score.ft` ya cargado (los demás se
+ *     consideran "aún no finalizados" y se omiten).
+ *
+ * Plan B: si openfootball devuelve 404, error de red, o un payload que
+ * no valida, este script falla con un mensaje claro. La GitHub Action
+ * detecta el fallo y sale sin commitear (no escribe un JSON basura).
+ *
+ * Plan C (futuro): si la comunidad abandona openfootball, se puede
+ * migrar a scraping HTML de www.fifa.com con cheerio + un headless
+ * browser. Hoy no hace falta: openfootball se actualiza con cada
+ * partido y el repo es estable.
+ */
 
 const PACKAGE_FIXTURE = path.resolve(
   ROOT,
@@ -57,7 +39,9 @@ const OUTPUT_PATH = path.resolve(
   'worldcup-2026-results.json',
 );
 
-const API_FOOTBALL_BASE = 'https://v3.football.api-sports.io';
+// Versión raw de GitHub (CDN-friendly, sin rate limit, sin auth).
+const OPENFOOTBALL_URL =
+  'https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
 
 const officialResultSchema = z.object({
   id: z.string().min(1),
@@ -72,36 +56,46 @@ const officialResultSchema = z.object({
 export type OfficialMatchResult = z.infer<typeof officialResultSchema>;
 
 const payloadSchema = z.object({
-  source: z.literal('api-football'),
+  source: z.literal('openfootball'),
   generatedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T/),
   matches: z.array(officialResultSchema),
 });
 export type OfficialResultsPayload = z.infer<typeof payloadSchema>;
 
-interface ApiFootballFixture {
-  fixture: {
-    id: number;
-    date: string;
-    status: { short: string; elapsed: number | null };
+interface OpenfootballMatch {
+  num?: number;
+  round?: string;
+  date?: string;
+  time?: string;
+  team1?: string;
+  team2?: string;
+  score?: {
+    ft?: [number, number] | null;
+    ht?: [number, number] | null;
+    pens?: [number, number] | null;
+    aet?: [number, number] | null;
   };
-  teams: {
-    home: { id: number; name: string };
-    away: { id: number; name: string };
-  };
-  goals: { home: number | null; away: number | null };
-  score: { penalty: { home: number | null; away: number | null } };
+  group?: string;
+  ground?: string;
 }
 
-const TEAM_NAME_MAP: Record<string, string> = {
-  // API-Football a veces normaliza nombres distintos al FIFA code. Mapeamos
-  // por nombre aproximado; si no matchea, lo logueamos y seguimos.
+interface OpenfootballDoc {
+  name?: string;
+  matches?: OpenfootballMatch[];
+}
+
+// Mapeo nombre openfootball → FIFA code (3 letras). Cubre los 48 equipos
+// del Mundial 2026. La diferencia típica: openfootball usa "Czech Republic"
+// en vez de "Czechia", "Turkey" en vez de "Türkiye", "DR Congo" en vez de
+// "Congo DR", "Ivory Coast" en vez de "Côte d'Ivoire".
+const NAME_TO_FIFA: Record<string, string> = {
   Mexico: 'MEX',
   'South Africa': 'RSA',
   'South Korea': 'KOR',
-  'Korea Republic': 'KOR',
-  Czechia: 'CZE',
+  'Czech Republic': 'CZE',
   Canada: 'CAN',
   'Bosnia and Herzegovina': 'BIH',
+  'Bosnia & Herzegovina': 'BIH',
   Qatar: 'QAT',
   Switzerland: 'SUI',
   Brazil: 'BRA',
@@ -110,10 +104,10 @@ const TEAM_NAME_MAP: Record<string, string> = {
   Scotland: 'SCO',
   USA: 'USA',
   'United States': 'USA',
-  Paraguay: 'PAR',
   Australia: 'AUS',
-  'Türkiye': 'TUR',
+  Paraguay: 'PAR',
   Turkey: 'TUR',
+  Türkiye: 'TUR',
   Germany: 'GER',
   Curaçao: 'CUW',
   'Ivory Coast': 'CIV',
@@ -129,6 +123,7 @@ const TEAM_NAME_MAP: Record<string, string> = {
   'New Zealand': 'NZL',
   Spain: 'ESP',
   'Cape Verde': 'CPV',
+  'Cape Verde Islands': 'CPV',
   'Saudi Arabia': 'KSA',
   Uruguay: 'URU',
   France: 'FRA',
@@ -148,61 +143,23 @@ const TEAM_NAME_MAP: Record<string, string> = {
   Croatia: 'CRO',
   Ghana: 'GHA',
   Panama: 'PAN',
+  'Czechia': 'CZE',
 };
 
-function mapTeamName(name: string): string | null {
-  return TEAM_NAME_MAP[name] ?? null;
+function mapName(name: string | undefined): string | null {
+  if (!name) return null;
+  return NAME_TO_FIFA[name] ?? null;
 }
 
-interface Fetched {
-  generatedAt: string;
-  results: OfficialMatchResult[];
+interface Fixture {
+  teamIdToName: Map<string, string>;
+  /** Strict key: `{date}|{homeFifa}|{awayFifa}` → matchId (FIFA codes, source-agnostic) */
+  byDate: Map<string, string>;
+  /** Fuzzy key: `{group}|{a}|{b}` (FIFA codes sorted) → matchId, for date/order mismatches */
+  byGroup: Map<string, string>;
 }
 
-async function fetchWorldCupFixtures(apiKey: string): Promise<ApiFootballFixture[]> {
-  const out: ApiFootballFixture[] = [];
-  // Paginamos /fixtures con league=1 (World Cup) y season=2026.
-  // API-Football free limita a 100 req/día — esta única llamada nos trae los
-  // ~104 partidos en un solo request, sin gastar más cuota.
-  const url = new URL(`${API_FOOTBALL_BASE}/fixtures`);
-  url.searchParams.set('league', '1');
-  url.searchParams.set('season', '2026');
-  const res = await fetch(url, {
-    headers: { 'x-apisports-key': apiKey },
-  });
-  if (!res.ok) {
-    throw new Error(`API-Football /fixtures → ${res.status} ${res.statusText}`);
-  }
-  // API-Football returns 200 even on auth/quota failures, with an `errors`
-  // object and an empty `response`. We treat that as a hard error so the
-  // caller can decide to skip the commit instead of writing a misleading
-  // empty JSON.
-  const json = (await res.json()) as {
-    response?: ApiFootballFixture[];
-    errors?: Record<string, string>;
-  };
-  if (json.errors && Object.keys(json.errors).length > 0) {
-    const first = Object.values(json.errors)[0];
-    throw new Error(`API-Football /fixtures errors: ${first ?? 'unknown'}`);
-  }
-  if (Array.isArray(json.response)) out.push(...json.response);
-  return out;
-}
-
-function buildKeyIndex(pkgTeams: { id: string; name: string }[]): Map<string, string> {
-  const idx = new Map<string, string>();
-  for (const t of pkgTeams) idx.set(t.id, t.name);
-  // Invertimos para lookup por nombre.
-  const byName = new Map<string, string>();
-  for (const t of pkgTeams) byName.set(t.name.toLowerCase(), t.id);
-  void idx;
-  return byName;
-}
-
-async function loadFixture(): Promise<{
-  teamNameToId: Map<string, string>;
-  matchKeys: Map<string, string>;
-}> {
+async function loadFixture(): Promise<Fixture> {
   const raw = await fs.readFile(PACKAGE_FIXTURE, 'utf8');
   const pkg = JSON.parse(raw) as {
     teams: { id: string; name: string }[];
@@ -210,80 +167,171 @@ async function loadFixture(): Promise<{
       matches: Array<{
         id: string;
         date?: string;
+        group?: string;
         homeTeamId?: string;
         awayTeamId?: string;
       }>;
     };
   };
-  const teamNameToId = buildKeyIndex(pkg.teams);
-  const matchKeys = new Map<string, string>();
+  const teamIdToName = new Map(pkg.teams.map((t) => [t.id, t.name]));
+  const byDate = new Map<string, string>();
+  const byGroup = new Map<string, string>();
   for (const m of pkg.tournament?.matches ?? []) {
-    if (!m.date || !m.homeTeamId || !m.awayTeamId) continue;
-    const key = `${m.date}|${m.homeTeamId}|${m.awayTeamId}`;
-    matchKeys.set(key, m.id);
+    if (!m.homeTeamId || !m.awayTeamId) continue;
+    // Build the lookup keys with FIFA codes (which are identical across
+    // openfootball's human names and the app's internal representation).
+    // Using names like "Bosnia and Herzegovina" vs "Bosnia & Herzegovina"
+    // would silently miss legitimate joins.
+    if (m.date) byDate.set(`${m.date}|${m.homeTeamId}|${m.awayTeamId}`, m.id);
+    if (m.group) {
+      const [x, y] = [m.homeTeamId, m.awayTeamId].sort();
+      byGroup.set(`${m.group}|${x}|${y}`, m.id);
+    }
   }
-  return { teamNameToId, matchKeys };
+  return { teamIdToName, byDate, byGroup };
 }
 
-export async function fetchOfficialResults(
-  apiKey: string
-): Promise<Fetched> {
-  const { teamNameToId, matchKeys } = await loadFixture();
-  const fixtures = await fetchWorldCupFixtures(apiKey);
+/**
+ * Join un partido de openfootball al matchId interno. Dos niveles de
+ * tolerancia: primero por fecha+home+away (strict), después por
+ * group+equipos sin importar el orden home/away (fuzzy). Esto cubre
+ * los casos donde el fixture de la app y openfootball discrepan en
+ * fecha exacta u orden (algo que pasa porque openfootball se actualiza
+ * a partir de comunicados FIFA y la app aproxima el fixture estático).
+ */
+function joinMatch(m: OpenfootballMatch, fx: Fixture): string | null {
+  if (!m.team1 || !m.team2) return null;
+  if (m.team1.startsWith('W') || m.team1.startsWith('L')) return null;
+  if (m.team2.startsWith('W') || m.team2.startsWith('L')) return null;
+  const homeFifa = mapName(m.team1);
+  const awayFifa = mapName(m.team2);
+  if (!homeFifa || !awayFifa) return null;
+  // Strict: date + home + away (FIFA codes, source-agnostic).
+  if (m.date) {
+    const exact = fx.byDate.get(`${m.date}|${homeFifa}|${awayFifa}`);
+    if (exact) return exact;
+  }
+  // Fuzzy: group + either ordering of the two FIFA codes.
+  const group = m.group?.replace('Group ', '');
+  if (group) {
+    const [x, y] = [homeFifa, awayFifa].sort();
+    const gk = `${group}|${x}|${y}`;
+    return fx.byGroup.get(gk) ?? null;
+  }
+  return null;
+}
+
+interface Fetched {
+  generatedAt: string;
+  results: OfficialMatchResult[];
+}
+
+export async function fetchOfficialResults(): Promise<Fetched> {
+  const fx = await loadFixture();
+  const res = await fetch(OPENFOOTBALL_URL, {
+    headers: {
+      Accept: 'application/json',
+      'Cache-Control': 'no-store',
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`openfootball HTTP ${res.status} ${res.statusText}`);
+  }
+  const raw = (await res.json()) as OpenfootballDoc;
+  if (!raw || typeof raw !== 'object' || !Array.isArray(raw.matches)) {
+    throw new Error('openfootball: payload not an object with .matches[]');
+  }
   const results: OfficialMatchResult[] = [];
-  for (const f of fixtures) {
-    const status = f.fixture.status.short;
-    if (status !== 'FT' && status !== 'AET' && status !== 'PEN') continue;
-    const hg = f.goals.home;
-    const ag = f.goals.away;
-    if (hg == null || ag == null) continue;
-    const homeId = mapTeamName(f.teams.home.name);
-    const awayId = mapTeamName(f.teams.away.name);
-    if (!homeId || !awayId) {
-      console.warn(
-        `[skip] m${f.fixture.id}: nombres no mapeados (${f.teams.home.name} / ${f.teams.away.name})`,
-      );
-      continue;
-    }
-    if (!teamNameToId.has(homeId) || !teamNameToId.has(awayId)) {
-      console.warn(`[skip] m${f.fixture.id}: fifa-code fuera del paquete (${homeId} / ${awayId})`);
-      continue;
-    }
-    // date viene en UTC ISO sin offset. La clave del matchKey está guardada
-    // como YYYY-MM-DD (la que emite build-fixture) — extraemos la parte de
-    // fecha del ISO y matcheamos.
-    const datePart = f.fixture.date.slice(0, 10);
-    const key = `${datePart}|${homeId}|${awayId}`;
-    const matchId = matchKeys.get(key);
+  for (const m of raw.matches) {
+    const ft = m.score?.ft;
+    if (!ft) continue; // partido no finalizado
+    const matchId = joinMatch(m, fx);
     if (!matchId) {
       console.warn(
-        `[skip] m${f.fixture.id}: sin matchKey (${key}). ¿fecha/equipos no coinciden con el fixture?`,
+        `[skip] no fixture match for OF entry ${m.date ?? '?'} ${m.team1 ?? '?'} vs ${m.team2 ?? '?'}`,
       );
       continue;
     }
+    // Build an ISO `finishedAt` from `date` + `time` (e.g. "20:00 UTC-6").
+    const finishedAt = composeFinishedAt(m.date, m.time);
+    if (!finishedAt) {
+      console.warn(`[skip] m${matchId} cannot compose finishedAt`);
+      continue;
+    }
+    const pens = m.score?.pens;
+    const aet = m.score?.aet;
+    const status: 'FT' | 'AET' | 'PEN' = pens
+      ? 'PEN'
+      : aet
+        ? 'AET'
+        : 'FT';
     const out: OfficialMatchResult = {
       id: matchId,
-      homeGoals: hg,
-      awayGoals: ag,
+      homeGoals: ft[0],
+      awayGoals: ft[1],
       status,
-      finishedAt: f.fixture.date,
-      apiFootballFixtureId: f.fixture.id,
+      finishedAt,
+      // The id is internal; we don't have a real api-football id anymore.
+      // Encode a stable hash so the field is still unique per match.
+      apiFootballFixtureId: hashId(matchId),
     };
-    const hp = f.score.penalty.home;
-    const ap = f.score.penalty.away;
-    if (hp != null && ap != null) {
-      out.homePens = hp;
-      out.awayPens = ap;
+    if (pens) {
+      out.homePens = pens[0];
+      out.awayPens = pens[1];
     }
     results.push(out);
   }
   return { generatedAt: new Date().toISOString(), results };
 }
 
-export async function run(apiKey: string, options: { dryRun?: boolean } = {}): Promise<OfficialResultsPayload> {
-  const { generatedAt, results } = await fetchOfficialResults(apiKey);
+/**
+ * Compose an ISO 8601 string from a YYYY-MM-DD date plus a time like
+ * "20:00 UTC-6". Returns null if the inputs are unusable.
+ *
+ * FIFA's openfootball dataset encodes local kickoff + tz offset
+ * directly, which is what we want to display in the UI ("20:00 hora
+ * local del estadio"). We embed that as a fixed offset ISO string so
+ * the frontend can parse it without needing a tz database at runtime.
+ */
+function composeFinishedAt(
+  date: string | undefined,
+  time: string | undefined
+): string | null {
+  if (!date) return null;
+  // "20:00 UTC-6" → "20:00-06:00"
+  const m = /(\d{1,2}):(\d{2})\s*(?:UTC)?\s*([+-])(\d{1,2})(?::?(\d{2}))?/.exec(
+    time ?? ''
+  );
+  if (!m) {
+    // Fallback: midnight UTC, with a warning in the calling layer.
+    return `${date}T00:00:00.000Z`;
+  }
+  const hh = m[1]!.padStart(2, '0');
+  const mm = m[2]!.padStart(2, '0');
+  const sign = m[3] === '-' ? '-' : '+';
+  const offH = m[4]!.padStart(2, '0');
+  const offM = (m[5] ?? '00').padStart(2, '0');
+  return `${date}T${hh}:${mm}:00.000${sign}${offH}:${offM}`;
+}
+
+/** Stable 31-bit hash of a matchId (used to keep the id field unique). */
+function hashId(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) {
+    h = (h * 31 + s.charCodeAt(i)) | 0;
+  }
+  // Force positive.
+  return Math.abs(h) || 1;
+}
+
+export async function run(
+  _ignoredApiKey: string,
+  options: { dryRun?: boolean } = {}
+): Promise<OfficialResultsPayload> {
+  void _ignoredApiKey;
+  const { generatedAt, results } = await fetchOfficialResults();
   const payload: OfficialResultsPayload = payloadSchema.parse({
-    source: 'api-football',
+    source: 'openfootball',
     generatedAt,
     matches: results,
   });
@@ -302,11 +350,10 @@ export async function run(apiKey: string, options: { dryRun?: boolean } = {}): P
 // CLI: corre solo si lo invocan directo (no cuando se importa desde tests).
 const isMain = import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
-  const apiKey = process.env.API_FOOTBALL_KEY;
-  if (!apiKey) {
-    console.error('Falta API_FOOTBALL_KEY en el entorno.');
-    process.exit(1);
-  }
+  // Mantenemos la firma `run(apiKey, ...)` para no tocar la Action, pero
+  // ignoramos la key — openfootball no necesita auth. La Action puede
+  // seguir pasando `${{ secrets.API_FOOTBALL_KEY }}` sin cambio.
+  const apiKey = process.env.API_FOOTBALL_KEY ?? 'unused';
   const dryRun = process.argv.includes('--dry-run');
   run(apiKey, { dryRun }).catch((err) => {
     console.error('Error sync-official-results:', err);
