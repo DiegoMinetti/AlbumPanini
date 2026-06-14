@@ -527,7 +527,7 @@ export function ExchangePage() {
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:pb-0">
       {/* ============== 1. REPETIDAS / FALTAN (tabs) ============== */}
       <OwnTabsCard
         tournamentGroups={tournamentGroups}
@@ -985,9 +985,13 @@ function OwnTabsCard({
        *  with a `title` for hover/long-press hint; on `sm:` and up
        *  the label is shown next to the icon. */}
       <div
-        className="sticky bottom-16 -mx-4 flex flex-row gap-1.5 border-t
-          border-outline-variant bg-surface px-3 pt-2.5 pb-1
-          shadow-[0_-2px_6px_rgba(0,0,0,0.06)] md:bottom-0"
+        className="fixed inset-x-0 z-50 -mx-4 flex flex-row gap-1.5
+          border-t border-outline-variant bg-surface px-3 pt-2.5 pb-1
+          shadow-[0_-2px_6px_rgba(0,0,0,0.06)]
+          md:static md:z-auto md:inset-auto"
+        style={{
+          bottom: 'calc(4.5rem + env(safe-area-inset-bottom))',
+        }}
         data-testid="exchange-actions-footer"
       >
         <FooterAction
