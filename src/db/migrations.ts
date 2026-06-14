@@ -48,6 +48,33 @@ export const migrations: DbMigration[] = [
       knockoutPicks: 'uid, scenarioId, slot',
     },
   },
+  {
+    version: 3,
+    description:
+      'Separate user predictions from official results. Add `predictions` ' +
+      'and `officialResults` tables. Migrate existing matchResults + ' +
+      'knockoutPicks rows into `predictions` (same shape, new home). The ' +
+      'legacy tables stay defined for back-compat reads but the app no ' +
+      'longer writes to them.',
+    stores: {
+      predictions: 'uid, scenarioId, matchId',
+      knockoutPredictions: 'uid, scenarioId, slot',
+      officialResults: 'matchId, finishedAt',
+    },
+    upgrade: async (tx) => {
+      // Move every row from the legacy per-scenario tables to the new
+      // `predictions` table. The shape is identical so a bulkPut is enough.
+      // We keep the legacy rows in place; the app simply stops reading them.
+      const oldResults = await tx.table('matchResults').toArray();
+      const oldPicks = await tx.table('knockoutPicks').toArray();
+      if (oldResults.length) {
+        await tx.table('predictions').bulkPut(oldResults);
+      }
+      if (oldPicks.length) {
+        await tx.table('knockoutPredictions').bulkPut(oldPicks);
+      }
+    },
+  },
   // ---------------------------------------------------------------------------
   // FUTURE MIGRATIONS — append below. Never edit an already-released entry.
   // ---------------------------------------------------------------------------

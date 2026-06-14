@@ -1,12 +1,16 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { setScore } from '@/services/scenarioService';
+import {
+  setPrediction,
+  PredictionLockedError,
+} from '@/services/predictionService';
 import type {
   IndexedMatchResult,
   StandingRow,
 } from '@/services/tournamentService';
 import type { StoredTeam } from '@/types/collection';
 import type { TournamentGroup, TournamentMatch } from '@/types/tournament';
+import type { StoredOfficialResult } from '@/types/prediction';
 import { Icon } from '@/components/ui/Icon';
 import { GroupStandingsTable } from './GroupStandingsTable';
 import { MatchScoreRow } from './MatchScoreRow';
@@ -17,6 +21,7 @@ interface GroupCardProps {
   standings: StandingRow[];
   teamsById: Map<string, StoredTeam>;
   results: Map<string, IndexedMatchResult>;
+  officialResults: Map<string, StoredOfficialResult>;
   perGroup: number;
   qualifiedThirds: Set<string>;
   scenarioId: string;
@@ -25,7 +30,8 @@ interface GroupCardProps {
 /**
  * One group panel: its standings table plus a collapsible list of the group's
  * fixtures with inline score editors. Editing a score writes to the active
- * scenario, which the live query upstream turns straight back into standings.
+ * scenario's `predictions` table (post-v3), which the live query upstream
+ * turns straight back into standings.
  */
 export function GroupCard({
   group,
@@ -33,6 +39,7 @@ export function GroupCard({
   standings,
   teamsById,
   results,
+  officialResults,
   perGroup,
   qualifiedThirds,
   scenarioId,
@@ -89,15 +96,32 @@ export function GroupCard({
         <div className="mt-1 divide-y divide-outline-variant/40 border-t border-outline-variant/40">
           {groupMatches.map((m) => {
             const result = results.get(m.id);
+            const official = officialResults.get(m.id);
             return (
               <MatchScoreRow
                 key={m.id}
+                match={m}
                 home={m.homeTeamId ? teamsById.get(m.homeTeamId) : undefined}
                 away={m.awayTeamId ? teamsById.get(m.awayTeamId) : undefined}
                 result={result}
-                onScore={(homeGoals, awayGoals) =>
-                  void setScore(scenarioId, m.id, { homeGoals, awayGoals })
-                }
+                official={official}
+                onScore={(homeGoals, awayGoals) => {
+                  try {
+                    void setPrediction(scenarioId, m, { homeGoals, awayGoals });
+                  } catch (err) {
+                    // Locked matches can no longer be edited; we surface a
+                    // console warning rather than a toast (per the spec, the
+                    // inputs are disabled anyway — this is a belt + suspenders
+                    // path in case the lock is bypassed via dev tools).
+                    if (err instanceof PredictionLockedError) {
+                      console.warn(
+                        `[prediction] rejected edit on ${err.matchId}: locked`,
+                      );
+                    } else {
+                      throw err;
+                    }
+                  }
+                }}
               />
             );
           })}

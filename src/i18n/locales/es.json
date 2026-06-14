@@ -415,6 +415,14 @@
       "sf": "Semifinales",
       "third": "Tercer puesto",
       "final": "Final"
+    },
+    "locked": "Predicción cerrada",
+    "official": "Oficial",
+    "verdict": {
+      "exact": "Exacto",
+      "sign": "Signo",
+      "wrong": "Errado",
+      "pending": "Pendiente"
     }
   },
   "pwaInstall": {

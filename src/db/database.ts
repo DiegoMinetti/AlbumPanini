@@ -10,6 +10,11 @@ import type {
   StoredMatchResult,
   StoredScenario,
 } from '@/types/scenario';
+import type {
+  StoredKnockoutPrediction,
+  StoredOfficialResult,
+  StoredPrediction,
+} from '@/types/prediction';
 import { LATEST_DB_VERSION, migrations } from './migrations';
 
 /** A key/value record in the `meta` table. */
@@ -42,8 +47,17 @@ export class PaniniDatabase extends Dexie {
   activity!: Table<ActivityEntry, number>;
   meta!: Table<MetaRecord, string>;
   scenarios!: Table<StoredScenario, string>;
+  // Legacy (pre-v3) per-scenario results. Kept defined so the migration in
+  // src/db/migrations.ts can read from them and so any leftover back-compat
+  // code (e.g. backup exports) can still serialize them. The app no longer
+  // reads or writes to these tables — use `predictions` instead.
   matchResults!: Table<StoredMatchResult, string>;
   knockoutPicks!: Table<StoredKnockoutPick, string>;
+  // v3+: per-scenario user predictions (mutable up to match kickoff).
+  predictions!: Table<StoredPrediction, string>;
+  knockoutPredictions!: Table<StoredKnockoutPrediction, string>;
+  // v3+: FIFA-official results, synced from API-Football. Read-only.
+  officialResults!: Table<StoredOfficialResult, string>;
 
   constructor(name = 'panini-db') {
     super(name);
@@ -113,6 +127,9 @@ export class PaniniDatabase extends Dexie {
         this.scenarios,
         this.matchResults,
         this.knockoutPicks,
+        this.predictions,
+        this.knockoutPredictions,
+        this.officialResults,
       ],
       async () => {
         await Promise.all([
@@ -124,6 +141,9 @@ export class PaniniDatabase extends Dexie {
           this.scenarios.clear(),
           this.matchResults.clear(),
           this.knockoutPicks.clear(),
+          this.predictions.clear(),
+          this.knockoutPredictions.clear(),
+          this.officialResults.clear(),
         ]);
       }
     );

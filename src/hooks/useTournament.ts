@@ -13,11 +13,12 @@ import {
   type BracketResolver,
 } from '@/services/tournamentService';
 import type { Tournament } from '@/types/tournament';
+import type { StoredScenario } from '@/types/scenario';
 import type {
-  StoredKnockoutPick,
-  StoredMatchResult,
-  StoredScenario,
-} from '@/types/scenario';
+  StoredKnockoutPrediction,
+  StoredPrediction,
+} from '@/types/prediction';
+import { useOfficialResults } from './useOfficialResults';
 
 export interface TournamentData {
   tournament: Tournament | null;
@@ -26,6 +27,11 @@ export interface TournamentData {
   activeScenario: StoredScenario | null;
   results: Map<string, IndexedMatchResult>;
   picks: Map<string, string>;
+  /** FIFA-official finished matches, keyed by matchId. Empty until the sync
+   *  JSON is fetched and persisted. */
+  officialResults: Map<string, import('@/types/prediction').StoredOfficialResult>;
+  /** When the last successful official-results sync happened. */
+  officialSyncedAt: string | null;
   standings: AllStandings | null;
   resolver: BracketResolver | null;
   loading: boolean;
@@ -101,23 +107,32 @@ export function useTournament(collectionId: string | null): TournamentData {
     }
   }, [collectionId, activeScenarioId, storedActiveId, setActiveScenario]);
 
-  const resultRows = useLiveQuery<StoredMatchResult[]>(
+  const resultRows = useLiveQuery<StoredPrediction[]>(
     async () =>
       activeScenarioId
-        ? db.matchResults.where('scenarioId').equals(activeScenarioId).toArray()
+        ? db.predictions.where('scenarioId').equals(activeScenarioId).toArray()
         : [],
     [activeScenarioId]
   );
-  const pickRows = useLiveQuery<StoredKnockoutPick[]>(
+  const pickRows = useLiveQuery<StoredKnockoutPrediction[]>(
     async () =>
       activeScenarioId
-        ? db.knockoutPicks
+        ? db.knockoutPredictions
             .where('scenarioId')
             .equals(activeScenarioId)
             .toArray()
         : [],
     [activeScenarioId]
   );
+
+  // FIFA official results, fetched on mount. Shared via useOfficialResults
+  // so multiple pages that need them (Tournament, future PR4 dashboard) hit
+  // the cache instead of re-downloading.
+  const {
+    byMatchId: officialByMatchId,
+    syncedAt: officialSyncedAt,
+    loading: loadingOfficial,
+  } = useOfficialResults();
 
   const results = useMemo(() => indexResults(resultRows ?? []), [resultRows]);
   const picks = useMemo(() => indexPicks(pickRows ?? []), [pickRows]);
@@ -144,11 +159,14 @@ export function useTournament(collectionId: string | null): TournamentData {
     activeScenario,
     results,
     picks,
+    officialResults: officialByMatchId,
+    officialSyncedAt,
     standings: tournament ? standings : null,
     resolver,
     loading:
       collection === undefined ||
       scenarios === undefined ||
+      loadingOfficial ||
       (activeScenarioId !== null &&
         (resultRows === undefined || pickRows === undefined)),
   };

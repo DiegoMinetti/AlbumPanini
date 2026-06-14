@@ -20,6 +20,11 @@ import type {
   StoredMatchResult,
   StoredScenario,
 } from '@/types/scenario';
+import type {
+  StoredKnockoutPrediction,
+  StoredOfficialResult,
+  StoredPrediction,
+} from '@/types/prediction';
 import {
   DEFAULT_SETTINGS,
   settingsSchema,
@@ -49,6 +54,9 @@ export async function createBackupPayload(
     scenarios,
     matchResults,
     knockoutPicks,
+    predictions,
+    knockoutPredictions,
+    officialResults,
   ] = await Promise.all([
     db.collections.toArray(),
     db.teams.toArray(),
@@ -57,6 +65,9 @@ export async function createBackupPayload(
     db.scenarios.toArray(),
     db.matchResults.toArray(),
     db.knockoutPicks.toArray(),
+    db.predictions.toArray(),
+    db.knockoutPredictions.toArray(),
+    db.officialResults.toArray(),
   ]);
 
   const teamsByCol = groupBy(teams, (t) => t.collectionId);
@@ -65,6 +76,11 @@ export async function createBackupPayload(
   const scenariosByCol = groupBy(scenarios, (s) => s.collectionId);
   const resultsByScenario = groupBy(matchResults, (r) => r.scenarioId);
   const picksByScenario = groupBy(knockoutPicks, (p) => p.scenarioId);
+  // v3+: prefer the canonical predictions table; fall back to the legacy one
+  // for users that haven't migrated yet (during the v3 upgrade window). The
+  // resulting `results` payload is the same shape either way.
+  const predictionsByScenario = groupBy(predictions, (r) => r.scenarioId);
+  const pickPredsByScenario = groupBy(knockoutPredictions, (p) => p.scenarioId);
 
   const backupCollections: BackupCollection[] = collections.map((c) => ({
     id: c.id,
@@ -83,14 +99,38 @@ export async function createBackupPayload(
     inventory: (invByCol.get(c.id) ?? [])
       .filter((i) => i.quantity > 0)
       .map((i) => ({ stickerId: i.stickerId, quantity: i.quantity })),
-    scenarios: (scenariosByCol.get(c.id) ?? []).map((s) => ({
-      id: s.id,
-      name: s.name,
-      isOfficial: s.isOfficial,
-      createdAt: s.createdAt,
-      updatedAt: s.updatedAt,
-      results: (resultsByScenario.get(s.id) ?? []).map(stripMatchResult),
-      picks: (picksByScenario.get(s.id) ?? []).map(stripKnockoutPick),
+    scenarios: (scenariosByCol.get(c.id) ?? []).map((s) => {
+      const preds = predictionsByScenario.get(s.id) ?? [];
+      const pickPreds = pickPredsByScenario.get(s.id) ?? [];
+      const legacyResults = resultsByScenario.get(s.id) ?? [];
+      const legacyPicks = picksByScenario.get(s.id) ?? [];
+      // Prefer predictions; fall back to legacy rows for the v3 upgrade window.
+      const results = preds.length
+        ? preds.map(stripMatchResult)
+        : legacyResults.map(stripMatchResult);
+      const picks = pickPreds.length
+        ? pickPreds.map(stripKnockoutPick)
+        : legacyPicks.map(stripKnockoutPick);
+      return {
+        id: s.id,
+        name: s.name,
+        isOfficial: s.isOfficial,
+        createdAt: s.createdAt,
+        updatedAt: s.updatedAt,
+        results,
+        picks,
+      };
+    }),
+    officialResults: officialResults.map((o) => ({
+      matchId: o.matchId,
+      homeGoals: o.homeGoals,
+      awayGoals: o.awayGoals,
+      homePens: o.homePens,
+      awayPens: o.awayPens,
+      status: o.status,
+      finishedAt: o.finishedAt,
+      apiFootballFixtureId: o.apiFootballFixtureId,
+      syncedAt: o.syncedAt,
     })),
   }));
 
@@ -217,6 +257,11 @@ export async function restoreBackup(
   const scenarios: StoredScenario[] = [];
   const matchResults: StoredMatchResult[] = [];
   const knockoutPicks: StoredKnockoutPick[] = [];
+  // v3+ canonical homes; we restore into both the legacy and the new tables
+  // so a backup taken on the new schema is also readable by an older client.
+  const predictions: StoredPrediction[] = [];
+  const knockoutPredictions: StoredKnockoutPrediction[] = [];
+  const officialResults: StoredOfficialResult[] = [];
 
   for (const c of payload.collections) {
     collections.push({
@@ -262,7 +307,7 @@ export async function restoreBackup(
         updatedAt: s.updatedAt,
       });
       for (const r of s.results) {
-        matchResults.push({
+        const legacy: StoredMatchResult = {
           uid: makeUid(s.id, r.matchId),
           scenarioId: s.id,
           matchId: r.matchId,
@@ -272,17 +317,28 @@ export async function restoreBackup(
           awayPens: r.awayPens,
           played: r.played,
           updatedAt: r.updatedAt,
-        });
+        };
+        matchResults.push(legacy);
+        // v3+: same shape, different table.
+        predictions.push({ ...legacy });
       }
       for (const p of s.picks) {
-        knockoutPicks.push({
+        const legacy: StoredKnockoutPick = {
           uid: makeUid(s.id, p.slot),
           scenarioId: s.id,
           slot: p.slot,
           teamId: p.teamId,
           updatedAt: p.updatedAt,
-        });
+        };
+        knockoutPicks.push(legacy);
+        knockoutPredictions.push({ ...legacy });
       }
+    }
+    // v3+: official results that the user had locally cached. The backup
+    // payload may not carry these (older versions don't); we just skip them
+    // gracefully if missing.
+    for (const o of c.officialResults ?? []) {
+      officialResults.push({ ...o });
     }
   }
 
@@ -302,6 +358,9 @@ export async function restoreBackup(
       db.scenarios,
       db.matchResults,
       db.knockoutPicks,
+      db.predictions,
+      db.knockoutPredictions,
+      db.officialResults,
     ],
     async () => {
       if (mode === 'replace') {
@@ -320,6 +379,8 @@ export async function restoreBackup(
         for (const s of scenarios) {
           await db.matchResults.where('scenarioId').equals(s.id).delete();
           await db.knockoutPicks.where('scenarioId').equals(s.id).delete();
+          await db.predictions.where('scenarioId').equals(s.id).delete();
+          await db.knockoutPredictions.where('scenarioId').equals(s.id).delete();
         }
       }
       await db.collections.bulkPut(collections);
@@ -329,6 +390,11 @@ export async function restoreBackup(
       await db.scenarios.bulkPut(scenarios);
       await db.matchResults.bulkPut(matchResults);
       await db.knockoutPicks.bulkPut(knockoutPicks);
+      // Also persist predictions / knockoutPredictions (v3+ canonical home)
+      // and any cached official results so the user keeps their sync.
+      await db.predictions.bulkPut(predictions);
+      await db.knockoutPredictions.bulkPut(knockoutPredictions);
+      await db.officialResults.bulkPut(officialResults);
     }
   );
 
