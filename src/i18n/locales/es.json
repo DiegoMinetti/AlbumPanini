@@ -423,6 +423,25 @@
       "sign": "Signo",
       "wrong": "Errado",
       "pending": "Pendiente"
+    },
+    "dashboard": "Puntos"
+  },
+  "dashboard": {
+    "points": "Mis puntos",
+    "scenario": "Copa",
+    "matches": "partidos",
+    "breakdown": "Detalle por partido",
+    "breakdownAria": "Desglose de puntos",
+    "empty": "Cargá predicciones para ver tu puntaje.",
+    "progress": "{{finished}} de {{total}} partidos finalizados ({{pct}}%)",
+    "verdict": {
+      "exact": "Exacto",
+      "sign": "Signo",
+      "wrong": "Errado",
+      "pending": "Pendiente"
+    },
+    "stage": {
+      "group": "Grupo {{group}}"
     }
   },
   "pwaInstall": {
