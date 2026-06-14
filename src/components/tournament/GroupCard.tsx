@@ -25,6 +25,7 @@ interface GroupCardProps {
   perGroup: number;
   qualifiedThirds: Set<string>;
   scenarioId: string;
+  isOfficialScenario: boolean;
 }
 
 /**
@@ -43,6 +44,7 @@ export function GroupCard({
   perGroup,
   qualifiedThirds,
   scenarioId,
+  isOfficialScenario,
 }: GroupCardProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -105,17 +107,15 @@ export function GroupCard({
                 away={m.awayTeamId ? teamsById.get(m.awayTeamId) : undefined}
                 result={result}
                 official={official}
+                isOfficialScenario={isOfficialScenario}
                 onScore={(homeGoals, awayGoals) => {
+                  if (isOfficialScenario) return; // official scenario: read-only
                   try {
                     void setPrediction(scenarioId, m, { homeGoals, awayGoals });
                   } catch (err) {
-                    // Locked matches can no longer be edited; we surface a
-                    // console warning rather than a toast (per the spec, the
-                    // inputs are disabled anyway — this is a belt + suspenders
-                    // path in case the lock is bypassed via dev tools).
                     if (err instanceof PredictionLockedError) {
                       console.warn(
-                        `[prediction] rejected edit on ${err.matchId}: locked`
+                        `[prediction] rejected edit on ${err.matchId}: locked`,
                       );
                     } else {
                       throw err;

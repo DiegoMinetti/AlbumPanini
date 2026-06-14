@@ -30,6 +30,7 @@ export function TournamentPage() {
     scenarios,
     activeScenario,
     activeScenarioId,
+    isOfficialScenario,
     standings,
     resolver,
     results,
@@ -79,6 +80,7 @@ export function TournamentPage() {
           results={results}
           officialResults={officialResults}
           scenarioId={activeScenarioId}
+          isOfficialScenario={isOfficialScenario}
         />
       ) : tab === 'bracket' ? (
         <BracketView
@@ -88,11 +90,13 @@ export function TournamentPage() {
           results={results}
           officialResults={officialResults}
           scenarioId={activeScenarioId}
+          isOfficialScenario={isOfficialScenario}
         />
       ) : (
         <DashboardView
           tournament={tournament}
           scenarioId={activeScenarioId}
+          isOfficialScenario={isOfficialScenario}
           officialResults={officialResults}
         />
       )}

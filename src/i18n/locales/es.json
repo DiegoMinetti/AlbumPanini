@@ -418,6 +418,7 @@
     },
     "locked": "Predicción cerrada",
     "official": "Oficial",
+    "officialScenarioNote": "FIFA completa los resultados automáticamente",
     "verdict": {
       "exact": "Exacto",
       "sign": "Signo",

@@ -15,6 +15,7 @@ interface GroupsViewProps {
   results: Map<string, IndexedMatchResult>;
   officialResults: Map<string, StoredOfficialResult>;
   scenarioId: string;
+  isOfficialScenario: boolean;
 }
 
 /**
@@ -31,6 +32,7 @@ export function GroupsView({
   results,
   officialResults,
   scenarioId,
+  isOfficialScenario,
 }: GroupsViewProps) {
   const { t } = useTranslation();
   const qualifiedThirds = new Set(standings.bestThirds);
@@ -60,6 +62,7 @@ export function GroupsView({
           perGroup={tournament.qualifiers.perGroup}
           qualifiedThirds={qualifiedThirds}
           scenarioId={scenarioId}
+          isOfficialScenario={isOfficialScenario}
         />
       ))}
     </div>
