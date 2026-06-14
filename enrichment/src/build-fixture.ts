@@ -273,7 +273,6 @@ function buildKnockoutMatches(): Match[] {
     date: string,
   ): void => {
     const v = venueFor(n);
-    const [yy, mm, dd] = date.split('-').map(Number);
     // Para el bracket, los horarios se conocen más tarde; FIFA suele publicar
     // kickoff por partido entre 1 y 3 meses antes del duelo. Por ahora los
     // dejamos en `TBD` y los autocompleta la GitHub Action (PR2).

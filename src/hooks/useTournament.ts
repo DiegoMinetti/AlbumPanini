@@ -16,6 +16,7 @@ import type { Tournament } from '@/types/tournament';
 import type { StoredScenario } from '@/types/scenario';
 import type {
   StoredKnockoutPrediction,
+  StoredOfficialResult,
   StoredPrediction,
 } from '@/types/prediction';
 import { useOfficialResults } from './useOfficialResults';
@@ -29,7 +30,7 @@ export interface TournamentData {
   picks: Map<string, string>;
   /** FIFA-official finished matches, keyed by matchId. Empty until the sync
    *  JSON is fetched and persisted. */
-  officialResults: Map<string, import('@/types/prediction').StoredOfficialResult>;
+  officialResults: Map<string, StoredOfficialResult>;
   /** When the last successful official-results sync happened. */
   officialSyncedAt: string | null;
   standings: AllStandings | null;
