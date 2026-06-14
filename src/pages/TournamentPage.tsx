@@ -10,12 +10,14 @@ import { NoActiveCollection } from '@/components/collections/NoActiveCollection'
 import { ScenarioBar } from '@/components/tournament/ScenarioBar';
 import { GroupsView } from '@/components/tournament/GroupsView';
 import { BracketView } from '@/components/tournament/BracketView';
+import { DashboardView } from '@/components/tournament/DashboardView';
 
-type Tab = 'groups' | 'bracket';
+type Tab = 'groups' | 'bracket' | 'dashboard';
 
 /**
  * Tournament — usa SegmentedControl M3 (indicator animado) para alternar
- * entre vista de grupos y eliminatorias. Mantiene el resto de la API.
+ * entre vista de grupos, eliminatorias, y el dashboard "Mi predicción vs
+ * FIFA" con scoring en vivo.
  */
 export function TournamentPage() {
   const { t } = useTranslation();
@@ -63,6 +65,7 @@ export function TournamentPage() {
         options={[
           { value: 'groups', label: t('tournament.groups') },
           { value: 'bracket', label: t('tournament.bracket') },
+          { value: 'dashboard', label: t('tournament.dashboard') },
         ]}
         value={tab}
         onChange={setTab}
@@ -77,7 +80,7 @@ export function TournamentPage() {
           officialResults={officialResults}
           scenarioId={activeScenarioId}
         />
-      ) : (
+      ) : tab === 'bracket' ? (
         <BracketView
           matches={tournament.matches}
           resolver={resolver}
@@ -85,6 +88,12 @@ export function TournamentPage() {
           results={results}
           officialResults={officialResults}
           scenarioId={activeScenarioId}
+        />
+      ) : (
+        <DashboardView
+          tournament={tournament}
+          scenarioId={activeScenarioId}
+          officialResults={officialResults}
         />
       )}
     </div>

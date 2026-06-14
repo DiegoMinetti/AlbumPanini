@@ -103,6 +103,39 @@ adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - 163/163 tests pasan; typecheck limpio; build OK (PWA pre-cachéa 25
   entries, +1 por el nuevo JSON).
 
+### Added (PR4 — dashboard 'Mi predicción vs FIFA' con scoring)
+- `src/services/scoringService.ts` — motor de scoring puro. Reglas: 3 pts
+  por resultado exacto (regulation, o regulation+penales cuando
+  `status === 'PEN'`), 1 pt por signo correcto en fase de grupos, 0 por
+  errado. En knockout, los manuales (`StoredKnockoutPrediction`) suman 1
+  pt extra cuando el equipo forzado avanza a la siguiente ronda.
+  Devuelve `totalPoints`, `totalMaxAvailable` (3 × partidos con oficial
+  cerrado), breakdown por veredicto, y `perMatch` para la lista detallada.
+- `src/hooks/useScoring.ts` — lectura reactiva de `predictions` +
+  `knockoutPredictions` del escenario activo, recomputa al cambiar.
+  Expone porcentajes para la barra de progreso.
+- `src/components/tournament/DashboardView.tsx` — nuevo tab "Puntos" en
+  `TournamentPage` (entre Grupos y Llaves). Muestra:
+  - Total (`{totalPoints} / {maxScore}`).
+  - Barra de progreso apilada (exacto / signo / errado / pendiente).
+  - Lista por partido con icono de veredicto y puntos.
+- `TournamentPage` ahora tiene 3 tabs: Grupos, Llaves, Puntos.
+- `i18n` (es/en): claves `tournament.dashboard`, `dashboard.{points,
+  scenario, matches, breakdown, breakdownAria, empty, progress,
+  verdict.*, stage.group}`.
+- 11 tests nuevos para `scoringService` (motor + casos PEN + sign en
+  grupos). Total: 174/174.
+- Lint limpio, typecheck limpio, build OK.
+
+### Fixed (post-PR3)
+- `enrichment/src/sync-official-results.ts` — antes tragaba silenciosamente
+  el caso `200 OK` con `errors.token` (auth/quotas). Ahora detecta el
+  campo `errors` y falla con un mensaje claro, así la Action sale sin
+  commitear cuando la API devuelve auth/quotas en vez de escribir un
+  JSON vacío engañoso.
+- Eliminé variables `yy/mm/dd` no usadas en `build-fixture.ts` y saqué
+  un `import()` inline en `useTournament` que el lint bloqueaba en CI.
+
 ---
 
 ## [1.0.0] — 2026-06-13

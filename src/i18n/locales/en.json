@@ -423,6 +423,25 @@
       "sign": "Result",
       "wrong": "Miss",
       "pending": "Pending"
+    },
+    "dashboard": "Score"
+  },
+  "dashboard": {
+    "points": "My points",
+    "scenario": "Cup",
+    "matches": "matches",
+    "breakdown": "Per-match breakdown",
+    "breakdownAria": "Score breakdown",
+    "empty": "Enter predictions to see your score.",
+    "progress": "{{finished}} of {{total}} matches finished ({{pct}}%)",
+    "verdict": {
+      "exact": "Exact",
+      "sign": "Result",
+      "wrong": "Miss",
+      "pending": "Pending"
+    },
+    "stage": {
+      "group": "Group {{group}}"
     }
   },
   "pwaInstall": {
