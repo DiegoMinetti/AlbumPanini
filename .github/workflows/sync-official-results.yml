@@ -1,34 +1,24 @@
 name: Sync official WC26 results
 
-# Sincroniza los resultados oficiales del Mundial 2026 desde API-Football y
+# Sincroniza los resultados oficiales del Mundial 2026 desde openfootball y
 # los commitea a public/official/worldcup-2026-results.json para que el
 # frontend (PR3) los descargue al abrir el fixture.
 #
-# Rate limit API-Football tier free: 100 req/día. El script hace UNA sola
-# llamada a /fixtures (todos los partidos del torneo) — gastamos 1 req por
-# run. Lo distribuimos en la ventana en la que hay partidos del Mundial para
-# maximizar frescura: 13hs Arg (≈16 UTC, primer kickoff USA) hasta 02hs Arg
-# del día siguiente (≈05 UTC, último kickoff USA/Canadá/México). Cada día
-# del Mundial usa 1 cron por hora punta + 1 cada 6h en valles.
+# Fuente: https://github.com/openfootball/worldcup.json/blob/master/2026/worldcup.json
+#   - JSON estático en GitHub, sin auth, sin rate limit. La comunidad lo
+#     mantiene a partir de comunicados oficiales FIFA.
+#   - Se descarga con un único fetch por run (gratis).
+#   - Sólo emite partidos con `score.ft` ya cargado.
 #
-# Horarios en hora Argentina (UTC-3 fuera de DST; Arg no tiene DST):
-#   - Día de partido: 13:00, 14:00, 15:00, 16:00, 17:00, 18:00, 19:00, 20:00,
-#     21:00, 22:00, 23:00, 00:00, 01:00, 02:00 Arg
-#   - Día sin partido: 1 run al mediodía Arg (para refrescar fixtures futuros
-#     si FIFA publicó horarios nuevos de knockout)
+# Ventana de corrida: 13hs–02hs Arg (= 16:00–05:00 UTC), el mismo
+# rango en el que hay partidos del Mundial. window_dispatch permite
+# un run manual.
 #
-# Convertidos a UTC (Arg = UTC-3 fijo): HH UTC = HH Arg + 3.
-# Implementamos la grilla con un único `cron` cada hora en la ventana Arg
-# 13:00–02:00 (= 16:00–05:00 UTC), y el script decide adentro si vale la
-# pena gastar el request o no (cuenta regresiva hasta el próximo kickoff,
-# partidos recién terminados, etc).
-#
-# Workflow_dispatch permite un run manual (botón "Run workflow").
+# Nota sobre API_FOOTBALL_KEY: ya no se usa (openfootball es sin auth),
+# pero mantenemos el secret opcional por compat con runs viejos.
 
 on:
   schedule:
-    # Cada hora, en la ventana 16:00–05:00 UTC (= 13:00–02:00 Arg).
-    # El script internamente evita gastar el rate limit si no hay actividad.
     - cron: '0 16-23 * * *'
     - cron: '0 0-5 * * *'
   workflow_dispatch:
@@ -39,6 +29,8 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,7 +55,7 @@ jobs:
         id: dry
         working-directory: enrichment
         env:
-          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY || 'unused' }}
         run: ./node_modules/.bin/tsx src/sync-official-results.ts --dry-run > /tmp/official.json
         continue-on-error: true
 
@@ -75,10 +67,16 @@ jobs:
             echo "Dry-run falló o devolvió vacío — saliendo sin commit."
             exit 0
           fi
-          # Si la API devolvió rate-limit (status 429 o error), salimos sin commit.
-          if grep -q '"errors":' /tmp/official.json; then
+          # Detección de errores: si el payload empieza con "Error" (CLI
+          # entry catch) o no es JSON válido, salimos sin commitear.
+          if head -1 /tmp/official.json | grep -q '^Error'; then
             echo "should_commit=false" >> "$GITHUB_OUTPUT"
-            echo "API-Football devolvió error — saliendo sin commit."
+            echo "Sync lanzó error — saliendo sin commit."
+            exit 0
+          fi
+          if ! head -1 /tmp/official.json | grep -q '^{'; then
+            echo "should_commit=false" >> "$GITHUB_OUTPUT"
+            echo "Payload no es JSON — saliendo sin commit."
             exit 0
           fi
           echo "should_commit=true" >> "$GITHUB_OUTPUT"
@@ -87,7 +85,7 @@ jobs:
         if: steps.decide.outputs.should_commit == 'true'
         working-directory: enrichment
         env:
-          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY || 'unused' }}
         run: ./node_modules/.bin/tsx src/sync-official-results.ts
 
       - name: Commit if changed
@@ -99,6 +97,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Sin cambios — nada que commitear."
           else
-            git commit -m "chore(official): sync WC26 results from api-football ($(date -u +%FT%TZ))"
+            git commit -m "chore(official): sync WC26 results from openfootball ($(date -u +%FT%TZ))"
             git push
           fi

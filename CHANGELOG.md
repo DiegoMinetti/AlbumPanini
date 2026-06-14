@@ -136,6 +136,43 @@ adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Eliminé variables `yy/mm/dd` no usadas en `build-fixture.ts` y saqué
   un `import()` inline en `useTournament` que el lint bloqueaba en CI.
 
+### Changed (PR5 — switch sync source: API-Football → openfootball)
+- **Causa**: API-Football tier free no cubre la season 2026 del Mundial
+  ("Free plans do not have access to this season"). El plan pago
+  ($19/mes) sí cubre, pero openfootball es gratis, sin auth, sin rate
+  limit, y la comunidad lo mantiene a partir de comunicados oficiales
+  FIFA.
+- `enrichment/src/sync-official-results.ts` reescrito: ahora descarga
+  `https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json`,
+  mapea cada partido terminado al `matchId` interno con un join de dos
+  niveles (strict date+order, fuzzy group+equipos sin importar orden)
+  para tolerar las discrepancias entre el fixture estático de la app y
+  el dataset, y emite el mismo shape que el frontend ya espera
+  (`OfficialResultsPayload`).
+- Mapeo de nombres openfootball → FIFA codes: cubre las 48 selecciones,
+  incluyendo las variantes que openfootball usa distinto a Panini
+  ("Bosnia & Herzegovina" vs "Bosnia and Herzegovina", "Turkey" vs
+  "Türkiye", "DR Congo" vs "Congo DR", "Ivory Coast" vs "Côte d'Ivoire").
+- Compose de `finishedAt` con offset local real (ej. "20:00 UTC-6" →
+  "2026-06-11T20:00:00.000-06:00") en vez de UTC fijo, así la UI puede
+  mostrar la hora local del estadio.
+- `.github/workflows/sync-official-results.yml` — agrega
+  `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` para silenciar el warning de
+  Node 20 deprecation. El secret `API_FOOTBALL_KEY` se mantiene
+  opcional por compat pero ya no se usa. La detección de errores en
+  el step "Decide whether to commit" pasó de buscar `"errors":` en el
+  JSON (genérico, matcheaba cualquier campo) a validar que el payload
+  empiece con `{` y no con `Error`.
+
+### Verification
+- `pnpm install --frozen-lockfile` OK (con `onlyBuiltDependencies` en
+  `pnpm-workspace.yaml`, no en `package.json`).
+- `tsc --noEmit` en `enrichment/` limpio.
+- `tsx src/sync-official-results.ts --dry-run` produce un JSON válido
+  con los partidos que openfootball ya tiene cargados.
+- 174/174 tests siguen pasando (no se tocaron tests de app).
+- Lint + build OK.
+
 ---
 
 ## [1.0.0] — 2026-06-13
