@@ -15,17 +15,24 @@ test('group stage shows groups and a score updates the standings', async ({
   await expect(page.getByText('Group A', { exact: true })).toBeVisible();
   await expect(page.getByText('Group L', { exact: true })).toBeVisible();
 
-  // Open Group A's fixtures and score the first match 2-0.
+  // Open Group A's fixtures and score the second-to-last match 2-0. We
+  // target MD3 (Mexico vs Czechia, 24 jun) instead of MD1 so the test
+  // keeps working after the real-world kickoff of the first games: the
+  // kickoff lock (PR3) leaves the inputs disabled once a match starts,
+  // and we don't want a flaky e2e tied to "what date is today".
   const groupA = page
     .locator('section', { hasText: 'Group A' })
     .first();
   await groupA.getByRole('button', { name: 'Show matches' }).click();
 
   const inputs = groupA.locator('input[type="number"]');
-  await inputs.nth(0).fill('2');
-  await inputs.nth(1).fill('0');
+  // Each match has two inputs (home + away). The MD3 Mexico-vs-Czechia
+  // match is the 5th one — its home input is index 8, away input 9.
+  // We score 2-0 to MEX so Mexico tops the group (3 points).
+  await inputs.nth(8).fill('2');
+  await inputs.nth(9).fill('0');
 
-  // The home team now has 3 points in the standings table.
+  // Mexico now has 3 points in the standings table.
   await expect(groupA.locator('table tbody tr').first()).toContainText('3');
 });
 
