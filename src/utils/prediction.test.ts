@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  isLockedForPrediction,
-  isPredictionCorrect,
-} from './prediction';
+import { isLockedForPrediction, isPredictionCorrect } from './prediction';
 import type { StoredOfficialResult } from '@/types/prediction';
 
 function pred(
@@ -47,27 +44,37 @@ describe('isLockedForPrediction', () => {
 
   it('returns true when the kickoff is in the past', () => {
     const past = new Date('2026-06-11T13:00:00Z').getTime();
-    expect(isLockedForPrediction({ kickoff: '2026-06-11T13:00:00.000Z' }, past + 1)).toBe(true);
+    expect(
+      isLockedForPrediction({ kickoff: '2026-06-11T13:00:00.000Z' }, past + 1)
+    ).toBe(true);
   });
 
   it('returns true at the exact kickoff instant (inclusive)', () => {
     const t = new Date('2026-06-11T13:00:00Z').getTime();
-    expect(isLockedForPrediction({ kickoff: '2026-06-11T13:00:00.000Z' }, t)).toBe(true);
+    expect(
+      isLockedForPrediction({ kickoff: '2026-06-11T13:00:00.000Z' }, t)
+    ).toBe(true);
   });
 
   it('returns false when the kickoff is in the future', () => {
     const future = new Date('2026-06-11T13:00:00Z').getTime();
-    expect(isLockedForPrediction({ kickoff: '2026-06-11T13:00:00.000Z' }, future - 1)).toBe(false);
+    expect(
+      isLockedForPrediction({ kickoff: '2026-06-11T13:00:00.000Z' }, future - 1)
+    ).toBe(false);
   });
 });
 
 describe('isPredictionCorrect', () => {
   it('returns pending when no prediction is provided', () => {
-    expect(isPredictionCorrect(undefined, official('FT', 2, 1))).toBe('pending');
+    expect(isPredictionCorrect(undefined, official('FT', 2, 1))).toBe(
+      'pending'
+    );
   });
 
   it('returns pending when prediction exists but is not played', () => {
-    expect(isPredictionCorrect(pred(1, 0, false), official('FT', 2, 1))).toBe('pending');
+    expect(isPredictionCorrect(pred(1, 0, false), official('FT', 2, 1))).toBe(
+      'pending'
+    );
   });
 
   it('returns official-missing when there is a prediction but no official yet', () => {
@@ -75,13 +82,17 @@ describe('isPredictionCorrect', () => {
   });
 
   it('returns pending when the official row is SCHEDULED', () => {
-    expect(isPredictionCorrect(pred(1, 0), official('SCHEDULED'))).toBe('pending');
+    expect(isPredictionCorrect(pred(1, 0), official('SCHEDULED'))).toBe(
+      'pending'
+    );
   });
 
   it('returns pending when the official row is finished but has no goals', () => {
     // Defensive: a malformed row with status=FT but no homeGoals/awayGoals
     // is treated as pending rather than crashing.
-    expect(isPredictionCorrect(pred(1, 0), official('FT', undefined, undefined))).toBe('pending');
+    expect(
+      isPredictionCorrect(pred(1, 0), official('FT', undefined, undefined))
+    ).toBe('pending');
   });
 
   it('returns exact when regulation scores match', () => {
@@ -121,10 +132,14 @@ describe('isPredictionCorrect', () => {
     // User predicted 1-0 in regulation; the game actually went to pens
     // (1-1 in regulation, 4-3 on pens for the home side). Strict
     // scoring: 0 pts — there's no sign bonus for penalty games.
-    expect(isPredictionCorrect(pred(1, 0), official('PEN', 1, 1, 4, 3))).toBe('wrong');
+    expect(isPredictionCorrect(pred(1, 0), official('PEN', 1, 1, 4, 3))).toBe(
+      'wrong'
+    );
   });
 
   it('AET: compares on regulation goals', () => {
-    expect(isPredictionCorrect(pred(2, 1), official('AET', 2, 1))).toBe('exact');
+    expect(isPredictionCorrect(pred(2, 1), official('AET', 2, 1))).toBe(
+      'exact'
+    );
   });
 });
