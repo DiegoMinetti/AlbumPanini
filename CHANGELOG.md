@@ -49,6 +49,21 @@ adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   con las fechas/kickoffs oficiales. Estructura, IDs y orden de equipos
   inalterados → no rompe `tournamentService` ni el bracket UI.
 
+### Added (PR2 — sync oficial desde API-Football)
+- `enrichment/src/sync-official-results.ts` — script que llama a
+  API-Football `/fixtures?league=1&season=2026`, mapea cada partido
+  terminado (FT / AET / PEN) al `matchId` interno y lo emite a
+  `public/official/worldcup-2026-results.json`. CLI: `pnpm sync-official`
+  (con `--dry-run`). Mapea nombres de API-Football a FIFA codes vía una
+  tabla; nombres no reconocidos se loguean y se skipean.
+- `.github/workflows/sync-official-results.yml` — Action con cron en la
+  ventana 16:00–05:00 UTC (= 13hs–02hs Arg), pensada para correr 1 vez por
+  hora mientras hay partidos y consumir 1 sola request de las 100/día del
+  free tier. Si la API responde vacío o error, sale sin commitear.
+- El JSON resultante es read-only: el frontend lo descarga al abrir el
+  fixture (PR3) y lo trata como `official_results`, separado de las
+  `predictions` del usuario.
+
 ---
 
 ## [1.0.0] — 2026-06-13

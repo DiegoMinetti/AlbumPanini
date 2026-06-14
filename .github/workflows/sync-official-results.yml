@@ -1,0 +1,104 @@
+name: Sync official WC26 results
+
+# Sincroniza los resultados oficiales del Mundial 2026 desde API-Football y
+# los commitea a public/official/worldcup-2026-results.json para que el
+# frontend (PR3) los descargue al abrir el fixture.
+#
+# Rate limit API-Football tier free: 100 req/día. El script hace UNA sola
+# llamada a /fixtures (todos los partidos del torneo) — gastamos 1 req por
+# run. Lo distribuimos en la ventana en la que hay partidos del Mundial para
+# maximizar frescura: 13hs Arg (≈16 UTC, primer kickoff USA) hasta 02hs Arg
+# del día siguiente (≈05 UTC, último kickoff USA/Canadá/México). Cada día
+# del Mundial usa 1 cron por hora punta + 1 cada 6h en valles.
+#
+# Horarios en hora Argentina (UTC-3 fuera de DST; Arg no tiene DST):
+#   - Día de partido: 13:00, 14:00, 15:00, 16:00, 17:00, 18:00, 19:00, 20:00,
+#     21:00, 22:00, 23:00, 00:00, 01:00, 02:00 Arg
+#   - Día sin partido: 1 run al mediodía Arg (para refrescar fixtures futuros
+#     si FIFA publicó horarios nuevos de knockout)
+#
+# Convertidos a UTC (Arg = UTC-3 fijo): HH UTC = HH Arg + 3.
+# Implementamos la grilla con un único `cron` cada hora en la ventana Arg
+# 13:00–02:00 (= 16:00–05:00 UTC), y el script decide adentro si vale la
+# pena gastar el request o no (cuenta regresiva hasta el próximo kickoff,
+# partidos recién terminados, etc).
+#
+# Workflow_dispatch permite un run manual (botón "Run workflow").
+
+on:
+  schedule:
+    # Cada hora, en la ventana 16:00–05:00 UTC (= 13:00–02:00 Arg).
+    # El script internamente evita gastar el rate limit si no hay actividad.
+    - cron: '0 16-23 * * *'
+    - cron: '0 0-5 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: enrichment/pnpm-lock.yaml
+
+      - name: Install enrichment deps
+        working-directory: enrichment
+        run: pnpm install --frozen-lockfile
+
+      - name: Run sync (dry-run first to check)
+        id: dry
+        working-directory: enrichment
+        env:
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+        run: ./node_modules/.bin/tsx src/sync-official-results.ts --dry-run > /tmp/official.json
+        continue-on-error: true
+
+      - name: Decide whether to commit
+        id: decide
+        run: |
+          if [ ! -s /tmp/official.json ]; then
+            echo "should_commit=false" >> "$GITHUB_OUTPUT"
+            echo "Dry-run falló o devolvió vacío — saliendo sin commit."
+            exit 0
+          fi
+          # Si la API devolvió rate-limit (status 429 o error), salimos sin commit.
+          if grep -q '"errors":' /tmp/official.json; then
+            echo "should_commit=false" >> "$GITHUB_OUTPUT"
+            echo "API-Football devolvió error — saliendo sin commit."
+            exit 0
+          fi
+          echo "should_commit=true" >> "$GITHUB_OUTPUT"
+
+      - name: Write results JSON
+        if: steps.decide.outputs.should_commit == 'true'
+        working-directory: enrichment
+        env:
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+        run: ./node_modules/.bin/tsx src/sync-official-results.ts
+
+      - name: Commit if changed
+        if: steps.decide.outputs.should_commit == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/official/worldcup-2026-results.json
+          if git diff --cached --quiet; then
+            echo "Sin cambios — nada que commitear."
+          else
+            git commit -m "chore(official): sync WC26 results from api-football ($(date -u +%FT%TZ))"
+            git push
+          fi
