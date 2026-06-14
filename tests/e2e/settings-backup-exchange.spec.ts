@@ -49,7 +49,13 @@ test('copy duplicates list to clipboard', async ({ page }) => {
 test('paste a friend list and see a summary', async ({ page }) => {
   await installDemo(page);
   await goto(page, '/exchange');
-  await page.getByTestId('paste-textarea').fill('ARG 1\nBRA 1');
+  // The parser needs section headers ("Repetidas" / "Me faltan") to
+  // classify a paste as "wants" vs "extras" — without them the body
+  // lines are treated as unresolved and the summary doesn't render.
+  // Real shares from this app always include those headers.
+  await page
+    .getByTestId('paste-textarea')
+    .fill("I'm missing\nARG 🇦🇷: 1\nBRA 🇧🇷: 1");
   await page.getByTestId('paste-analyze').click();
   await expect(page.getByTestId('paste-summary')).toBeVisible();
 });

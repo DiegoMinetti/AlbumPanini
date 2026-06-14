@@ -519,6 +519,7 @@ export function ExchangePage() {
         missing={ownList.missing}
         duplicatesCount={totalDuplicates}
         missingCount={totalMissing}
+        sectionTestId="duplicates-section"
         duplicatesSelected={offeredDuplicates}
         missingSelected={offeredMissing}
         onToggleDuplicate={(code, idx) =>
@@ -724,6 +725,7 @@ interface OwnTabsCardProps {
   missing: { prefix: string; emoji: string; numbers: string[] }[];
   duplicatesCount: number;
   missingCount: number;
+  sectionTestId: string;
   duplicatesSelected: Set<string>;
   missingSelected: Set<string>;
   onToggleDuplicate: (code: string, copyIndex: number) => void;
@@ -834,6 +836,7 @@ function OwnTabsCard({
   missing,
   duplicatesCount,
   missingCount,
+  sectionTestId,
   duplicatesSelected,
   missingSelected,
   onToggleDuplicate,
@@ -874,7 +877,7 @@ function OwnTabsCard({
   return (
     <section
       className="card flex flex-col gap-3"
-      data-testid="own-tabs-card"
+      data-testid={sectionTestId}
     >
       <SegmentedControl
         ariaLabel={t('exchange.tabsLabel')}
