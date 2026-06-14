@@ -25,7 +25,12 @@ import {
   settingsSchema,
   type Settings,
 } from '@/types/settings';
-import { gunzipJson, gzipJson } from '@/utils/compression';
+import {
+  base64UrlToBytes,
+  bytesToBase64Url,
+  gunzipJson,
+  gzipJson,
+} from '@/utils/compression';
 import { makeUid } from '@/utils/ids';
 import { normalizeCode } from '@/utils/code';
 import { fetchManifest, fetchPackage } from './collectionLoader';
@@ -105,6 +110,35 @@ export async function exportBackup(settings: Settings): Promise<Blob> {
   const bytes = gzipJson(payload);
   // Copy into a fresh ArrayBuffer-backed view so the Blob part type is exact.
   return new Blob([new Uint8Array(bytes)], { type: 'application/gzip' });
+}
+
+/**
+ * Same payload as `exportBackup`, but encoded as a URL-safe base64
+ * string. The text is chat-safe (no padding, no `+/=` characters) and
+ * can be pasted into a textarea on another device to restore the
+ * backup. Pair with `parseBackupText` to round-trip.
+ */
+export async function exportBackupAsText(settings: Settings): Promise<string> {
+  const payload = await createBackupPayload(settings);
+  return bytesToBase64Url(gzipJson(payload));
+}
+
+/** Inverse of {@link exportBackupAsText}. */
+export function parseBackupText(text: string): {
+  payload: BackupPayload;
+  migratedFrom?: number;
+} {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    throw new Error('Empty backup text');
+  }
+  let bytes: Uint8Array;
+  try {
+    bytes = base64UrlToBytes(trimmed);
+  } catch {
+    throw new Error('Invalid backup text: not valid base64url');
+  }
+  return parseBackupFile(bytes);
 }
 
 /** A sensible default filename for the exported backup. */

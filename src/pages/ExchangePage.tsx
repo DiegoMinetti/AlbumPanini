@@ -10,6 +10,7 @@ import {
   type ResolvedExchange,
 } from '@/services/exchangeService';
 import { adjustQuantity } from '@/services/inventoryService';
+import { writeClipboard } from '@/utils/file';
 import { Spinner } from '@/components/feedback/Spinner';
 import { NoActiveCollection } from '@/components/collections/NoActiveCollection';
 import { EmptyState } from '@/components/feedback/EmptyState';
@@ -971,35 +972,34 @@ function OwnTabsCard({
               />
             ))}
           </div>
-
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <button
-              type="button"
-              className="btn-primary flex-1"
-              onClick={isDup ? onCopyDuplicates : onCopyMissing}
-              disabled={activeSelected.size === 0}
-              data-testid={`${testId}-copy`}
-            >
-              {activeSelected.size > 0
-                ? isDup
-                  ? t('exchange.copyDuplicatesSelected', {
-                      count: activeSelected.size,
-                    })
-                  : t('exchange.copyMissingSelected', {
-                      count: activeSelected.size,
-                    })
-                : isDup
-                  ? t('exchange.copyDuplicates')
-                  : t('exchange.copyMissing')}
-            </button>
-          </div>
         </>
       )}
 
-      {/* Always-visible footer: copy both + share, even when one tab
-       *  has no items. This is the discoverable entry point for the
-       *  "share both" flow. */}
-      <div className="flex flex-col gap-2 border-t border-outline-variant pt-3 sm:flex-row">
+      {/* Always-visible footer: copy selected + copy both + share. The
+       *  container is `sticky bottom-0` so the three action buttons
+       *  float over the chips list and stay visible while the
+       *  duplicates/missing card is on screen. The solid background +
+       *  top border let it cover the chips underneath as the user
+       *  scrolls the page. */}
+      <div
+        className="sticky bottom-0 -mx-4 flex flex-col gap-2 border-t
+          border-outline-variant bg-surface px-4 pt-3 pb-1
+          shadow-[0_-2px_6px_rgba(0,0,0,0.06)] sm:flex-row"
+        data-testid="exchange-actions-footer"
+      >
+        <button
+          type="button"
+          className="btn-secondary flex-1"
+          onClick={isDup ? onCopyDuplicates : onCopyMissing}
+          disabled={isDup ? duplicatesCount === 0 : missingCount === 0}
+          data-testid={
+            isDup ? 'duplicates-section-copy' : 'missing-section-copy'
+          }
+        >
+          {isDup
+            ? t('exchange.copyDuplicatesSelected', { count: duplicatesCount })
+            : t('exchange.copyMissingSelected', { count: missingCount })}
+        </button>
         <button
           type="button"
           className="btn-secondary flex-1"
@@ -1661,27 +1661,6 @@ function pickSelected(
       return { prefix: g.prefix, emoji: g.emoji, numbers: kept };
     })
     .filter((g) => g.numbers.length > 0);
-}
-
-async function writeClipboard(text: string): Promise<boolean> {
-  try {
-    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(ta);
-    return ok;
-  } catch {
-    return false;
-  }
 }
 
 async function shareOrCopy(text: string): Promise<boolean> {

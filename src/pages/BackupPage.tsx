@@ -5,7 +5,9 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import {
   backupFilename,
   exportBackup,
+  exportBackupAsText,
   parseBackupFile,
+  parseBackupText,
   restoreBackup,
 } from '@/services/backupService';
 import {
@@ -25,7 +27,7 @@ import {
 } from '@/services/syncService';
 import type { SyncPayload } from '@/types/sync';
 import type { BackupPayload } from '@/types/backup';
-import { downloadBlob, readFileAsBytes } from '@/utils/file';
+import { downloadBlob, readFileAsBytes, writeClipboard } from '@/utils/file';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Modal } from '@/components/ui/Modal';
@@ -103,23 +105,44 @@ export function BackupPage() {
   // Backup import/export
   // -------------------------------------------------------------------------
 
+  // Snapshot of the settings we want to embed in the backup. Pulled from
+  // the live store so we can pass it to either the file export or the
+  // text export below.
+  const currentSettingsSnapshot = {
+    theme: settings.theme,
+    language: settings.language,
+    haptics: settings.haptics,
+    stickerView: settings.stickerView,
+    activeCollectionId: settings.activeCollectionId,
+    showImages: settings.showImages,
+    stickerGrouped: settings.stickerGrouped,
+    editMode: settings.editMode,
+    appLaunchCount: settings.appLaunchCount,
+    donationLinkOpened: settings.donationLinkOpened,
+    defaultCollectionSeeded: settings.defaultCollectionSeeded,
+  };
+
+  const [pastedText, setPastedText] = useState('');
+
   const handleExport = async () => {
     try {
-      const blob = await exportBackup({
-        theme: settings.theme,
-        language: settings.language,
-        haptics: settings.haptics,
-        stickerView: settings.stickerView,
-        activeCollectionId: settings.activeCollectionId,
-        showImages: settings.showImages,
-        stickerGrouped: settings.stickerGrouped,
-        editMode: settings.editMode,
-        appLaunchCount: settings.appLaunchCount,
-        donationLinkOpened: settings.donationLinkOpened,
-        defaultCollectionSeeded: settings.defaultCollectionSeeded,
-      });
+      const blob = await exportBackup(currentSettingsSnapshot);
       downloadBlob(blob, backupFilename());
       toast.success(t('backup.exported'));
+    } catch {
+      toast.error(t('toast.error'));
+    }
+  };
+
+  const handleCopyAsText = async () => {
+    try {
+      const text = await exportBackupAsText(currentSettingsSnapshot);
+      const ok = await writeClipboard(text);
+      if (ok) {
+        toast.success(t('backup.exportAsTextCopied'));
+      } else {
+        toast.error(t('toast.error'));
+      }
     } catch {
       toast.error(t('toast.error'));
     }
@@ -132,6 +155,20 @@ export function BackupPage() {
       setPending(parsed);
     } catch {
       toast.error(t('backup.invalid'));
+    }
+  };
+
+  const handlePasteText = () => {
+    if (!pastedText.trim()) {
+      toast.warning(t('backup.importFromTextEmpty'));
+      return;
+    }
+    try {
+      const parsed = parseBackupText(pastedText);
+      setPending(parsed);
+      setPastedText('');
+    } catch {
+      toast.error(t('backup.invalidText'));
     }
   };
 
@@ -426,14 +463,27 @@ export function BackupPage() {
         <p className="text-body-md text-on-surface-variant">
           {t('backup.exportDesc')}
         </p>
-        <button
-          type="button"
-          className="btn-primary self-start"
-          onClick={() => void handleExport()}
-          data-testid="export-backup"
-        >
-          {t('backup.export')}
-        </button>
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <button
+            type="button"
+            className="btn-primary self-start"
+            onClick={() => void handleExport()}
+            data-testid="export-backup"
+          >
+            {t('backup.export')}
+          </button>
+          <button
+            type="button"
+            className="btn-secondary self-start"
+            onClick={() => void handleCopyAsText()}
+            data-testid="export-backup-as-text"
+          >
+            {t('backup.exportAsText')}
+          </button>
+        </div>
+        <p className="text-label-sm text-on-surface-variant">
+          {t('backup.exportAsTextDesc')}
+        </p>
       </section>
 
       <section className="card flex flex-col gap-3">
@@ -478,6 +528,32 @@ export function BackupPage() {
             e.target.value = '';
           }}
         />
+
+        <div className="mt-3 flex flex-col gap-2 border-t border-outline-variant pt-3">
+          <h3 className="text-label-md font-medium uppercase tracking-wide text-on-surface-variant">
+            {t('backup.importFromText')}
+          </h3>
+          <p className="text-body-sm text-on-surface-variant">
+            {t('backup.importFromTextDesc')}
+          </p>
+          <textarea
+            className="input min-h-[100px] py-2 font-mono text-label-sm"
+            placeholder={t('backup.importFromTextPlaceholder')}
+            value={pastedText}
+            onChange={(e) => setPastedText(e.target.value)}
+            aria-label={t('backup.importFromTextPlaceholder')}
+            data-testid="import-backup-text"
+          />
+          <button
+            type="button"
+            className="btn-secondary self-start"
+            onClick={handlePasteText}
+            disabled={!pastedText.trim()}
+            data-testid="import-backup-text-action"
+          >
+            {t('backup.importFromTextAction')}
+          </button>
+        </div>
       </section>
 
       <section className="card flex flex-col gap-3">
