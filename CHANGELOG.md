@@ -35,6 +35,35 @@ adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   candidatos.
 - `CHANGELOG.md` — este archivo.
 
+### Changed (PR1 — fixture oficial FIFA)
+- `enrichment/src/build-fixture.ts` — fechas de la fase de grupos
+  reemplazadas por las oficiales FIFA (sorteo 5-dic-2025): A 11/18/24 jun,
+  B 12/18/24, C 13/19/24, D 12/19/25, E-F 14/20/25, G-H 15/21/26, I 16/22/26,
+  J 16/22/27, K-L 17/23/27 jun. Eliminatorias 28 jun – 19 jul.
+- `enrichment/src/build-fixture.ts` — cada partido de grupo ahora trae
+  `kickoff` (ISO-8601 UTC) y `kickoffTz` (IANA tz de la sede, no DST-hardcoded).
+  Franjas FIFA reales: 12:00 / 15:00 / 18:00 / 21:00 hora local del estadio.
+- `enrichment/src/build-fixture.ts` — agregada `tz` a `HOST_CITIES` para que
+  la GitHub Action (PR2) pueda regenerar `kickoff` con offset real.
+- `public/collections/worldcup-2026.json` — `tournament.matches` regenerado
+  con las fechas/kickoffs oficiales. Estructura, IDs y orden de equipos
+  inalterados → no rompe `tournamentService` ni el bracket UI.
+
+### Added (PR2 — sync oficial desde API-Football)
+- `enrichment/src/sync-official-results.ts` — script que llama a
+  API-Football `/fixtures?league=1&season=2026`, mapea cada partido
+  terminado (FT / AET / PEN) al `matchId` interno y lo emite a
+  `public/official/worldcup-2026-results.json`. CLI: `pnpm sync-official`
+  (con `--dry-run`). Mapea nombres de API-Football a FIFA codes vía una
+  tabla; nombres no reconocidos se loguean y se skipean.
+- `.github/workflows/sync-official-results.yml` — Action con cron en la
+  ventana 16:00–05:00 UTC (= 13hs–02hs Arg), pensada para correr 1 vez por
+  hora mientras hay partidos y consumir 1 sola request de las 100/día del
+  free tier. Si la API responde vacío o error, sale sin commitear.
+- El JSON resultante es read-only: el frontend lo descarga al abrir el
+  fixture (PR3) y lo trata como `official_results`, separado de las
+  `predictions` del usuario.
+
 ---
 
 ## [1.0.0] — 2026-06-13
