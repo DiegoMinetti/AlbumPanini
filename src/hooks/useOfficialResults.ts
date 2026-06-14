@@ -37,9 +37,11 @@ export function useOfficialResults(): OfficialResultsData {
 
   useEffect(() => {
     let cancelled = false;
+    console.log('[useOfficialResults] mount, starting fetch');
     void (async () => {
       try {
         await syncOfficialResultsFromRemote();
+        console.log('[useOfficialResults] sync done');
         if (cancelled) return;
         const at = await readOfficialSyncedAt();
         if (cancelled) return;

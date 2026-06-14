@@ -52,7 +52,11 @@ export function parseOfficialResultsPayload(
     throw new Error('official-results payload must be a JSON object');
   }
   const r = raw as RawPayload;
-  if (r.source !== 'api-football') {
+  // Accept both the original api-football source and the openfootball
+  // source we switched to in PR5 (api-football free tier doesn't cover
+  // the 2026 season). The shape is identical; only the producer name
+  // changed.
+  if (r.source !== 'api-football' && r.source !== 'openfootball') {
     throw new Error(`unexpected source: ${String(r.source)}`);
   }
   if (typeof r.generatedAt !== 'string') {

@@ -1,5 +1,54 @@
 {
-  "source": "api-football",
-  "generatedAt": "1970-01-01T00:00:00.000Z",
-  "matches": []
+  "source": "openfootball",
+  "generatedAt": "2026-06-14T03:37:26.145Z",
+  "matches": [
+    {
+      "id": "m1",
+      "homeGoals": 2,
+      "awayGoals": 0,
+      "status": "FT",
+      "finishedAt": "2026-06-11T13:00:00.000-06:00",
+      "apiFootballFixtureId": 3428
+    },
+    {
+      "id": "m2",
+      "homeGoals": 2,
+      "awayGoals": 1,
+      "status": "FT",
+      "finishedAt": "2026-06-11T20:00:00.000-06:00",
+      "apiFootballFixtureId": 3429
+    },
+    {
+      "id": "m7",
+      "homeGoals": 1,
+      "awayGoals": 1,
+      "status": "FT",
+      "finishedAt": "2026-06-12T15:00:00.000-04:00",
+      "apiFootballFixtureId": 3434
+    },
+    {
+      "id": "m8",
+      "homeGoals": 1,
+      "awayGoals": 1,
+      "status": "FT",
+      "finishedAt": "2026-06-13T12:00:00.000-07:00",
+      "apiFootballFixtureId": 3435
+    },
+    {
+      "id": "m13",
+      "homeGoals": 1,
+      "awayGoals": 1,
+      "status": "FT",
+      "finishedAt": "2026-06-13T18:00:00.000-04:00",
+      "apiFootballFixtureId": 106319
+    },
+    {
+      "id": "m19",
+      "homeGoals": 4,
+      "awayGoals": 1,
+      "status": "FT",
+      "finishedAt": "2026-06-12T18:00:00.000-07:00",
+      "apiFootballFixtureId": 106325
+    }
+  ]
 }
