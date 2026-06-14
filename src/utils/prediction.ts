@@ -40,7 +40,8 @@ export function isPredictionCorrect(
   if (!prediction || !prediction.played) return 'pending';
   if (!official) return 'official-missing';
   if (official.status === 'SCHEDULED') return 'pending';
-  if (official.homeGoals == null || official.awayGoals == null) return 'pending';
+  if (official.homeGoals == null || official.awayGoals == null)
+    return 'pending';
   // For games that ended in penalties, the official result is decided on
   // penalties; mirror that here so a "draw in regulation + won on pens"
   // prediction counts as exact.

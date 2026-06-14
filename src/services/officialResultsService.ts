@@ -76,7 +76,12 @@ export function parseOfficialResultsPayload(
     const kickoff = asString(match.kickoff);
     const apiFootballFixtureId = asNumber(match.apiFootballFixtureId);
     if (!id) throw new Error(`matches[${i}].id missing`);
-    if (status !== 'FT' && status !== 'AET' && status !== 'PEN' && status !== 'SCHEDULED') {
+    if (
+      status !== 'FT' &&
+      status !== 'AET' &&
+      status !== 'PEN' &&
+      status !== 'SCHEDULED'
+    ) {
       throw new Error(`matches[${i}].status invalid: ${String(status)}`);
     }
     if (!kickoff) throw new Error(`matches[${i}].kickoff missing`);

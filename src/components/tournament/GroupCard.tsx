@@ -115,7 +115,7 @@ export function GroupCard({
                   } catch (err) {
                     if (err instanceof PredictionLockedError) {
                       console.warn(
-                        `[prediction] rejected edit on ${err.matchId}: locked`,
+                        `[prediction] rejected edit on ${err.matchId}: locked`
                       );
                     } else {
                       throw err;

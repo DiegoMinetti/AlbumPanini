@@ -1,5 +1,8 @@
 import { db } from '@/db';
-import type { StoredOfficialResult, StoredPrediction } from '@/types/prediction';
+import type {
+  StoredOfficialResult,
+  StoredPrediction,
+} from '@/types/prediction';
 
 /**
  * Auto-fill the official scenario with FIFA results.
@@ -31,17 +34,13 @@ export async function autoFillOfficialScenarios(
   // "0-0" before kickoff — exactly what we don't want.
   const finished = rows.filter(
     (r) =>
-      r.status !== 'SCHEDULED' &&
-      r.homeGoals != null &&
-      r.awayGoals != null
+      r.status !== 'SCHEDULED' && r.homeGoals != null && r.awayGoals != null
   );
   if (finished.length === 0) {
     return { scenariosTouched: 0, predictionsWritten: 0 };
   }
 
-  const scenarios = (await db.scenarios.toArray()).filter(
-    (s) => s.isOfficial
-  );
+  const scenarios = (await db.scenarios.toArray()).filter((s) => s.isOfficial);
   if (scenarios.length === 0) {
     return { scenariosTouched: 0, predictionsWritten: 0 };
   }

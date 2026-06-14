@@ -2,9 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db';
 import { useScenarioStore } from '@/stores/scenarioStore';
-import {
-  ensureOfficialScenario,
-} from '@/services/scenarioService';
+import { ensureOfficialScenario } from '@/services/scenarioService';
 import { autoFillOfficialScenarios } from '@/services/officialAutoFillService';
 import {
   computeAllStandings,
@@ -76,9 +74,7 @@ export function useTournament(collectionId: string | null): TournamentData {
       void (async () => {
         await ensureOfficialScenario(collectionId);
         try {
-          await autoFillOfficialScenarios(
-            await db.officialResults.toArray()
-          );
+          await autoFillOfficialScenarios(await db.officialResults.toArray());
         } catch (err) {
           console.warn('[useTournament] auto-fill after ensure failed', err);
         }

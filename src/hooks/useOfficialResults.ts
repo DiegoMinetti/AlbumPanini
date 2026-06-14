@@ -80,9 +80,7 @@ export function useOfficialResults(): OfficialResultsData {
     let cancelled = false;
     void (async () => {
       try {
-        await autoFillOfficialScenarios(
-          await db.officialResults.toArray()
-        );
+        await autoFillOfficialScenarios(await db.officialResults.toArray());
         if (cancelled) return;
       } catch (err) {
         if (cancelled) return;
