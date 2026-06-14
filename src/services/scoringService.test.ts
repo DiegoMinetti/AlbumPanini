@@ -124,13 +124,32 @@ describe('scoreMatch', () => {
 
 const miniTournament: Tournament = {
   qualifiers: { perGroup: 2, bestThirds: 2 },
-  groups: [
-    { id: 'A', teamIds: ['T1', 'T2', 'T3', 'T4'] },
-  ],
+  groups: [{ id: 'A', teamIds: ['T1', 'T2', 'T3', 'T4'] }],
   matches: [
-    { id: 'm1', matchNumber: 1, stage: 'group', group: 'A', homeTeamId: 'T1', awayTeamId: 'T2' },
-    { id: 'm2', matchNumber: 2, stage: 'group', group: 'A', homeTeamId: 'T3', awayTeamId: 'T4' },
-    { id: 'm3', matchNumber: 3, stage: 'group', group: 'A', homeTeamId: 'T1', awayTeamId: 'T3' },
+    {
+      id: 'm1',
+      matchNumber: 1,
+      stage: 'group',
+      group: 'A',
+      homeTeamId: 'T1',
+      awayTeamId: 'T2',
+    },
+    {
+      id: 'm2',
+      matchNumber: 2,
+      stage: 'group',
+      group: 'A',
+      homeTeamId: 'T3',
+      awayTeamId: 'T4',
+    },
+    {
+      id: 'm3',
+      matchNumber: 3,
+      stage: 'group',
+      group: 'A',
+      homeTeamId: 'T1',
+      awayTeamId: 'T3',
+    },
     { id: 'm4', matchNumber: 4, stage: 'r32', homeSlot: '1A', awaySlot: '2A' },
   ],
 };

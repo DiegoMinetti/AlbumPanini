@@ -40,7 +40,10 @@ export async function listPredictions(
 export async function listKnockoutPredictions(
   scenarioId: string
 ): Promise<StoredKnockoutPrediction[]> {
-  return db.knockoutPredictions.where('scenarioId').equals(scenarioId).toArray();
+  return db.knockoutPredictions
+    .where('scenarioId')
+    .equals(scenarioId)
+    .toArray();
 }
 
 /**

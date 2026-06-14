@@ -79,12 +79,7 @@ export function useScoring({
   const score = useMemo<ScenarioScore | null>(() => {
     if (!tournament) return null;
     if (predictionRows === undefined || pickRows === undefined) return null;
-    return scoreScenario(
-      tournament,
-      predictionRows,
-      officialResults,
-      pickRows
-    );
+    return scoreScenario(tournament, predictionRows, officialResults, pickRows);
   }, [tournament, predictionRows, pickRows, officialResults]);
 
   const totalMatches = tournament?.matches.length ?? 0;

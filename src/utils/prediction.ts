@@ -26,7 +26,15 @@ export function isLockedForPrediction(
  * scoring engine. Pure: no DB access, no React.
  */
 export function isPredictionCorrect(
-  prediction: { homeGoals: number; awayGoals: number; homePens?: number; awayPens?: number; played: boolean } | undefined,
+  prediction:
+    | {
+        homeGoals: number;
+        awayGoals: number;
+        homePens?: number;
+        awayPens?: number;
+        played: boolean;
+      }
+    | undefined,
   official: StoredOfficialResult | undefined
 ): 'pending' | 'official-missing' | 'exact' | 'sign' | 'wrong' {
   if (!prediction || !prediction.played) return 'pending';
@@ -35,10 +43,10 @@ export function isPredictionCorrect(
   // penalties; mirror that here so a "draw in regulation + won on pens"
   // prediction counts as exact.
   const pens = official.status === 'PEN';
-  const ph = pens ? official.homePens ?? 0 : official.homeGoals;
-  const pa = pens ? official.awayPens ?? 0 : official.awayGoals;
-  const pp = pens ? prediction.homePens ?? 0 : prediction.homeGoals;
-  const pa_ = pens ? prediction.awayPens ?? 0 : prediction.awayGoals;
+  const ph = pens ? (official.homePens ?? 0) : official.homeGoals;
+  const pa = pens ? (official.awayPens ?? 0) : official.awayGoals;
+  const pp = pens ? (prediction.homePens ?? 0) : prediction.homeGoals;
+  const pa_ = pens ? (prediction.awayPens ?? 0) : prediction.awayGoals;
   if (ph === pp && pa === pa_) return 'exact';
   const sign = (h: number, a: number): number => Math.sign(h - a);
   if (sign(ph, pa) === sign(pp, pa_)) return 'sign';

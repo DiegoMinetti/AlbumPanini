@@ -150,7 +150,9 @@ export function MatchScoreRow({
           </span>
           <span className="tabular-nums font-semibold text-on-surface">
             {official.homeGoals}-{official.awayGoals}
-            {official.status === 'PEN' && official.homePens != null && official.awayPens != null
+            {official.status === 'PEN' &&
+            official.homePens != null &&
+            official.awayPens != null
               ? ` (${official.homePens}-${official.awayPens} pen)`
               : ''}
           </span>
@@ -174,10 +176,22 @@ function VerdictChip({
 }) {
   const { t } = useTranslation();
   const map = {
-    exact: { label: t('tournament.verdict.exact'), cls: 'bg-primary/15 text-primary' },
-    sign: { label: t('tournament.verdict.sign'), cls: 'bg-secondary/15 text-secondary' },
-    wrong: { label: t('tournament.verdict.wrong'), cls: 'bg-error/15 text-error' },
-    pending: { label: t('tournament.verdict.pending'), cls: 'bg-outline-variant/30 text-on-surface-variant' },
+    exact: {
+      label: t('tournament.verdict.exact'),
+      cls: 'bg-primary/15 text-primary',
+    },
+    sign: {
+      label: t('tournament.verdict.sign'),
+      cls: 'bg-secondary/15 text-secondary',
+    },
+    wrong: {
+      label: t('tournament.verdict.wrong'),
+      cls: 'bg-error/15 text-error',
+    },
+    pending: {
+      label: t('tournament.verdict.pending'),
+      cls: 'bg-outline-variant/30 text-on-surface-variant',
+    },
     'official-missing': { label: '', cls: '' },
   } as const;
   const v = map[verdict];

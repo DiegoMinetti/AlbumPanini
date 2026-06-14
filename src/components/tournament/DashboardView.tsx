@@ -166,11 +166,7 @@ function PerMatchRow({ score }: { score: MatchScore }) {
   );
 }
 
-function VerdictIcon({
-  verdict,
-}: {
-  verdict: MatchScore['verdict'];
-}) {
+function VerdictIcon({ verdict }: { verdict: MatchScore['verdict'] }) {
   switch (verdict) {
     case 'exact':
       return <Icon name="check" size={18} className="text-primary" />;
