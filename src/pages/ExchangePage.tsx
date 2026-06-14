@@ -16,6 +16,7 @@ import { NoActiveCollection } from '@/components/collections/NoActiveCollection'
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { PromptModal } from '@/components/ui/PromptModal';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { toast } from '@/stores/uiStore';
 import {
   pendingTradesFor,
@@ -980,46 +981,88 @@ function OwnTabsCard({
        *  float over the chips list and stay visible while the
        *  duplicates/missing card is on screen. The solid background +
        *  top border let it cover the chips underneath as the user
-       *  scrolls the page. */}
+       *  scrolls the page. On mobile, the buttons collapse to icon-only
+       *  with a `title` for hover/long-press hint; on `sm:` and up
+       *  the label is shown next to the icon. */}
       <div
-        className="sticky bottom-0 -mx-4 flex flex-col gap-2 border-t
-          border-outline-variant bg-surface px-4 pt-3 pb-1
-          shadow-[0_-2px_6px_rgba(0,0,0,0.06)] sm:flex-row"
+        className="sticky bottom-16 -mx-4 flex flex-row gap-1.5 border-t
+          border-outline-variant bg-surface px-3 pt-2.5 pb-1
+          shadow-[0_-2px_6px_rgba(0,0,0,0.06)] md:bottom-0"
         data-testid="exchange-actions-footer"
       >
-        <button
-          type="button"
-          className="btn-secondary flex-1"
+        <FooterAction
+          icon="content_copy"
+          label={
+            isDup
+              ? t('exchange.copyDuplicatesSelected', { count: duplicatesCount })
+              : t('exchange.copyMissingSelected', { count: missingCount })
+          }
+          shortLabel={
+            isDup ? t('exchange.copyDuplicates') : t('exchange.copyMissing')
+          }
           onClick={isDup ? onCopyDuplicates : onCopyMissing}
           disabled={isDup ? duplicatesCount === 0 : missingCount === 0}
-          data-testid={
-            isDup ? 'duplicates-section-copy' : 'missing-section-copy'
-          }
-        >
-          {isDup
-            ? t('exchange.copyDuplicatesSelected', { count: duplicatesCount })
-            : t('exchange.copyMissingSelected', { count: missingCount })}
-        </button>
-        <button
-          type="button"
-          className="btn-secondary flex-1"
+          testId={isDup ? 'duplicates-section-copy' : 'missing-section-copy'}
+        />
+        <FooterAction
+          icon="inbox"
+          label={t('exchange.copyBoth')}
+          shortLabel={t('exchange.copyBoth')}
           onClick={onCopyBoth}
           disabled={duplicatesCount === 0 && missingCount === 0}
-          data-testid="share-both-copy"
-        >
-          {t('exchange.copyBoth')}
-        </button>
-        <button
-          type="button"
-          className="btn-secondary flex-1"
+          testId="share-both-copy"
+        />
+        <FooterAction
+          icon="share"
+          label={t('exchange.shareBothShare')}
+          shortLabel={t('exchange.shareBothShare')}
           onClick={onShareBoth}
           disabled={duplicatesCount === 0 && missingCount === 0}
-          data-testid="share-both-share"
-        >
-          {t('exchange.shareBothShare')}
-        </button>
+          testId="share-both-share"
+        />
       </div>
     </section>
+  );
+}
+
+/**
+ * Action button used inside the sticky exchange footer.
+ *
+ * Renders an icon next to a label on `sm:` and up, and collapses to
+ * an icon-only square on small screens so all three actions fit
+ * comfortably on a phone viewport. The `title` attribute is set on
+ * every variant so mobile long-press / desktop hover surfaces the
+ * label for users who forget what the icon means.
+ */
+function FooterAction({
+  icon,
+  label,
+  shortLabel,
+  onClick,
+  disabled,
+  testId,
+}: {
+  icon: IconName;
+  label: string;
+  shortLabel: string;
+  onClick: () => void;
+  disabled: boolean;
+  testId: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={shortLabel}
+      aria-label={label}
+      data-testid={testId}
+      className="btn-secondary flex flex-1 items-center justify-center
+        gap-1.5 px-2 py-2 text-label-md"
+    >
+      <Icon name={icon} size={18} className="shrink-0" />
+      <span className="hidden truncate sm:inline">{label}</span>
+    </button>
   );
 }
 
