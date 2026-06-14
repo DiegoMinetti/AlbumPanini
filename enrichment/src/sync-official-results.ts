@@ -173,7 +173,18 @@ async function fetchWorldCupFixtures(apiKey: string): Promise<ApiFootballFixture
   if (!res.ok) {
     throw new Error(`API-Football /fixtures → ${res.status} ${res.statusText}`);
   }
-  const json = (await res.json()) as { response?: ApiFootballFixture[] };
+  // API-Football returns 200 even on auth/quota failures, with an `errors`
+  // object and an empty `response`. We treat that as a hard error so the
+  // caller can decide to skip the commit instead of writing a misleading
+  // empty JSON.
+  const json = (await res.json()) as {
+    response?: ApiFootballFixture[];
+    errors?: Record<string, string>;
+  };
+  if (json.errors && Object.keys(json.errors).length > 0) {
+    const first = Object.values(json.errors)[0];
+    throw new Error(`API-Football /fixtures errors: ${first ?? 'unknown'}`);
+  }
   if (Array.isArray(json.response)) out.push(...json.response);
   return out;
 }
