@@ -418,6 +418,7 @@
     },
     "locked": "Prediction locked",
     "official": "Official",
+    "officialScenarioNote": "FIFA auto-fills results as matches finish",
     "verdict": {
       "exact": "Exact",
       "sign": "Result",

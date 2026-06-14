@@ -2,7 +2,10 @@ import { useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db';
 import { useScenarioStore } from '@/stores/scenarioStore';
-import { ensureOfficialScenario } from '@/services/scenarioService';
+import {
+  ensureOfficialScenario,
+} from '@/services/scenarioService';
+import { autoFillOfficialScenarios } from '@/services/officialAutoFillService';
 import {
   computeAllStandings,
   createBracketResolver,
@@ -26,6 +29,8 @@ export interface TournamentData {
   scenarios: StoredScenario[];
   activeScenarioId: string | null;
   activeScenario: StoredScenario | null;
+  /** True when the active scenario is the auto-filled "Oficial" one. */
+  isOfficialScenario: boolean;
   results: Map<string, IndexedMatchResult>;
   picks: Map<string, string>;
   /** FIFA-official finished matches, keyed by matchId. Empty until the sync
@@ -68,7 +73,16 @@ export function useTournament(collectionId: string | null): TournamentData {
   // Ensure the official scenario exists as soon as a tournament is present.
   useEffect(() => {
     if (collectionId && tournament) {
-      void ensureOfficialScenario(collectionId);
+      void (async () => {
+        await ensureOfficialScenario(collectionId);
+        try {
+          await autoFillOfficialScenarios(
+            await db.officialResults.toArray()
+          );
+        } catch (err) {
+          console.warn('[useTournament] auto-fill after ensure failed', err);
+        }
+      })();
     }
   }, [collectionId, tournament]);
 
@@ -96,6 +110,7 @@ export function useTournament(collectionId: string | null): TournamentData {
   }, [sortedScenarios, storedActiveId]);
 
   const activeScenarioId = activeScenario?.id ?? null;
+  const isOfficialScenario = !!activeScenario?.isOfficial;
 
   // Self-heal the persisted selection if it points at a missing scenario.
   useEffect(() => {
@@ -158,6 +173,7 @@ export function useTournament(collectionId: string | null): TournamentData {
     scenarios: sortedScenarios,
     activeScenarioId,
     activeScenario,
+    isOfficialScenario,
     results,
     picks,
     officialResults: officialByMatchId,

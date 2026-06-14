@@ -23,6 +23,8 @@ interface KnockoutMatchRowProps {
   awayLabel?: string;
   result?: IndexedMatchResult;
   official?: StoredOfficialResult;
+  /** See MatchScoreRow — official scenario means read-only. */
+  isOfficialScenario?: boolean;
 }
 
 /**
@@ -106,11 +108,14 @@ export function KnockoutMatchRow({
   awayLabel,
   result,
   official,
+  isOfficialScenario = false,
 }: KnockoutMatchRowProps) {
   const { t } = useTranslation();
   const teamsResolved = !!home && !!away;
   const locked = isLockedForPrediction(match);
-  const editable = teamsResolved && !locked;
+  // Official scenario: always read-only. User makes predictions in their
+  // own custom scenarios; the official one mirrors FIFA automatically.
+  const editable = teamsResolved && !locked && !isOfficialScenario;
   const played = result?.played ?? false;
 
   const homeGoals = played ? result!.homeGoals : '';
@@ -131,6 +136,7 @@ export function KnockoutMatchRow({
     homePens?: number | null;
     awayPens?: number | null;
   }) => {
+    if (isOfficialScenario) return; // official scenario is read-only
     try {
       void setPrediction(scenarioId, match, {
         homeGoals: next.homeGoals ?? (played ? result!.homeGoals : null),

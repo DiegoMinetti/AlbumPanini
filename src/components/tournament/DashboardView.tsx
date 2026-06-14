@@ -9,6 +9,7 @@ interface DashboardViewProps {
   tournament: Tournament;
   scenarioId: string;
   officialResults: Map<string, StoredOfficialResult>;
+  isOfficialScenario: boolean;
 }
 
 /**

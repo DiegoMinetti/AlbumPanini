@@ -17,6 +17,12 @@ interface MatchScoreRowProps {
   result?: IndexedMatchResult;
   /** FIFA-official result for this match (if already finished). */
   official?: StoredOfficialResult;
+  /**
+   * When the active scenario is the auto-filled "Oficial" one, scores
+   * are read-only (FIFA sets them). Inputs render disabled and the
+   * onScore callback is never invoked.
+   */
+  isOfficialScenario?: boolean;
   onScore: (homeGoals: number | null, awayGoals: number | null) => void;
 }
 
@@ -70,7 +76,9 @@ function TeamSide({
  * One fixture row: two teams (or slot placeholders) with editable goal inputs.
  * Inputs are disabled when:
  *  - either team is unresolved (e.g. bracket slot still open), or
- *  - the match kickoff is in the past (predictions are locked).
+ *  - the match kickoff is in the past (predictions are locked), or
+ *  - the active scenario is the auto-filled "Oficial" one (read-only
+ *    mirror of FIFA — the score is set by the sync, not by the user).
  *
  * If a FIFA-official result is available, we render it side-by-side with the
  * user's prediction and a small verdict chip (✓ / ✗ / pending) so the user
@@ -84,12 +92,16 @@ export function MatchScoreRow({
   awayLabel,
   result,
   official,
+  isOfficialScenario = false,
   onScore,
 }: MatchScoreRowProps) {
   const { t } = useTranslation();
   const teamsResolved = !!home && !!away;
   const locked = isLockedForPrediction(match);
-  const editable = teamsResolved && !locked;
+  // On the official scenario the inputs are always read-only: the user
+  // is just looking at FIFA's data. They make their own predictions in
+  // custom scenarios they create themselves.
+  const editable = teamsResolved && !locked && !isOfficialScenario;
   const homeGoals = result?.played ? result.homeGoals : '';
   const awayGoals = result?.played ? result.awayGoals : '';
 
@@ -160,9 +172,15 @@ export function MatchScoreRow({
         </div>
       ) : null}
 
-      {locked && !official ? (
+      {locked && !official && !isOfficialScenario ? (
         <div className="text-right text-label-sm italic text-on-surface-variant">
           {t('tournament.locked')}
+        </div>
+      ) : null}
+
+      {isOfficialScenario ? (
+        <div className="text-right text-label-sm italic text-on-surface-variant">
+          {t('tournament.officialScenarioNote')}
         </div>
       ) : null}
     </div>

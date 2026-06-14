@@ -16,6 +16,7 @@ interface BracketViewProps {
   results: Map<string, IndexedMatchResult>;
   officialResults: Map<string, StoredOfficialResult>;
   scenarioId: string;
+  isOfficialScenario: boolean;
 }
 
 /** Knockout stages in bracket order. `group` is excluded. */
@@ -43,6 +44,7 @@ export function BracketView({
   results,
   officialResults,
   scenarioId,
+  isOfficialScenario,
 }: BracketViewProps) {
   const { t } = useTranslation();
 
@@ -84,6 +86,7 @@ export function BracketView({
                     awayLabel={m.awaySlot}
                     result={results.get(m.id)}
                     official={officialResults.get(m.id)}
+                    isOfficialScenario={isOfficialScenario}
                   />
                 );
               })}
