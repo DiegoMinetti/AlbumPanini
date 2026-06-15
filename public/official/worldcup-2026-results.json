@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-15T03:07:36.362Z",
+  "generatedAt": "2026-06-15T05:45:49.361Z",
   "matches": [
     {
       "id": "m1",
@@ -316,8 +316,11 @@
     },
     {
       "id": "m32",
-      "status": "SCHEDULED",
+      "homeGoals": 5,
+      "awayGoals": 1,
+      "status": "FT",
       "kickoff": "2026-06-14T20:00:00.000-06:00",
+      "finishedAt": "2026-06-14T20:00:00.000-06:00",
       "venue": "Monterrey (Guadalupe)",
       "group": "F",
       "stage": "group",
