@@ -425,7 +425,36 @@
       "wrong": "Errado",
       "pending": "Pendiente"
     },
-    "dashboard": "Puntos"
+    "dashboard": "Puntos",
+    "matches": "Partidos"
+  },
+  "matches": {
+    "summary": "{{past}} jugados · {{upcoming}} por jugar · {{total}} en total",
+    "match": "partido",
+    "matches": "partidos",
+    "jumpToToday": "Ir a hoy",
+    "refresh": "Actualizar resultados FIFA",
+    "refreshError": "No se pudo sincronizar: {{error}}",
+    "nextStartsIn": "Próximo: {{countdown}}",
+    "newResult": "Nuevo",
+    "filterAria": "Filtrar partidos por estado",
+    "filter": {
+      "all": "Todos",
+      "past": "Jugados",
+      "live": "En vivo",
+      "upcoming": "Pendientes"
+    },
+    "filterEmpty": {
+      "all": "No hay partidos para mostrar.",
+      "past": "Todavía no terminó ningún partido.",
+      "live": "No hay partidos en vivo en este momento.",
+      "upcoming": "Ya se jugaron todos los partidos del torneo."
+    },
+    "status": {
+      "live": "En vivo",
+      "next": "Próximo",
+      "final": "Final"
+    }
   },
   "dashboard": {
     "points": "Mis puntos",
