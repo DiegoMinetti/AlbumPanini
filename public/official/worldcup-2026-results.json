@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-16T21:03:18.347Z",
+  "generatedAt": "2026-06-16T22:38:09.826Z",
   "matches": [
     {
       "id": "m1",
@@ -484,8 +484,11 @@
     },
     {
       "id": "m49",
-      "status": "SCHEDULED",
+      "homeGoals": 3,
+      "awayGoals": 1,
+      "status": "FT",
       "kickoff": "2026-06-16T15:00:00.000-04:00",
+      "finishedAt": "2026-06-16T15:00:00.000-04:00",
       "venue": "New York/New Jersey (East Rutherford)",
       "group": "I",
       "stage": "group",
