@@ -167,3 +167,69 @@ export async function seedDefaultCollection(
   const pkg = await fetchPackage(entry, signal);
   return installPackage(pkg);
 }
+
+/**
+ * Compare two dotted-version strings (e.g. "1.2.3" vs "1.10.0") numerically.
+ * Returns negative when `a < b`, 0 when equal, positive when `a > b`. Non-numeric
+ * segments fall back to 0 so a malformed version never causes a destructive
+ * downgrade — the more permissive behavior is to treat it as "no change".
+ * Pre-release suffixes (`-rc.1`, `-beta.2`, …) are stripped before comparison
+ * because the project doesn't use pre-release tags and ignoring them keeps
+ * "1.0.0" and "1.0.0-rc.1" treated as the same version.
+ */
+export function compareSemver(a: string, b: string): number {
+  const parse = (v: string): number[] =>
+    v
+      .replace(/-[A-Za-z].*$/, '')
+      .split(/[.\-+]/)
+      .map((part) => {
+        const n = Number.parseInt(part, 10);
+        return Number.isFinite(n) ? n : 0;
+      });
+  const aParts = parse(a);
+  const bParts = parse(b);
+  const len = Math.max(aParts.length, bParts.length);
+  for (let i = 0; i < len; i++) {
+    const diff = (aParts[i] ?? 0) - (bParts[i] ?? 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+}
+
+/**
+ * Idempotent sync of the default collection with the latest manifest version.
+ *
+ *  - Not installed yet → first-time install (same as {@link seedDefaultCollection}).
+ *  - Installed at a *newer* version than the manifest → no-op (never downgrade).
+ *  - Installed at the same version → no-op.
+ *  - Installed at an *older* version than the manifest → re-install the catalog
+ *    (collection row + teams + stickers + tournament). Inventory, scenarios,
+ *    predictions, official results and other user-owned rows are left
+ *    untouched, so existing users keep their progress.
+ *
+ * Safe to call on every app launch. Returns a summary describing what
+ * happened, or null if the manifest has no entry for the default collection.
+ * Throws on network/parse failure so the caller can surface / retry.
+ */
+export async function syncDefaultCollection(
+  signal?: AbortSignal
+): Promise<{ collection: StoredCollection; updated: boolean } | null> {
+  const manifest = await fetchManifest(signal);
+  const entry = manifest.find((e) => e.id === DEFAULT_COLLECTION_ID);
+  if (!entry) return null;
+
+  const existing = await db.collections.get(DEFAULT_COLLECTION_ID);
+  if (!existing) {
+    const pkg = await fetchPackage(entry, signal);
+    const created = await installPackage(pkg);
+    return { collection: created, updated: true };
+  }
+
+  if (compareSemver(entry.version, existing.version) <= 0) {
+    return null;
+  }
+
+  const pkg = await fetchPackage(entry, signal);
+  const updated = await installPackage(pkg);
+  return { collection: updated, updated: true };
+}

@@ -1,10 +1,13 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import {
+  compareSemver,
   fetchManifest,
   fetchPackage,
   installPackage,
   packageToRows,
   isInstalled,
+  syncDefaultCollection,
+  DEFAULT_COLLECTION_ID,
 } from './collectionLoader';
 import {
   duplicateCollection,
@@ -14,7 +17,7 @@ import {
   listCollections,
   getStickers,
 } from './collectionService';
-import { setQuantity, getInventoryMap } from './inventoryService';
+import { setQuantity, getInventoryMap } from '@/services/inventoryService';
 import { db } from '@/db';
 import { resetDb, makeTestPackage } from '@/tests/helpers';
 
@@ -126,5 +129,142 @@ describe('lifecycle', () => {
   it('rename rejects empty names', async () => {
     const created = await installPackage(makeTestPackage());
     await expect(renameCollection(created.id, '   ')).rejects.toThrow();
+  });
+});
+
+describe('compareSemver', () => {
+  it('orders dotted numeric segments', () => {
+    expect(compareSemver('1.0.0', '1.0.0')).toBe(0);
+    expect(compareSemver('1.0.0', '1.0.1')).toBeLessThan(0);
+    expect(compareSemver('1.1.0', '1.0.9')).toBeGreaterThan(0);
+    expect(compareSemver('2.0.0', '10.0.0')).toBeLessThan(0);
+  });
+
+  it('treats missing segments as zero', () => {
+    expect(compareSemver('1', '1.0.0')).toBe(0);
+    expect(compareSemver('1.0', '1.0.1')).toBeLessThan(0);
+  });
+
+  it('falls back to zero for non-numeric parts', () => {
+    // Pre-release tags are ignored — only the numeric segments matter.
+    expect(compareSemver('1.0.0-rc.1', '1.0.0')).toBe(0);
+  });
+});
+
+describe('syncDefaultCollection', () => {
+  function stubManifestEntry(entry: {
+    id: string;
+    file: string;
+    name?: string;
+    version: string;
+  }) {
+    const fullEntry = {
+      name: entry.name ?? 'Test World Cup',
+      description: '',
+      language: 'es',
+      ...entry,
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input.toString();
+        if (url.endsWith('index.json')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({ collections: [fullEntry] }),
+          };
+        }
+        if (url.endsWith(entry.file)) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () =>
+              makeTestPackage({ id: entry.id, version: entry.version }),
+          };
+        }
+        return { ok: false, status: 404 };
+      })
+    );
+  }
+
+  it('installs the default collection on first run', async () => {
+    stubManifestEntry({
+      id: DEFAULT_COLLECTION_ID,
+      file: 'wc.json',
+      version: '2.0.0',
+    });
+    const result = await syncDefaultCollection();
+    expect(result?.updated).toBe(true);
+    expect(result?.collection.version).toBe('2.0.0');
+    expect(await isInstalled(DEFAULT_COLLECTION_ID)).toBe(true);
+  });
+
+  it('is a no-op when the installed version is current', async () => {
+    // Seed at 2.0.0, manifest is also 2.0.0.
+    await installPackage(
+      makeTestPackage({ id: DEFAULT_COLLECTION_ID, version: '2.0.0' })
+    );
+    stubManifestEntry({
+      id: DEFAULT_COLLECTION_ID,
+      file: 'wc.json',
+      version: '2.0.0',
+    });
+    const result = await syncDefaultCollection();
+    expect(result).toBeNull();
+    const stored = await db.collections.get(DEFAULT_COLLECTION_ID);
+    expect(stored?.version).toBe('2.0.0');
+  });
+
+  it('re-installs the catalog when the manifest version is newer', async () => {
+    // Old install + a sticker the user has marked in inventory.
+    await installPackage(
+      makeTestPackage({ id: DEFAULT_COLLECTION_ID, version: '1.0.0' })
+    );
+    await setQuantity(DEFAULT_COLLECTION_ID, 'ARG-1', 5);
+
+    stubManifestEntry({
+      id: DEFAULT_COLLECTION_ID,
+      file: 'wc.json',
+      version: '1.1.0',
+    });
+    const result = await syncDefaultCollection();
+    expect(result?.updated).toBe(true);
+    expect(result?.collection.version).toBe('1.1.0');
+
+    // Inventory survived the re-install.
+    const map = await getInventoryMap(DEFAULT_COLLECTION_ID);
+    expect(map.get('ARG-1')).toBe(5);
+
+    // createdAt preserved, status preserved.
+    const stored = await db.collections.get(DEFAULT_COLLECTION_ID);
+    expect(stored?.version).toBe('1.1.0');
+  });
+
+  it('never downgrades an installation ahead of the manifest', async () => {
+    await installPackage(
+      makeTestPackage({ id: DEFAULT_COLLECTION_ID, version: '2.5.0' })
+    );
+    stubManifestEntry({
+      id: DEFAULT_COLLECTION_ID,
+      file: 'wc.json',
+      version: '2.0.0',
+    });
+    const result = await syncDefaultCollection();
+    expect(result).toBeNull();
+    const stored = await db.collections.get(DEFAULT_COLLECTION_ID);
+    expect(stored?.version).toBe('2.5.0');
+  });
+
+  it('returns null when the manifest has no entry for the default collection', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        status: 200,
+        json: async () => ({ collections: [] }),
+      }))
+    );
+    expect(await syncDefaultCollection()).toBeNull();
   });
 });

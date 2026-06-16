@@ -7,7 +7,10 @@ import { ToastViewport } from '@/components/feedback/ToastViewport';
 import { PwaUpdatePrompt } from '@/components/feedback/PwaUpdatePrompt';
 import { PwaInstallPrompt } from '@/components/feedback/PwaInstallPrompt';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { seedDefaultCollection } from '@/services/collectionLoader';
+import {
+  seedDefaultCollection,
+  syncDefaultCollection,
+} from '@/services/collectionLoader';
 
 const SESSION_LAUNCH_KEY = 'panini-launch-registered';
 
@@ -55,6 +58,24 @@ export function App() {
     markDefaultCollectionSeeded,
     setActiveCollection,
   ]);
+
+  // Every launch: re-sync the default collection catalog (teams, stickers,
+  // tournament structure) when the shipped manifest version is newer than
+  // what's installed. User-owned rows (inventory, scenarios, predictions,
+  // official results) are preserved across the re-install. Idempotent — a
+  // no-op when the version is current or newer. Runs in the background so
+  // it never blocks the first paint.
+  useEffect(() => {
+    const controller = new AbortController();
+    void (async () => {
+      try {
+        await syncDefaultCollection(controller.signal);
+      } catch (err) {
+        console.warn('[sync] default collection sync failed', err);
+      }
+    })();
+    return () => controller.abort();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
