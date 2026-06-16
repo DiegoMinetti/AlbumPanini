@@ -36,6 +36,10 @@ export interface TournamentData {
   officialResults: Map<string, StoredOfficialResult>;
   /** When the last successful official-results sync happened. */
   officialSyncedAt: string | null;
+  /** True while a user-triggered official-results refresh is in flight. */
+  officialRefreshing: boolean;
+  /** Manually re-fetch the official results from the network. */
+  refreshOfficial: () => Promise<number>;
   standings: AllStandings | null;
   resolver: BracketResolver | null;
   loading: boolean;
@@ -144,6 +148,8 @@ export function useTournament(collectionId: string | null): TournamentData {
     byMatchId: officialByMatchId,
     syncedAt: officialSyncedAt,
     loading: loadingOfficial,
+    refreshing: officialRefreshing,
+    refresh: refreshOfficial,
   } = useOfficialResults();
 
   const results = useMemo(() => indexResults(resultRows ?? []), [resultRows]);
@@ -174,6 +180,8 @@ export function useTournament(collectionId: string | null): TournamentData {
     picks,
     officialResults: officialByMatchId,
     officialSyncedAt,
+    officialRefreshing,
+    refreshOfficial,
     standings: tournament ? standings : null,
     resolver,
     loading:

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db';
 import {
@@ -12,8 +12,14 @@ export interface OfficialResultsData {
   byMatchId: Map<string, StoredOfficialResult>;
   syncedAt: string | null;
   loading: boolean;
+  /** True while an explicit user-triggered refresh is in flight. */
+  refreshing: boolean;
   /** Last fetch error, surfaced for the UI to show a stale/offline badge. */
   error: string | null;
+  /** Manually re-fetch the official results from the network. Returns the
+   *  number of rows written, or throws on failure. The `byMatchId` map
+   *  updates reactively once the upsert commits. */
+  refresh: () => Promise<number>;
 }
 
 /**
@@ -40,6 +46,7 @@ export function useOfficialResults(): OfficialResultsData {
   );
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // The auto-fill is split into its own effect so that StrictMode's
@@ -48,6 +55,22 @@ export function useOfficialResults(): OfficialResultsData {
   // idempotent: re-running is a no-op when the predictions are already
   // up to date.
   const [lastSyncAt, setLastSyncAt] = useState<number | null>(null);
+
+  // Manual refresh. Distinct from the mount effect so the UI can show a
+  // dedicated spinner / disabled state while a user-triggered sync runs.
+  const refresh = useCallback(async (): Promise<number> => {
+    setRefreshing(true);
+    try {
+      const n = await syncOfficialResultsFromRemote();
+      setLastSyncAt(Date.now());
+      const at = await readOfficialSyncedAt();
+      setSyncedAt(at);
+      setError(null);
+      return n;
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,5 +116,5 @@ export function useOfficialResults(): OfficialResultsData {
   }, [lastSyncAt]);
 
   const byMatchId = new Map((rows ?? []).map((r) => [r.matchId, r]));
-  return { byMatchId, syncedAt, loading, error };
+  return { byMatchId, syncedAt, loading, refreshing, error, refresh };
 }

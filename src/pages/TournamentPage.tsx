@@ -10,9 +10,10 @@ import { NoActiveCollection } from '@/components/collections/NoActiveCollection'
 import { ScenarioBar } from '@/components/tournament/ScenarioBar';
 import { GroupsView } from '@/components/tournament/GroupsView';
 import { BracketView } from '@/components/tournament/BracketView';
+import { MatchesView } from '@/components/tournament/MatchesView';
 import { DashboardView } from '@/components/tournament/DashboardView';
 
-type Tab = 'groups' | 'bracket' | 'dashboard';
+type Tab = 'groups' | 'bracket' | 'matches' | 'dashboard';
 
 /**
  * Tournament — usa SegmentedControl M3 (indicator animado) para alternar
@@ -35,6 +36,8 @@ export function TournamentPage() {
     resolver,
     results,
     officialResults,
+    officialRefreshing,
+    refreshOfficial,
     loading: loadingTournament,
   } = useTournament(active?.id ?? null);
 
@@ -66,6 +69,7 @@ export function TournamentPage() {
         options={[
           { value: 'groups', label: t('tournament.groups') },
           { value: 'bracket', label: t('tournament.bracket') },
+          { value: 'matches', label: t('tournament.matches') },
           { value: 'dashboard', label: t('tournament.dashboard') },
         ]}
         value={tab}
@@ -91,6 +95,18 @@ export function TournamentPage() {
           officialResults={officialResults}
           scenarioId={activeScenarioId}
           isOfficialScenario={isOfficialScenario}
+        />
+      ) : tab === 'matches' ? (
+        <MatchesView
+          matches={tournament.matches}
+          resolver={resolver}
+          teamsById={teamsById}
+          results={results}
+          officialResults={officialResults}
+          scenarioId={activeScenarioId}
+          isOfficialScenario={isOfficialScenario}
+          officialRefreshing={officialRefreshing}
+          refreshOfficial={refreshOfficial}
         />
       ) : (
         <DashboardView

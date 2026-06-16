@@ -425,7 +425,36 @@
       "wrong": "Miss",
       "pending": "Pending"
     },
-    "dashboard": "Score"
+    "dashboard": "Score",
+    "matches": "Matches"
+  },
+  "matches": {
+    "summary": "{{past}} played · {{upcoming}} upcoming · {{total}} total",
+    "match": "match",
+    "matches": "matches",
+    "jumpToToday": "Jump to today",
+    "refresh": "Refresh FIFA results",
+    "refreshError": "Sync failed: {{error}}",
+    "nextStartsIn": "Next: {{countdown}}",
+    "newResult": "New",
+    "filterAria": "Filter matches by status",
+    "filter": {
+      "all": "All",
+      "past": "Played",
+      "live": "Live",
+      "upcoming": "Upcoming"
+    },
+    "filterEmpty": {
+      "all": "There are no matches to show.",
+      "past": "No matches have finished yet.",
+      "live": "No matches are live right now.",
+      "upcoming": "All tournament matches are already played."
+    },
+    "status": {
+      "live": "Live",
+      "next": "Next",
+      "final": "Final"
+    }
   },
   "dashboard": {
     "points": "My points",

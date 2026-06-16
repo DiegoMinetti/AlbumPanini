@@ -434,3 +434,34 @@
     color: var(--donation-blink-color);
   }
 }
+
+/* ===== Matches view — new result highlight + refresh spinner ===== */
+/*
+ * Pulse de 2.2 s que se dispara cuando un resultado FIFA oficial llega para
+ * un partido. Mantiene la fila en su color base (sólo el glow cambia) y
+ * devuelve el control al scroll del usuario lo antes posible.
+ */
+@keyframes match-new-result-pulse {
+  0% {
+    background-color: var(--md-tertiary-container, #ffd8a8);
+    box-shadow: 0 0 0 0 rgba(255, 167, 38, 0.55);
+  }
+  35% {
+    background-color: var(--md-tertiary-container, #ffd8a8);
+    box-shadow: 0 0 0 8px rgba(255, 167, 38, 0);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 0 rgba(255, 167, 38, 0);
+  }
+}
+
+/* Spinner de 1 s para el botón de refresh. Infinito mientras `refreshing`. */
+@keyframes refresh-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
