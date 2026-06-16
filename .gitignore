@@ -12,6 +12,11 @@ playwright-report
 test-results
 .vitest
 
+# Python tooling (FIFA schedule sync script)
+__pycache__/
+*.pyc
+*.pyo
+
 # Editor / OS
 .DS_Store
 .idea
