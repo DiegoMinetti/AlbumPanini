@@ -32,6 +32,12 @@ export const settingsSchema = z.object({
    * read-only, preventing accidental changes while consulting. On by default.
    */
   editMode: z.boolean().default(true),
+  /**
+   * IANA timezone used to render match kickoffs, group the calendar by day and
+   * anchor the "next match" highlight. Defaults to Buenos Aires because the
+   * primary user is in AR, but every other consumer can pick their own.
+   */
+  timeZone: z.string().min(1).default('America/Buenos_Aires'),
   /** Number of app launches recorded (used for non-invasive donation prompt). */
   appLaunchCount: z.number().int().nonnegative().default(0),
   /** True once the Mercado Pago link was opened by the user. */

@@ -16,6 +16,15 @@ import type { TournamentMatch } from '@/types/tournament';
 import type { StoredOfficialResult } from '@/types/prediction';
 import { isLockedForPrediction, isPredictionCorrect } from '@/utils/prediction';
 import { haptics } from '@/utils/haptics';
+import {
+  dayKeyInZone,
+  formatDayInZone,
+  formatLongDateInZone,
+  formatTimeInZone,
+  formatWeekdayInZone,
+  safeTimeZone,
+} from '@/utils/timeZone';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { Icon } from '@/components/ui/Icon';
 import {
   setPrediction,
@@ -93,16 +102,9 @@ function buildSections(
   resolver: BracketResolver,
   results: Map<string, IndexedMatchResult>,
   now: number,
-  locale: string
+  locale: string,
+  timeZone: string
 ): DaySection[] {
-  const dayFmt = new Intl.DateTimeFormat(locale, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
-  const weekdayFmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
-  const dayNumFmt = new Intl.DateTimeFormat(locale, { day: 'numeric' });
-
   const entries: TimelineEntry[] = matches
     .map((m): TimelineEntry => {
       const kickoffMs = parseKickoffMs(m);
@@ -129,8 +131,7 @@ function buildSections(
 
   const byDay = new Map<string, TimelineEntry[]>();
   for (const e of entries) {
-    const d = new Date(e.kickoffMs);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const key = dayKeyInZone(e.kickoffMs, timeZone);
     let list = byDay.get(key);
     if (!list) {
       list = [];
@@ -150,9 +151,9 @@ function buildSections(
     );
     sections.push({
       key,
-      label: dayFmt.format(ref),
-      weekday: weekdayFmt.format(ref),
-      day: dayNumFmt.format(ref),
+      label: formatLongDateInZone(ref.getTime(), locale, timeZone),
+      weekday: formatWeekdayInZone(ref.getTime(), locale, timeZone),
+      day: formatDayInZone(ref.getTime(), locale, timeZone),
       entries: list,
       anchor: hasAnchor && !anchorAssigned,
     });
@@ -342,12 +343,8 @@ function VerdictChip({
   );
 }
 
-function timeFmt(kickoffMs: number, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(new Date(kickoffMs));
+function timeFmt(kickoffMs: number, locale: string, timeZone: string): string {
+  return formatTimeInZone(kickoffMs, locale, timeZone);
 }
 
 interface MatchRowProps {
@@ -361,6 +358,7 @@ interface MatchRowProps {
   scenarioId: string;
   isOfficialScenario: boolean;
   locale: string;
+  timeZone: string;
   /** True if this row's official result just arrived within the last
    *  `NEW_RESULT_HIGHLIGHT_MS`. Triggers a brief green highlight. */
   highlightNew: boolean;
@@ -379,6 +377,7 @@ function MatchRow({
   scenarioId,
   isOfficialScenario,
   locale,
+  timeZone,
   highlightNew,
   countdown,
 }: MatchRowProps) {
@@ -463,7 +462,7 @@ function MatchRow({
           <span aria-hidden>•</span>
           <span className="inline-flex items-center gap-0.5 tabular-nums">
             <Icon name="schedule" size={12} />
-            {timeFmt(entry.kickoffMs, locale)}
+            {timeFmt(entry.kickoffMs, locale, timeZone)}
           </span>
           {m.city || m.venue ? (
             <>
@@ -696,6 +695,8 @@ export function MatchesView({
 }: MatchesViewProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language || 'en';
+  const configuredZone = useSettingsStore((s) => s.timeZone);
+  const timeZone = safeTimeZone(configuredZone);
   const [now, setNow] = useState(() => Date.now());
   const [filter, setFilter] = useState<StatusFilter>('all');
   const [refreshError, setRefreshError] = useState<string | null>(null);
@@ -709,8 +710,8 @@ export function MatchesView({
   }, []);
 
   const sections = useMemo(
-    () => buildSections(matches, resolver, results, now, locale),
-    [matches, resolver, results, now, locale]
+    () => buildSections(matches, resolver, results, now, locale, timeZone),
+    [matches, resolver, results, now, locale, timeZone]
   );
 
   // Apply the status filter on top of the built sections. Sections that
@@ -1018,6 +1019,7 @@ export function MatchesView({
                       scenarioId={scenarioId}
                       isOfficialScenario={isOfficialScenario}
                       locale={locale}
+                      timeZone={timeZone}
                       highlightNew={newlyFinished.has(m.id)}
                       countdown={countdownById.get(m.id)}
                     />

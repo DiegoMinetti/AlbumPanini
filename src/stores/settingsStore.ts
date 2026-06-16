@@ -12,6 +12,7 @@ import {
   type ThemeMode,
 } from '@/types/settings';
 import { setHapticsEnabled } from '@/utils/haptics';
+import { DEFAULT_TIME_ZONE, safeTimeZone } from '@/utils/timeZone';
 
 interface SettingsState extends Settings {
   setTheme: (theme: ThemeMode) => void;
@@ -22,6 +23,7 @@ interface SettingsState extends Settings {
   setShowImages: (show: boolean) => void;
   setStickerGrouped: (grouped: boolean) => void;
   setEditMode: (editMode: boolean) => void;
+  setTimeZone: (zone: string) => void;
   registerAppLaunch: () => void;
   markDonationLinkOpened: () => void;
   markDefaultCollectionSeeded: () => void;
@@ -109,6 +111,8 @@ export const useSettingsStore = create<SettingsState>()(
       setShowImages: (showImages) => set({ showImages }),
       setStickerGrouped: (stickerGrouped) => set({ stickerGrouped }),
       setEditMode: (editMode) => set({ editMode }),
+      setTimeZone: (timeZone) =>
+        set({ timeZone: safeTimeZone(timeZone) || DEFAULT_TIME_ZONE }),
       registerAppLaunch: () =>
         set({ appLaunchCount: get().appLaunchCount + 1 }),
       markDonationLinkOpened: () => set({ donationLinkOpened: true }),
@@ -131,6 +135,7 @@ export const useSettingsStore = create<SettingsState>()(
         showImages: state.showImages,
         stickerGrouped: state.stickerGrouped,
         editMode: state.editMode,
+        timeZone: state.timeZone,
         appLaunchCount: state.appLaunchCount,
         donationLinkOpened: state.donationLinkOpened,
         defaultCollectionSeeded: state.defaultCollectionSeeded,

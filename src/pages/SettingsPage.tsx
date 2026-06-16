@@ -10,6 +10,11 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { LATEST_DB_VERSION } from '@/db';
 import { toast } from '@/stores/uiStore';
+import {
+  COMMON_TIME_ZONES,
+  formatOffsetLabel,
+  safeTimeZone,
+} from '@/utils/timeZone';
 import type { Language, ThemeMode } from '@/types/settings';
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? '1.0.0';
@@ -29,6 +34,8 @@ export function SettingsPage() {
   const toggleHaptics = useSettingsStore((s) => s.toggleHaptics);
   const showImages = useSettingsStore((s) => s.showImages);
   const setShowImages = useSettingsStore((s) => s.setShowImages);
+  const timeZone = useSettingsStore((s) => s.timeZone);
+  const setTimeZone = useSettingsStore((s) => s.setTimeZone);
 
   const { active } = useActiveCollection();
   const history = useLiveQuery(() => db.getVersionHistory(), []);
@@ -82,6 +89,38 @@ export function SettingsPage() {
           checked={showImages}
           onChange={() => setShowImages(!showImages)}
         />
+      </section>
+
+      <section className="card flex flex-col gap-3">
+        <h2 className="text-title-md font-semibold text-on-surface">
+          {t('settings.region')}
+        </h2>
+        <p className="text-body-md text-on-surface-variant">
+          {t('settings.regionHint')}
+        </p>
+        <div>
+          <label
+            htmlFor="settings-timezone"
+            className="mb-1 block text-label-md text-on-surface-variant"
+          >
+            {t('settings.timeZone')}
+          </label>
+          <select
+            id="settings-timezone"
+            data-testid="settings-timezone"
+            value={safeTimeZone(timeZone)}
+            onChange={(e) => setTimeZone(e.target.value)}
+            className="w-full rounded-md border border-outline-variant bg-surface px-3 py-2
+              text-body-md text-on-surface focus:border-primary focus:outline-none
+              focus:ring-2 focus:ring-primary/40"
+          >
+            {COMMON_TIME_ZONES.map((z) => (
+              <option key={z.id} value={z.id}>
+                {z.label} — {formatOffsetLabel(z.id)}
+              </option>
+            ))}
+          </select>
+        </div>
       </section>
 
       <section className="card flex flex-col gap-3">
