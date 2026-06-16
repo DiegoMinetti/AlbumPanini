@@ -8,7 +8,13 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancel-in-progress está en false porque el sync workflow commitea
+  # a main con frecuencia. Con `true` y `group: ci-main`, cada sync
+  # commit cancela el CI del anterior y termina haciendo que nunca
+  # termine uno. No es un problema en PRs porque cada uno tiene su
+  # propio ref. Si querés mantener la cancelación agresiva en PRs,
+  # separar el group por evento (`ci-pr-${{ github.event.pull_request.number }}`).
+  cancel-in-progress: false
 
 jobs:
   quality:

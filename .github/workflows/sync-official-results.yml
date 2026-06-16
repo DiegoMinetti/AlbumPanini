@@ -34,6 +34,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Usamos un PAT (GH_PAT) en vez del GITHUB_TOKEN por defecto
+          # porque los pushes hechos con GITHUB_TOKEN NO disparan
+          # workflows downstream (CI/deploy), por diseño de GitHub
+          # para evitar loops recursivos. Con un PAT, cada sync
+          # commit sí dispara el CI, que a su vez dispara el deploy.
+          token: ${{ secrets.GH_PAT }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -90,7 +97,13 @@ jobs:
 
       - name: Commit if changed
         if: steps.decide.outputs.should_commit == 'true'
+        env:
+          # Mismo motivo que en el checkout: el push debe hacerse con
+          # un PAT (no con GITHUB_TOKEN) para que GitHub dispare los
+          # workflows downstream (CI + deploy) en cada sync.
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/${GITHUB_REPOSITORY}.git"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/official/worldcup-2026-results.json
