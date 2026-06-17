@@ -79,17 +79,47 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2,json,wasm}'],
+        // JSON files are intentionally excluded from the precache list.
+        // Anything under /collections/ (per-collection manifests) or
+        // /official/ (FIFA results snapshots) changes frequently — once per
+        // app deploy for collections, every ~30 min during match hours for
+        // results — and the app already fetches them with explicit cache
+        // control. Baking them into the precache meant users saw stale
+        // snapshots (e.g. zero FT matches) until the SW itself updated, which
+        // is exactly the bug the Partidos tab hit on the deployed build.
+        //
+        // The runtime caching rules below now own these URLs and use
+        // NetworkFirst with a 5 s timeout so offline users still get the last
+        // good copy from the runtime cache.
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2,wasm}'],
         // Tesseract language data and large wasm can exceed the default limit.
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         navigateFallback: `${basePath}index.html`,
         runtimeCaching: [
           {
-            // Collection JSON packages are loaded at runtime.
+            // Official results JSON from the openfootball sync workflow.
+            // NetworkFirst with a short timeout: live users always see the
+            // freshest snapshot (~30 min cadence during the World Cup), and
+            // offline users still get the last good copy.
+            urlPattern: ({ url }) => url.pathname.includes('/official/'),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'official-results-cache',
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 16, maxAgeSeconds: 60 * 60 * 24 },
+            },
+          },
+          {
+            // Collection JSON packages (teams, stickers, tournament).
+            // NetworkFirst so version-bumps are picked up on next launch
+            // without waiting for the SW to update. The 30-day expiry is a
+            // safety net — the app's own re-sync logic (PR1) is what
+            // actually decides when to upgrade.
             urlPattern: ({ url }) => url.pathname.includes('/collections/'),
-            handler: 'StaleWhileRevalidate',
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'collections-cache',
+              networkTimeoutSeconds: 5,
               expiration: { maxEntries: 64, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
