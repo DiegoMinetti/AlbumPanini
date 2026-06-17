@@ -163,12 +163,15 @@ test('matches view: filter chips, refresh button, and next-match countdown', asy
   await allChip.click();
 
   // The next-match countdown is rendered in the header. The exact string
-  // changes with the wall clock; we just assert the prefix ("Next:") and
-  // that some non-empty time string follows.
+  // changes with the wall clock; we just assert the prefix ("Next in ")
+  // and that some non-empty time string follows. The i18n string was
+  // "Next: {{countdown}}" before the countdown formatter fix in PR5
+  // (PR5 made the "in"/"en" prefix part of the i18n string so the same
+  // helper works for both locales).
   const countdown = page.getByTestId('matches-next-countdown');
   await expect(countdown).toBeVisible();
   const countdownText = (await countdown.textContent())?.trim() ?? '';
-  expect(countdownText).toMatch(/^Next: .+/);
+  expect(countdownText).toMatch(/^Next in .+/);
 
   // The manual refresh button is rendered and enabled.
   const refreshBtn = page.getByTestId('matches-refresh');
