@@ -94,18 +94,32 @@ test('matches view shows a timeline grouped by day with the next match anchored'
       ?.scrollIntoView({ block: 'start' });
   });
 
-  // The first match row inside the anchor section is either "live" (pulsing
-  // dot) or the next-up match — both states are valid for "current/next".
-  // We pull the first row's status straight from the DOM because Playwright's
-  // Locator chaining through nested `data-day-key` + `data-testid` had
-  // visibility-check edge cases after the auto-scroll into view.
-  const firstRowStatus = await page.evaluate((dayKey) => {
-    const row = document.querySelector(
-      `[data-testid="matches-day-section"][data-day-key="${dayKey}"] [data-testid="match-row"]`
+  // The anchor section is the day-bucket that contains the live or next
+  // match. Earlier rows in that bucket can legitimately be 'past' (e.g. an
+  // earlier kickoff on the same day that's already started) — the section
+  // is still the correct anchor section. So instead of asserting on the
+  // very first row, we find the first 'live'/'next' row in the section
+  // and assert its status.
+  //
+  // This became load-bearing after the FIFA schedule re-sync (PR3) — the
+  // corrected kickoff times put multiple MD4 group matches on 2026-06-17
+  // (m56 at 01:00 ART, m61 at 14:00 ART), so by the time the test runs in
+  // CI the section's first row is the already-started m56, not the live
+  // m61. Without this guard the test fails on any day with ≥ 2 group
+  // matches where the earlier kickoff is past.
+  const anchorRowStatus = await page.evaluate((dayKey) => {
+    const rows = Array.from(
+      document.querySelectorAll(
+        `[data-testid="matches-day-section"][data-day-key="${dayKey}"] [data-testid="match-row"]`,
+      ),
     );
-    return row ? row.getAttribute('data-match-status') : null;
+    const liveOrNext = rows.find((r) => {
+      const s = r.getAttribute('data-match-status');
+      return s === 'live' || s === 'next';
+    });
+    return liveOrNext ? liveOrNext.getAttribute('data-match-status') : null;
   }, anchorDay);
-  expect(['live', 'next']).toContain(firstRowStatus);
+  expect(['live', 'next']).toContain(anchorRowStatus);
 
   // Jump-to-today pill only renders when the user has scrolled away from
   // the anchor. We scroll to the very top of the page and assert it appears.

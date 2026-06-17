@@ -199,7 +199,10 @@ export function compareSemver(a: string, b: string): number {
 /**
  * Idempotent sync of the default collection with the latest manifest version.
  *
- *  - Not installed yet → first-time install (same as {@link seedDefaultCollection}).
+ *  - Not installed yet → no-op. First-time install is the job of
+ *    {@link seedDefaultCollection} and is gated by the `defaultCollectionSeeded`
+ *    settings flag. Splitting the two keeps this function side-effect-free
+ *    for users / tests that have explicitly opted out of the WC26 auto-seed.
  *  - Installed at a *newer* version than the manifest → no-op (never downgrade).
  *  - Installed at the same version → no-op.
  *  - Installed at an *older* version than the manifest → re-install the catalog
@@ -208,8 +211,8 @@ export function compareSemver(a: string, b: string): number {
  *    untouched, so existing users keep their progress.
  *
  * Safe to call on every app launch. Returns a summary describing what
- * happened, or null if the manifest has no entry for the default collection.
- * Throws on network/parse failure so the caller can surface / retry.
+ * happened, or null if there was nothing to do. Throws on network/parse
+ * failure so the caller can surface / retry.
  */
 export async function syncDefaultCollection(
   signal?: AbortSignal
@@ -219,11 +222,12 @@ export async function syncDefaultCollection(
   if (!entry) return null;
 
   const existing = await db.collections.get(DEFAULT_COLLECTION_ID);
-  if (!existing) {
-    const pkg = await fetchPackage(entry, signal);
-    const created = await installPackage(pkg);
-    return { collection: created, updated: true };
-  }
+  // No prior install: leave the first-time install to seedDefaultCollection.
+  // Doing it here would clobber setups that opted out of the auto-seed via
+  // `defaultCollectionSeeded: true` (notably the E2E suite, where each
+  // scenario installs only the collection it actually exercises and would
+  // otherwise be polluted by the 980 WC26 stickers).
+  if (!existing) return null;
 
   if (compareSemver(entry.version, existing.version) <= 0) {
     return null;

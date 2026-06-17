@@ -188,16 +188,20 @@ describe('syncDefaultCollection', () => {
     );
   }
 
-  it('installs the default collection on first run', async () => {
+  it('is a no-op when the default collection is not installed yet', async () => {
+    // First-time install is the job of `seedDefaultCollection` (gated by the
+    // `defaultCollectionSeeded` settings flag). `syncDefaultCollection` is
+    // for *re-syncing* an existing install when the manifest version moves
+    // forward, so it must not first-time-install — otherwise it would
+    // clobber E2E setups that have explicitly opted out of the WC26 seed.
     stubManifestEntry({
       id: DEFAULT_COLLECTION_ID,
       file: 'wc.json',
       version: '2.0.0',
     });
     const result = await syncDefaultCollection();
-    expect(result?.updated).toBe(true);
-    expect(result?.collection.version).toBe('2.0.0');
-    expect(await isInstalled(DEFAULT_COLLECTION_ID)).toBe(true);
+    expect(result).toBeNull();
+    expect(await isInstalled(DEFAULT_COLLECTION_ID)).toBe(false);
   });
 
   it('is a no-op when the installed version is current', async () => {
