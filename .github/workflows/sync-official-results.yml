@@ -19,8 +19,13 @@ name: Sync official WC26 results
 
 on:
   schedule:
-    - cron: '0 16-23 * * *'
-    - cron: '0 0-5 * * *'
+    # Bump de hourly → cada 15 min en la ventana de partidos para bajar
+    # la latencia entre el FT real y la disponibilidad del JSON en el
+    # frontend. openfootball no tiene rate limit así que el costo extra
+    # de runs (14 → 56/día) es despreciable. Lag esperado después del
+    # FT: 0-15 min (antes 0-60 min).
+    - cron: '*/15 16-23 * * *'
+    - cron: '*/15 0-5 * * *'
   workflow_dispatch:
 
 jobs:
