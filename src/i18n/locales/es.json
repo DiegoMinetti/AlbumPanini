@@ -438,7 +438,7 @@
     "jumpToToday": "Ir a hoy",
     "refresh": "Actualizar resultados FIFA",
     "refreshError": "No se pudo sincronizar: {{error}}",
-    "nextStartsIn": "Próximo: {{countdown}}",
+    "nextStartsIn": "Próximo en {{countdown}}",
     "newResult": "Nuevo",
     "filterAria": "Filtrar partidos por estado",
     "filter": {

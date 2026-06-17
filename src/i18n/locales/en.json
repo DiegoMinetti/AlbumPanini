@@ -438,7 +438,7 @@
     "jumpToToday": "Jump to today",
     "refresh": "Refresh FIFA results",
     "refreshError": "Sync failed: {{error}}",
-    "nextStartsIn": "Next: {{countdown}}",
+    "nextStartsIn": "Next in {{countdown}}",
     "newResult": "New",
     "filterAria": "Filter matches by status",
     "filter": {

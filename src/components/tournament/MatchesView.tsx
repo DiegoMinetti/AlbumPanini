@@ -24,6 +24,7 @@ import {
   formatWeekdayInZone,
   safeTimeZone,
 } from '@/utils/timeZone';
+import { formatCountdown } from '@/utils/countdown';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { Icon } from '@/components/ui/Icon';
 import {
@@ -169,33 +170,11 @@ function buildSections(
  *  - < 24 h  → "En 4 h 15 min"
  *  - >= 1 d  → "En 2 d 4 h"
  *  - already started → ""
+ *
+ * (Implementation moved to `@/utils/countdown` so it can be unit-tested
+ *  without mounting React. The helper returns just the time portion; the
+ *  "En"/"in" prefix comes from the i18n string `matches.nextStartsIn`.)
  */
-function formatCountdown(
-  kickoffMs: number,
-  now: number,
-  locale: string
-): string {
-  const diff = kickoffMs - now;
-  if (diff <= 0) return '';
-  const totalMin = Math.floor(diff / 60_000);
-  const totalSec = Math.floor(diff / 1000);
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-  if (totalMin < 60) {
-    return rtf.format(Math.round(totalSec), 'second').replace('in ', 'En ');
-  }
-  if (totalMin < 60 * 24) {
-    const h = Math.floor(totalMin / 60);
-    const m = totalMin % 60;
-    return m === 0
-      ? rtf.format(h, 'hour').replace('in ', 'En ')
-      : `${'En '}${h} h ${m} min`;
-  }
-  const d = Math.floor(totalMin / (60 * 24));
-  const h = Math.floor((totalMin % (60 * 24)) / 60);
-  return h === 0
-    ? rtf.format(d, 'day').replace('in ', 'En ')
-    : `${'En '}${d} d ${h} h`;
-}
 
 const M3_NUMBER_CLS =
   'h-9 w-10 rounded-md border border-outline-variant bg-transparent text-center ' +
@@ -764,7 +743,7 @@ export function MatchesView({
     [sections]
   );
   const nextCountdown = nextEntry
-    ? formatCountdown(nextEntry.kickoffMs, now, locale)
+    ? formatCountdown(nextEntry.kickoffMs, now)
     : '';
 
   // ===== New-result detection =====
