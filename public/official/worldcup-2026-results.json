@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-18T20:59:50.952Z",
+  "generatedAt": "2026-06-18T21:48:46.114Z",
   "matches": [
     {
       "id": "m1",
@@ -91,8 +91,11 @@
     },
     {
       "id": "m9",
-      "status": "SCHEDULED",
+      "homeGoals": 4,
+      "awayGoals": 1,
+      "status": "FT",
       "kickoff": "2026-06-18T12:00:00.000-07:00",
+      "finishedAt": "2026-06-18T12:00:00.000-07:00",
       "venue": "Los Angeles (Inglewood)",
       "group": "B",
       "stage": "group",
