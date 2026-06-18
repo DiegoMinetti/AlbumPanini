@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-18T03:26:20.294Z",
+  "generatedAt": "2026-06-18T05:09:26.009Z",
   "matches": [
     {
       "id": "m1",
@@ -616,8 +616,11 @@
     },
     {
       "id": "m62",
-      "status": "SCHEDULED",
+      "homeGoals": 1,
+      "awayGoals": 3,
+      "status": "FT",
       "kickoff": "2026-06-17T20:00:00.000-06:00",
+      "finishedAt": "2026-06-17T20:00:00.000-06:00",
       "venue": "Mexico City",
       "group": "K",
       "stage": "group",
