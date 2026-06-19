@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-19T21:09:11.225Z",
+  "generatedAt": "2026-06-19T21:40:56.298Z",
   "matches": [
     {
       "id": "m1",
@@ -220,8 +220,11 @@
     },
     {
       "id": "m21",
-      "status": "SCHEDULED",
+      "homeGoals": 2,
+      "awayGoals": 0,
+      "status": "FT",
       "kickoff": "2026-06-19T12:00:00.000-07:00",
+      "finishedAt": "2026-06-19T12:00:00.000-07:00",
       "venue": "Seattle",
       "group": "D",
       "stage": "group",
