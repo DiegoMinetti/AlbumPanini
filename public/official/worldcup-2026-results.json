@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-19T23:37:52.712Z",
+  "generatedAt": "2026-06-20T00:08:57.729Z",
   "matches": [
     {
       "id": "m1",
@@ -160,8 +160,11 @@
     },
     {
       "id": "m15",
-      "status": "SCHEDULED",
+      "homeGoals": 0,
+      "awayGoals": 1,
+      "status": "FT",
       "kickoff": "2026-06-19T18:00:00.000-04:00",
+      "finishedAt": "2026-06-19T18:00:00.000-04:00",
       "venue": "Boston (Foxborough)",
       "group": "C",
       "stage": "group",
