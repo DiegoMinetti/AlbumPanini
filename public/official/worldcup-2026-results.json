@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-21T01:03:34.655Z",
+  "generatedAt": "2026-06-21T02:04:28.765Z",
   "matches": [
     {
       "id": "m1",
@@ -304,8 +304,11 @@
     },
     {
       "id": "m28",
-      "status": "SCHEDULED",
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "status": "FT",
       "kickoff": "2026-06-20T19:00:00.000-05:00",
+      "finishedAt": "2026-06-20T19:00:00.000-05:00",
       "venue": "Kansas City",
       "group": "E",
       "stage": "group",
