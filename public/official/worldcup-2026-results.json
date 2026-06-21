@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-21T17:51:13.209Z",
+  "generatedAt": "2026-06-21T18:32:47.537Z",
   "matches": [
     {
       "id": "m1",
@@ -484,8 +484,11 @@
     },
     {
       "id": "m45",
-      "status": "SCHEDULED",
+      "homeGoals": 4,
+      "awayGoals": 0,
+      "status": "FT",
       "kickoff": "2026-06-21T12:00:00.000-04:00",
+      "finishedAt": "2026-06-21T12:00:00.000-04:00",
       "venue": "Atlanta",
       "group": "H",
       "stage": "group",
