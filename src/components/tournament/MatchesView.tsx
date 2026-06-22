@@ -858,7 +858,11 @@ export function MatchesView({
     <div className="relative flex flex-col gap-4">
       <div
         data-testid="matches-filter-bar"
-        className="sticky top-[var(--app-topbar-h,0px)] z-20 -mx-3
+        // The tournament tab bar (Grupos / Llaves / Partidos / Puntos)
+        // is itself sticky at top-[app-topbar-h]. Stack this filter bar
+        // right under it so the two sticky bars don't overlap. 56px =
+        // 48px M3 min-h-tap + 8px py-1.5 (4 each side) of the tab bar.
+        className="sticky top-[calc(var(--app-topbar-h,0px)+56px)] z-20 -mx-3
           bg-surface/85 px-3 pb-2 pt-1.5 backdrop-blur supports-[backdrop-filter]:bg-surface/65"
       >
         <StatusFilterChips

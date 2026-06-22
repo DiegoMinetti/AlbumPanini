@@ -35,6 +35,14 @@ adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - **DB schema v4**: nueva tabla `appVersions` (`src/db/migrations.ts`).
+- **Sticky tournament tab bar**: el menú de Grupos / Llaves / Partidos
+  / Puntos queda fijo arriba del viewport al hacer scroll. Se apoya
+  en el top bar con `var(--app-topbar-h,0px)`, fondo translúcido +
+  blur para que el contenido pase por debajo sin ruido visual.
+- **Matches filter bar apilada bajo los tabs**: el filtro de estado de
+  Partidos ahora se apila debajo del tab bar sticky
+  (`top-[calc(app-topbar-h+56px)]`), en vez de pelearse por la misma
+  posición.
 
 - **DB schema v4**: nueva tabla `appVersions` (`src/db/migrations.ts`).
   Cada row registra un build que el usuario instaló (SHA + version +

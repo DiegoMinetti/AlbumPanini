@@ -64,17 +64,24 @@ export function TournamentPage() {
         activeScenario={activeScenario}
       />
 
-      <SegmentedControl<Tab>
-        ariaLabel={t('tournament.title')}
-        options={[
-          { value: 'groups', label: t('tournament.groups') },
-          { value: 'bracket', label: t('tournament.bracket') },
-          { value: 'matches', label: t('tournament.matches') },
-          { value: 'dashboard', label: t('tournament.dashboard') },
-        ]}
-        value={tab}
-        onChange={setTab}
-      />
+      <div
+        data-testid="tournament-tabs-bar"
+        className="sticky top-[var(--app-topbar-h,0px)] z-20 -mx-3
+          bg-surface/85 px-3 py-1.5 backdrop-blur
+          supports-[backdrop-filter]:bg-surface/65"
+      >
+        <SegmentedControl<Tab>
+          ariaLabel={t('tournament.title')}
+          options={[
+            { value: 'groups', label: t('tournament.groups') },
+            { value: 'bracket', label: t('tournament.bracket') },
+            { value: 'matches', label: t('tournament.matches') },
+            { value: 'dashboard', label: t('tournament.dashboard') },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
+      </div>
 
       {tab === 'groups' ? (
         <GroupsView
