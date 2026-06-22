@@ -22,6 +22,30 @@ adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed (PR A — bracket R32/R16 alineado con FIFA Regulations Anexo C)
+
+- `enrichment/src/build-fixture.ts` — el array `r32` (líneas 247-265 antes)
+  usaba un ordenamiento genérico `1X vs T_N` que NO corresponde al formato
+  oficial del Mundial 2026. Reemplazado por el bracket del Anexo C de FIFA:
+  8 partidos `1X vs 3{Y,Z,...}` con el set de grupos elegibles para el
+  "mejor tercero" (p.ej. M74 = `1E vs 3ABCDF` = ganador E vs mejor tercero
+  de {A,B,C,D,F}). Slots runner-up y winner-vs-winner mantienen los
+  formatos clásicos `1A..2L`.
+- `enrichment/src/build-fixture.ts` — el lazo de R16 generaba pareo
+  secuencial `W73↔W74`, `W75↔W76`, etc., que tampoco es FIFA-correcto. El
+  lado izquierdo del bracket debe cruzar `W73↔W75`, `W74↔W77`, `W76↔W78`;
+  el derecho queda secuencial como estaba.
+- `public/collections/worldcup-2026.json` — regenerado desde el script
+  actualizado. Resultado: M86 ahora resuelve `1J vs 2H` (Argentina vs
+  Uruguay), no `1J vs 2I` (Argentina vs Francia) como antes.
+
+**Datos de usuario:** los picks existentes en IndexedDB (escenarios,
+resultados de grupos, picks manuales de llave) NO se modifican ni se
+eliminan. Slots viejos como `T1`-`T8` o `2C`-`2H` quedan en la DB sin
+match referenciándolos, pero el resolver PR B los sigue entendiendo si el
+usuario quiere revisarlos. Slots nuevos `3[A-L]+` empiezan vacíos — el
+usuario puede hacer pick manual cuando quiera.
+
 ### Planned (ver [ROADMAP.md](./ROADMAP.md))
 
 - Reactivar sección "My QR" en `ExchangePage` (TD-001).

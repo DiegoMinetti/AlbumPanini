@@ -21,8 +21,15 @@ import { ROOT } from './config.js';
  * local del estadio).
  *
  * El bracket del formato de 48 equipos es matemático y consistente: 32
- * clasificados → R32 → R16 → QF → SF → 3er puesto → final. La combinación de
- * "mejores terceros" sigue el ordenamiento T1..T8 estándar publicado por FIFA.
+ * clasificados → R32 → R16 → QF → SF → 3er puesto → final. Los slots del R32
+ * siguen FIFA Regulations Anexo C: cada partido del R32 entre un ganador y
+ * el "mejor tercero" se codifica como `3[A-L]+` con el set de grupos
+ * elegibles (p.ej. `3CEFHI` = mejor tercero de {C,E,F,H,I}). Los partidos
+ * runner-up vs runner-up y ganador vs ganador usan los slots clásicos
+ * `1A`..`2L`. La asignación final del tercero a un slot concreto la decide
+ * la fila del Anexo C correspondiente al set de 8 grupos que efectivamente
+ * clasificó; mientras esa fila no se publique, el resolver devuelve
+ * `undefined` cuando hay ambigüedad (1 candidato = resuelve; 2+ = defer).
  *
  * Los resultados oficiales (goles, penales) NO se tocan acá: viven en el store
  * `official_results` que sincroniza la GitHub Action (ver PR2).
@@ -242,26 +249,47 @@ function buildGroupMatches(
   return matches;
 }
 
-/** Bracket del formato de 48 equipos. Slots simbólicos resueltos en runtime. */
+/**
+ * Bracket del formato de 48 equipos. Slots simbólicos resueltos en runtime
+ * por `tournamentService.ts`. Slots `3[A-L]+` se decodifican vía el ranking
+ * de mejores terceros y la fila del Anexo C que corresponda.
+ */
 function buildKnockoutMatches(): Match[] {
-  // 16vos (R32): 12 ganadores (1X), 12 segundos (2X), 8 mejores terceros (T1-8).
+  // R32 — FIFA Regulations Anexo C. Orden dentro de cada slot de "mejor
+  // tercero" (`3[A-L]+`) es el set oficial de grupos elegibles que publica
+  // FIFA. La asignación de un equipo concreto al slot depende del Anexo C
+  // (495 combinaciones según qué 8 grupos clasifican) — el resolver devuelve
+  // `undefined` mientras esa fila no esté disponible.
   const r32: Array<[string, string]> = [
-    ['1A', 'T1'],
-    ['1B', 'T2'],
-    ['1C', 'T3'],
-    ['1D', 'T4'],
-    ['1E', 'T5'],
-    ['1F', 'T6'],
-    ['1G', 'T7'],
-    ['1H', 'T8'],
-    ['2A', '2B'],
-    ['2C', '2D'],
-    ['2E', '2F'],
-    ['2G', '2H'],
-    ['1I', '2J'],
-    ['1J', '2I'],
-    ['1K', '2L'],
-    ['1L', '2K'],
+    ['2A', '2B'], // M73 — runners-up A vs B
+    ['1E', '3ABCDF'], // M74 — ganador E vs mejor 3º de {A,B,C,D,F}
+    ['1F', '2C'], // M75
+    ['1C', '2F'], // M76 — cruzados C vs F
+    ['1I', '3CDFGH'], // M77
+    ['2E', '2I'], // M78 — runners-up
+    ['1A', '3CEFHI'], // M79
+    ['1L', '3EHIJK'], // M80
+    ['1D', '3BEFIJ'], // M81
+    ['1G', '3AEHIJ'], // M82
+    ['2K', '2L'], // M83 — runners-up
+    ['1H', '2J'], // M84
+    ['1B', '3EFGIJ'], // M85
+    ['1J', '2H'], // M86 — cruzados J vs H
+    ['1K', '3DEIJL'], // M87
+    ['2D', '2G'], // M88 — runners-up
+  ];
+
+  // R16 — M89-96. Lado izquierdo del bracket: FIFA cruza W73↔W75, W74↔W77,
+  // W76↔W78 (no secuencial). Lado derecho queda secuencial como antes.
+  const r16: Array<[string, string]> = [
+    ['W73', 'W75'], // M89
+    ['W74', 'W77'], // M90
+    ['W76', 'W78'], // M91
+    ['W79', 'W80'], // M92
+    ['W81', 'W82'], // M93
+    ['W83', 'W84'], // M94
+    ['W85', 'W86'], // M95
+    ['W87', 'W88'], // M96
   ];
 
   const matches: Match[] = [];
@@ -288,7 +316,8 @@ function buildKnockoutMatches(): Match[] {
     });
   };
 
-  // R32: M73-88 (28 jun - 2 jul).
+  // R32: M73-88 (28 jun - 3 jul). Mismo reparto por día que el bracket
+  // oficial FIFA (3-3-3-3-3-1).
   r32.forEach(([h, a], i) => {
     const day = 28 + Math.floor(i / 3);
     const date = day <= 30 ? iso(2026, 6, day) : iso(2026, 7, day - 30);
@@ -296,9 +325,9 @@ function buildKnockoutMatches(): Match[] {
   });
   void HOST_CITIES; // tip: mantener referencia para tree-shaking futuro
   // R16: M89-96 (3-7 jul).
-  for (let i = 0; i < 8; i += 1) {
-    add(89 + i, 'r16', `W${73 + i * 2}`, `W${74 + i * 2}`, iso(2026, 7, 3 + Math.floor(i / 2)));
-  }
+  r16.forEach(([h, a], i) => {
+    add(89 + i, 'r16', h, a, iso(2026, 7, 3 + Math.floor(i / 2)));
+  });
   // 4tos: M97-100 (9-11 jul).
   for (let i = 0; i < 4; i += 1) {
     add(97 + i, 'qf', `W${89 + i * 2}`, `W${90 + i * 2}`, iso(2026, 7, 9 + Math.floor(i / 2)));
