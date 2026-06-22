@@ -48,6 +48,8 @@ export interface TournamentData {
 const EMPTY_STANDINGS: AllStandings = {
   byGroup: new Map(),
   bestThirds: [],
+  thirdByGroup: new Map(),
+  qualifyingGroups: new Set(),
 };
 
 /**

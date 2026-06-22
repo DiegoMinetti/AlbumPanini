@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>World Cup 2026 — Knockout Bracket Audit</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --surface: #121933;
+    --surface-2: #1a2347;
+    --line: #2a3565;
+    --text: #e8ecf7;
+    --text-dim: #a3accb;
+    --accent: #6ee7ff;
+    --accent-2: #a78bfa;
+    --good: #34d399;
+    --bad: #f87171;
+    --warn: #fbbf24;
+    --ok: #34d399;
+    --mx: #006847;
+    --br: #fcd11600;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, -apple-system, "Segoe UI", Inter, system-ui, sans-serif;
+    background: radial-gradient(1200px 800px at 20% -10%, #1f2a5a 0%, transparent 60%),
+                radial-gradient(1000px 700px at 110% 10%, #2a1d4e 0%, transparent 60%),
+                var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+    min-height: 100vh;
+  }
+  header {
+    padding: 32px 24px 16px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  header h1 {
+    margin: 0 0 4px;
+    font-size: clamp(24px, 3.5vw, 38px);
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .stat .label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+  .stat .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .stat.bad .value { color: var(--bad); }
+  .stat.good .value { color: var(--good); }
+  .stat.warn .value { color: var(--warn); }
+  section {
+    margin: 36px 0;
+  }
+  h2 {
+    font-size: 20px;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  h2 .small { font-size: 13px; color: var(--text-dim); font-weight: normal; margin-left: 8px; }
+  .legend {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-size: 12px; color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 10px; height: 10px; border-radius: 2px; }
+  .sw-bad { background: var(--bad); }
+  .sw-good { background: var(--good); }
+  .sw-warn { background: var(--warn); }
+
+  /* Bracket grid */
+  .bracket-wrap {
+    overflow-x: auto;
+    padding-bottom: 12px;
+  }
+  .bracket {
+    display: grid;
+    grid-template-columns: 220px 220px 220px 220px 220px;
+    gap: 14px;
+    min-width: 1100px;
+  }
+  .col h3 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    text-align: center;
+  }
+  .match {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    position: relative;
+    font-size: 13px;
+  }
+  .match .head {
+    background: var(--surface-2);
+    padding: 6px 10px;
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .match .head .num { font-weight: 700; color: var(--text); }
+  .match .row {
+    padding: 8px 10px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .match .row:first-of-type { border-top: 0; }
+  .match .slot { color: var(--text-dim); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+  .match .team { font-weight: 600; color: var(--text); text-align: right; }
+  .match.broken { border-color: rgba(248, 113, 113, 0.4); }
+  .match.broken .row { background: rgba(248, 113, 113, 0.06); }
+  .match.fixed { border-color: rgba(110, 231, 255, 0.4); }
+  .match.correct { border-color: rgba(52, 211, 153, 0.4); }
+  .match .row.currentslot .slot { color: var(--warn); }
+  .match .row.officialslot .slot { color: var(--accent); }
+  .badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge.bad { background: rgba(248, 113, 113, 0.18); color: var(--bad); }
+  .badge.good { background: rgba(52, 211, 153, 0.18); color: var(--good); }
+  .badge.note { background: rgba(167, 139, 250, 0.18); color: var(--accent-2); }
+
+  /* Best thirds table */
+  .thirds {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .third {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .third .rank {
+    font-family: ui-monospace, monospace;
+    font-size: 18px;
+    color: var(--accent);
+    font-weight: 700;
+    width: 36px;
+  }
+  .third.in { border-color: rgba(52, 211, 153, 0.35); background: rgba(52, 211, 153, 0.06); }
+  .third.out { opacity: 0.55; }
+  .third .name { flex: 1; font-weight: 600; }
+  .third .meta { color: var(--text-dim); font-size: 12px; }
+  .third .check { color: var(--good); font-weight: 700; }
+  .third .cross { color: var(--bad); }
+
+  /* Projection */
+  .projection {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin: 12px 0;
+  }
+  .projection h4 {
+    margin: 0 0 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 14px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .projection h4 .num { color: var(--accent); font-weight: 700; }
+  .projection .vs {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 12px;
+    align-items: center;
+  }
+  .projection .side {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--surface-2);
+  }
+  .projection .side .label {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: ui-monospace, monospace;
+  }
+  .projection .side .team {
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .projection .vs-sep {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .projection .side.third .team.empty { color: var(--warn); font-style: italic; }
+
+  /* Diff table */
+  table.diff {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--surface);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  table.diff th, table.diff td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+  }
+  table.diff th {
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+  table.diff tr:last-child td { border-bottom: 0; }
+  table.diff td.bad { color: var(--bad); }
+  table.diff td.good { color: var(--good); }
+  table.diff td.slot { font-family: ui-monospace, monospace; color: var(--accent); font-size: 12px; }
+  table.diff td.warn { background: rgba(251, 191, 36, 0.08); }
+
+  .footer {
+    color: var(--text-dim);
+    font-size: 12px;
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+    margin-top: 24px;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>World Cup 2026 — Knockout Bracket Audit</h1>
+    <p>Comparación del bracket actual en AlbumPanini vs el formato oficial FIFA (Regulations Annex C).
+       Snapshot de standings al 19 jun 2026 (MD1 + MD2 cerrados, MD3 proyectado).</p>
+  </header>
+
+  <main>
+    <section>
+      <div class="summary">
+        <div class="stat bad">
+          <div class="label">R32 correctos</div>
+          <div class="value">1 / 16</div>
+        </div>
+        <div class="stat bad">
+          <div class="label">R16 correctos</div>
+          <div class="value">5 / 8</div>
+        </div>
+        <div class="stat good">
+          <div class="label">QF / SF / Final</div>
+          <div class="value">8 / 8</div>
+        </div>
+        <div class="stat warn">
+          <div class="label">Combinaciones FIFA</div>
+          <div class="value">495</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Diff visual — R32 y R16 lado a lado <span class="small">rojo = actual incorrecto, celeste = FIFA correcto</span></h2>
+      <div class="legend">
+        <span><span class="swatch sw-bad"></span>Slot actual (código)</span>
+        <span><span class="swatch" style="background:var(--accent)"></span>Slot oficial FIFA</span>
+        <span><span class="swatch sw-good"></span>Partido correcto (coincide)</span>
+      </div>
+      <div class="bracket-wrap">
+        <div class="bracket">
+
+          <!-- COL 1: R32 (split 8 / 8) -->
+          <div class="col">
+            <h3>R32 — mitad izq.</h3>
+
+            <div class="match broken">
+              <div class="head"><span class="num">M73</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">1A vs T1</span></div>
+              <div class="row officialslot"><span class="slot">2A vs 2B</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M74</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">1B vs T2</span></div>
+              <div class="row officialslot"><span class="slot">1E vs 3º{A,B,C,D,F}</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M75</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">1C vs T3</span></div>
+              <div class="row officialslot"><span class="slot">1F vs 2C</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M76</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">1D vs T4</span></div>
+              <div class="row officialslot"><span class="slot">1C vs 2F</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M77</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">1E vs T5</span></div>
+              <div class="row officialslot"><span class="slot">1I vs 3º{C,D,F,G,H}</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M78</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">1F vs T6</span></div>
+              <div class="row officialslot"><span class="slot">2E vs 2I</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M79</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">1G vs T7</span></div>
+              <div class="row officialslot"><span class="slot">1A vs 3º{C,E,F,H,I}</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M80</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">1H vs T8</span></div>
+              <div class="row officialslot"><span class="slot">1L vs 3º{E,H,I,J,K}</span></div>
+            </div>
+          </div>
+
+          <div class="col">
+            <h3>R32 — mitad der.</h3>
+
+            <div class="match correct">
+              <div class="head"><span class="num">M81</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">2A vs 2B  →  1D vs 3º{B,E,F,I,J}</span></div>
+              <div class="row officialslot"><span class="slot">1D vs 3º{B,E,F,I,J}</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M82</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">2C vs 2D</span></div>
+              <div class="row officialslot"><span class="slot">1G vs 3º{A,E,H,I,J}</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M83</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">2E vs 2F</span></div>
+              <div class="row officialslot"><span class="slot">2K vs 2L</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M84</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">2G vs 2H</span></div>
+              <div class="row officialslot"><span class="slot">1H vs 2J</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M85</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">1I vs 2J</span></div>
+              <div class="row officialslot"><span class="slot">1B vs 3º{E,F,G,I,J}</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M86</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">1J vs 2I</span></div>
+              <div class="row officialslot"><span class="slot">1J vs 2H</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M87</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">1K vs 2L</span></div>
+              <div class="row officialslot"><span class="slot">1K vs 3º{D,E,I,J,L}</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M88</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">1L vs 2K</span></div>
+              <div class="row officialslot"><span class="slot">2D vs 2G</span></div>
+            </div>
+          </div>
+
+          <!-- COL 3: R16 -->
+          <div class="col">
+            <h3>R16 — izq.</h3>
+
+            <div class="match broken">
+              <div class="head"><span class="num">M89</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">W73 vs W74</span></div>
+              <div class="row officialslot"><span class="slot">W73 vs W75</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M90</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">W75 vs W76</span></div>
+              <div class="row officialslot"><span class="slot">W74 vs W77</span></div>
+            </div>
+            <div class="match broken">
+              <div class="head"><span class="num">M91</span><span class="badge bad">❌</span></div>
+              <div class="row currentslot"><span class="slot">W77 vs W78</span></div>
+              <div class="row officialslot"><span class="slot">W76 vs W78</span></div>
+            </div>
+
+            <div class="match correct">
+              <div class="head"><span class="num">M92</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">W79 vs W80</span></div>
+            </div>
+          </div>
+
+          <div class="col">
+            <h3>R16 — der.</h3>
+
+            <div class="match correct">
+              <div class="head"><span class="num">M93</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">W81 vs W82</span></div>
+            </div>
+            <div class="match correct">
+              <div class="head"><span class="num">M94</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">W83 vs W84</span></div>
+            </div>
+            <div class="match correct">
+              <div class="head"><span class="num">M95</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">W85 vs W86</span></div>
+            </div>
+            <div class="match correct">
+              <div class="head"><span class="num">M96</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">W87 vs W88</span></div>
+            </div>
+          </div>
+
+          <!-- COL 5: QF + SF + Final -->
+          <div class="col">
+            <h3>QF / SF / Final</h3>
+
+            <div class="match correct">
+              <div class="head"><span class="num">M97 QF</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">W89 vs W90</span></div>
+            </div>
+            <div class="match correct">
+              <div class="head"><span class="num">M98 QF</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">W91 vs W92</span></div>
+            </div>
+            <div class="match correct">
+              <div class="head"><span class="num">M99 QF</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">W93 vs W94</span></div>
+            </div>
+            <div class="match correct">
+              <div class="head"><span class="num">M100 QF</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">W95 vs W96</span></div>
+            </div>
+            <div class="match correct">
+              <div class="head"><span class="num">M101 SF</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">W97 vs W98</span></div>
+            </div>
+            <div class="match correct">
+              <div class="head"><span class="num">M102 SF</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">W99 vs W100</span></div>
+            </div>
+            <div class="match correct">
+              <div class="head"><span class="num">M103 3°</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">L101 vs L102</span></div>
+            </div>
+            <div class="match correct">
+              <div class="head"><span class="num">M104 Final</span><span class="badge good">✓</span></div>
+              <div class="row"><span class="slot">W101 vs W102</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Best thirds proyectados <span class="small">clasifican los 8 con mejor Pts → GD → GF (proyección MD3)</span></h2>
+      <div class="thirds">
+        <div class="third in"><span class="rank">T1</span><span class="name">Paraguay</span><span class="meta">Gr. D · 6 pts</span><span class="check">✓</span></div>
+        <div class="third in"><span class="rank">T2</span><span class="name">Escocia</span><span class="meta">Gr. C · 5 pts</span><span class="check">✓</span></div>
+        <div class="third in"><span class="rank">T3</span><span class="name">Senegal</span><span class="meta">Gr. I · 5 pts</span><span class="check">✓</span></div>
+        <div class="third in"><span class="rank">T4</span><span class="name">Costa de Marfil</span><span class="meta">Gr. E · 4 pts</span><span class="check">✓</span></div>
+        <div class="third in"><span class="rank">T5</span><span class="name">Japón</span><span class="meta">Gr. F · 4 pts</span><span class="check">✓</span></div>
+        <div class="third in"><span class="rank">T6</span><span class="name">Irán</span><span class="meta">Gr. G · 3 pts</span><span class="check">✓</span></div>
+        <div class="third in"><span class="rank">T7</span><span class="name">Arabia Saudita</span><span class="meta">Gr. H · 3 pts</span><span class="check">✓</span></div>
+        <div class="third in"><span class="rank">T8</span><span class="name">Chequia</span><span class="meta">Gr. A · 2 pts</span><span class="check">✓</span></div>
+        <div class="third out"><span class="rank">T9</span><span class="name">Uzbekistán</span><span class="meta">Gr. K</span><span class="cross">✗</span></div>
+        <div class="third out"><span class="rank">T10</span><span class="name">Argelia</span><span class="meta">Gr. J</span><span class="cross">✗</span></div>
+        <div class="third out"><span class="rank">T11</span><span class="name">Croacia</span><span class="meta">Gr. L</span><span class="cross">✗</span></div>
+        <div class="third out"><span class="rank">T12</span><span class="name">Bosnia y Herz.</span><span class="meta">Gr. B</span><span class="cross">✗</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Proyección: equipo más probable por slot (R32) <span class="small">con bracket FIFA corregido + standings al 19 jun</span></h2>
+
+      <div class="projection">
+        <h4><span class="num">M73</span> 2A vs 2B</h4>
+        <div class="vs">
+          <div class="side"><div class="label">2º A</div><div class="team">Corea del Sur</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side"><div class="label">2º B</div><div class="team">Suiza</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M74</span> 1E vs 3º{A,B,C,D,F}</h4>
+        <div class="vs">
+          <div class="side"><div class="label">1º E</div><div class="team">Alemania</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side third"><div class="label">3º de {A,B,C,D,F}</div><div class="team">Chequia (A)</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M75</span> 1F vs 2C</h4>
+        <div class="vs">
+          <div class="side"><div class="label">1º F</div><div class="team">Suecia</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side"><div class="label">2º C</div><div class="team">Marruecos</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M76</span> 1C vs 2F</h4>
+        <div class="vs">
+          <div class="side"><div class="label">1º C</div><div class="team">Brasil</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side"><div class="label">2º F</div><div class="team">Países Bajos</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M77</span> 1I vs 3º{C,D,F,G,H}</h4>
+        <div class="vs">
+          <div class="side"><div class="label">1º I</div><div class="team">Francia</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side third"><div class="label">3º de {C,D,F,G,H}</div><div class="team">Escocia (C)</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M78</span> 2E vs 2I</h4>
+        <div class="vs">
+          <div class="side"><div class="label">2º E</div><div class="team">Ecuador</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side"><div class="label">2º I</div><div class="team">Noruega</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M79</span> 1A vs 3º{C,E,F,H,I}</h4>
+        <div class="vs">
+          <div class="side"><div class="label">1º A</div><div class="team">México</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side third"><div class="label">3º de {C,E,F,H,I}</div><div class="team">Escocia (C)</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M80</span> 1L vs 3º{E,H,I,J,K}</h4>
+        <div class="vs">
+          <div class="side"><div class="label">1º L</div><div class="team">Inglaterra</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side third"><div class="label">3º de {E,H,I,J,K}</div><div class="team">Costa de Marfil (E)</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M81</span> 1D vs 3º{B,E,F,I,J}</h4>
+        <div class="vs">
+          <div class="side"><div class="label">1º D</div><div class="team">Estados Unidos</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side third"><div class="label">3º de {B,E,F,I,J}</div><div class="team">Costa de Marfil (E)</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M82</span> 1G vs 3º{A,E,H,I,J}</h4>
+        <div class="vs">
+          <div class="side"><div class="label">1º G</div><div class="team">Bélgica</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side third"><div class="label">3º de {A,E,H,I,J}</div><div class="team">Chequia (A)</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M83</span> 2K vs 2L</h4>
+        <div class="vs">
+          <div class="side"><div class="label">2º K</div><div class="team">Portugal</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side"><div class="label">2º L</div><div class="team">Ghana</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M84</span> 1H vs 2J</h4>
+        <div class="vs">
+          <div class="side"><div class="label">1º H</div><div class="team">España</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side"><div class="label">2º J</div><div class="team">Austria</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M85</span> 1B vs 3º{E,F,G,I,J}</h4>
+        <div class="vs">
+          <div class="side"><div class="label">1º B</div><div class="team">Canadá</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side third"><div class="label">3º de {E,F,G,I,J}</div><div class="team">Costa de Marfil (E)</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M86</span> 1J vs 2H</h4>
+        <div class="vs">
+          <div class="side"><div class="label">1º J</div><div class="team">Argentina</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side"><div class="label">2º H</div><div class="team">Uruguay</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M87</span> 1K vs 3º{D,E,I,J,L}</h4>
+        <div class="vs">
+          <div class="side"><div class="label">1º K</div><div class="team">Colombia</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side third"><div class="label">3º de {D,E,I,J,L}</div><div class="team">Paraguay (D)</div></div>
+        </div>
+      </div>
+
+      <div class="projection">
+        <h4><span class="num">M88</span> 2D vs 2G</h4>
+        <div class="vs">
+          <div class="side"><div class="label">2º D</div><div class="team">Australia</div></div>
+          <div class="vs-sep">vs</div>
+          <div class="side"><div class="label">2º G</div><div class="team">Egipto</div></div>
+        </div>
+      </div>
+
+    </section>
+
+    <section>
+      <h2>Tabla diff completa <span class="small">slot actual vs slot FIFA, partido por partido</span></h2>
+      <table class="diff">
+        <thead>
+          <tr><th>#</th><th>Actual (código)</th><th>Oficial FIFA</th><th>Estado</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>M73</strong></td><td>1A vs T1</td><td class="slot">2A vs 2B</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M74</strong></td><td>1B vs T2</td><td class="slot">1E vs 3º{A,B,C,D,F}</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M75</strong></td><td>1C vs T3</td><td class="slot">1F vs 2C</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M76</strong></td><td>1D vs T4</td><td class="slot">1C vs 2F</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M77</strong></td><td>1E vs T5</td><td class="slot">1I vs 3º{C,D,F,G,H}</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M78</strong></td><td>1F vs T6</td><td class="slot">2E vs 2I</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M79</strong></td><td>1G vs T7</td><td class="slot">1A vs 3º{C,E,F,H,I}</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M80</strong></td><td>1H vs T8</td><td class="slot">1L vs 3º{E,H,I,J,K}</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M81</strong></td><td>2A vs 2B</td><td class="slot">1D vs 3º{B,E,F,I,J}</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M82</strong></td><td>2C vs 2D</td><td class="slot">1G vs 3º{A,E,H,I,J}</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M83</strong></td><td>2E vs 2F</td><td class="slot">2K vs 2L</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M84</strong></td><td>2G vs 2H</td><td class="slot">1H vs 2J</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M85</strong></td><td>1I vs 2J</td><td class="slot">1B vs 3º{E,F,G,I,J}</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M86</strong></td><td>1J vs 2I</td><td class="slot">1J vs 2H</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M87</strong></td><td>1K vs 2L</td><td class="slot">1K vs 3º{D,E,I,J,L}</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M88</strong></td><td>1L vs 2K</td><td class="slot">2D vs 2G</td><td class="bad">❌ mal</td></tr>
+          <tr><td colspan="4" style="background:rgba(255,255,255,0.04); font-size:11px; color:var(--text-dim); padding:6px 10px; text-align:center;">R16 — pareo izquierdo</td></tr>
+          <tr><td><strong>M89</strong></td><td>W73 vs W74</td><td class="slot">W73 vs W75</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M90</strong></td><td>W75 vs W76</td><td class="slot">W74 vs W77</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M91</strong></td><td>W77 vs W78</td><td class="slot">W76 vs W78</td><td class="bad">❌ mal</td></tr>
+          <tr><td><strong>M92–M96</strong></td><td colspan="2" style="text-align:center; color:var(--good)">todos correctos</td><td class="good">✓</td></tr>
+          <tr><td colspan="4" style="background:rgba(255,255,255,0.04); font-size:11px; color:var(--text-dim); padding:6px 10px; text-align:center;">QF / SF / Final</td></tr>
+          <tr><td><strong>M97–M104</strong></td><td colspan="2" style="text-align:center; color:var(--good)">todos correctos</td><td class="good">✓</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Plan de fix (3 PRs chiquitos) <span class="small">alineado con la preferencia de PRs chicas + OK explícito</span></h2>
+      <table class="diff">
+        <thead><tr><th>PR</th><th>Alcance</th><th>Archivos</th><th>Riesgo</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>A</strong></td>
+            <td>Cambiar el array <code>r32</code> y las parejas <code>r16</code> en <code>build-fixture.ts</code> para que coincidan con FIFA Annex C. Regenerar <code>worldcup-2026.json</code>. Sin cambios de runtime.</td>
+            <td><code>enrichment/src/build-fixture.ts</code>, <code>public/collections/worldcup-2026.json</code></td>
+            <td class="good">bajo</td>
+          </tr>
+          <tr>
+            <td><strong>B</strong></td>
+            <td>Extender el resolver: aceptar slots <code>3[A-L]+</code> en <code>tournamentService.ts</code>. Tests unitarios con ≥ 5 filas del Anexo C. Sin UI.</td>
+            <td><code>src/services/tournamentService.ts</code>, <code>src/services/tournamentService.test.ts</code></td>
+            <td class="good">bajo</td>
+          </tr>
+          <tr>
+            <td><strong>C</strong></td>
+            <td>UI: que <code>BracketView.tsx</code> muestre el set elegible cuando un slot es de mejor tercero condicional. Tooltip explicativo.</td>
+            <td><code>src/components/tournament/BracketView.tsx</code>, <code>KnockoutMatchRow.tsx</code></td>
+            <td class="good">bajo</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div class="footer">
+      Fuentes:
+      <a href="https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_knockout_stage">Wikipedia · 2026 FIFA WC knockout stage</a> ·
+      <a href="https://digitalhub.fifa.com/m/636f5c9c6f29771f/original/FWC2026_regulations_EN.pdf">FIFA Regulations PDF (Anexo C)</a> ·
+      <a href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/standings">FIFA Standings</a> ·
+      <a href="https://sports.stackexchange.com/questions/30289">Sports.SE: 3rd place bracket assignment</a>.
+      <br />
+      Datos: AlbumPanini <code>public/collections/worldcup-2026.json</code>, <code>enrichment/src/build-fixture.ts</code>, <code>src/services/tournamentService.ts</code>.
+      <br />
+      Proyección con standings al 19 jun 2026. MD3 proyectado — el orden final puede cambiar cuando se juegue la última fecha (24-27 jun).
+    </div>
+  </main>
+</body>
+</html>

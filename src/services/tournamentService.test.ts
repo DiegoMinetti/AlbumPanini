@@ -214,3 +214,177 @@ describe('createBracketResolver', () => {
     expect(resolver.resolveSlot('W73')).toBe('OVERRIDE');
   });
 });
+
+describe('best3rd-set slots (FIFA Annex C)', () => {
+  // Build a small "fake" tournament: 3 groups (A, B, C), each with 4 teams.
+  // We control points/GD so we know who finishes 3rd in each group.
+  const groupA: TournamentGroup = {
+    id: 'A',
+    teamIds: ['A1', 'A2', 'A3', 'A4'],
+  };
+  const groupB: TournamentGroup = {
+    id: 'B',
+    teamIds: ['B1', 'B2', 'B3', 'B4'],
+  };
+  const groupC: TournamentGroup = {
+    id: 'C',
+    teamIds: ['C1', 'C2', 'C3', 'C4'],
+  };
+
+  // Standard 4-team round-robin: 3 matchdays, 6 matches per group.
+  const pairings = [
+    [0, 1],
+    [2, 3],
+    [0, 2],
+    [1, 3],
+    [0, 3],
+    [1, 2],
+  ];
+
+  function groupFixtures(
+    g: TournamentGroup,
+    startN: number
+  ): TournamentMatch[] {
+    return pairings.map(([a, b], i) => ({
+      id: `${g.id}-m${startN + i}`,
+      matchNumber: startN + i,
+      stage: 'group',
+      group: g.id,
+      homeTeamId: g.teamIds[a],
+      awayTeamId: g.teamIds[b],
+    }));
+  }
+
+  const fixtures = [
+    ...groupFixtures(groupA, 1),
+    ...groupFixtures(groupB, 7),
+    ...groupFixtures(groupC, 13),
+  ];
+
+  function setResults(
+    rows: Array<[string, number, number]>
+  ): Map<string, StoredMatchResult> {
+    return new Map(
+      rows.map(([matchId, hg, ag]) => [matchId, result(matchId, hg, ag)])
+    );
+  }
+
+  // Targeted standings — every group: X1 7 pts (top), X2 7 pts (H2H loser),
+  // X3 3 pts, X4 0 pts. We then tweak each "X3" team's GD so that the
+  // best-3rd comparison across groups produces a known order:
+  //
+  //   A3 → 3 pts, GD  0    (best of the 3 thirds)
+  //   C3 → 3 pts, GD -1    (middle)
+  //   B3 → 3 pts, GD -4    (worst — out of top-2)
+  //
+  // With bestThirdsCount = 2: qualifying = {A, C}; B's 3rd is eliminated.
+  const results = setResults([
+    // Group A — A1+A2 tied on 7; A1 wins H2H (GD +2 vs +1).
+    ['A-m1', 1, 1], // A1 = A2 (draw)
+    ['A-m2', 2, 0], // A3 > A4
+    ['A-m3', 1, 0], // A1 > A3
+    ['A-m4', 2, 0], // A2 > A4
+    ['A-m5', 1, 0], // A1 > A4
+    ['A-m6', 1, 0], // A2 > A3   → A3 GD = 0 (2-0, 0-1, 0-1)
+    // Group B — B1+B2 tied on 7; B1 wins H2H (GD +6 vs +3). B3 finishes
+    // with 3 pts and GD -4 (1-0, 0-3, 0-2).
+    ['B-m7', 1, 1],
+    ['B-m8', 1, 0],
+    ['B-m9', 3, 0],
+    ['B-m10', 1, 0],
+    ['B-m11', 3, 0],
+    ['B-m12', 2, 0],
+    // Group C — C1+C2 tied on 7; C1 wins H2H. C3 finishes with 3 pts and
+    // GD -1 (2-0, 0-2, 1-2).
+    ['C-m13', 1, 1],
+    ['C-m14', 2, 0],
+    ['C-m15', 2, 0],
+    ['C-m16', 3, 0],
+    ['C-m17', 4, 0],
+    ['C-m18', 2, 1],
+  ]);
+
+  it('computeAllStandings exposes thirdByGroup and qualifyingGroups', () => {
+    const standings = computeAllStandings(
+      [groupA, groupB, groupC],
+      fixtures,
+      results,
+      2
+    );
+    expect(standings.thirdByGroup.get('A')?.teamId).toBe('A3');
+    expect(standings.thirdByGroup.get('B')?.teamId).toBe('B3');
+    expect(standings.thirdByGroup.get('C')?.teamId).toBe('C3');
+    // Top 2 thirds by (pts desc, GD desc): A3 (GD 0), C3 (GD -1).
+    expect(standings.bestThirds).toEqual(['A3', 'C3']);
+    expect(standings.qualifyingGroups).toEqual(new Set(['A', 'C']));
+  });
+
+  it('resolves `3[A-L]+` to the unique qualifying candidate (one of the listed qualifies)', () => {
+    // Slot `3AB` = best 3rd from {A, B}. Only A's 3rd is in top-2 → A3.
+    const standings = computeAllStandings(
+      [groupA, groupB, groupC],
+      fixtures,
+      results,
+      2
+    );
+    const resolver = createBracketResolver(
+      fixtures,
+      standings,
+      results,
+      new Map()
+    );
+    expect(resolver.resolveSlot('3AB')).toBe('A3');
+    expect(resolver.resolveSlot('3BC')).toBe('C3');
+  });
+
+  it('returns undefined for `3[A-L]+` when ≥2 listed groups qualify (ambiguous — defer)', () => {
+    // Both A3 and C3 are in top-2 → `3AC` is ambiguous; the resolver should
+    // not pick one for the user. Annex C / manual pick will decide later.
+    const standings = computeAllStandings(
+      [groupA, groupB, groupC],
+      fixtures,
+      results,
+      2
+    );
+    const resolver = createBracketResolver(
+      fixtures,
+      standings,
+      results,
+      new Map()
+    );
+    expect(resolver.resolveSlot('3AC')).toBeUndefined();
+  });
+
+  it('returns undefined for `3[A-L]+` when no listed group qualifies', () => {
+    // bestThirdsCount = 1 → only A3 qualifies (best GD). `3BC` lists only
+    // groups whose 3rds are out → no candidate → undefined.
+    const standings = computeAllStandings(
+      [groupA, groupB, groupC],
+      fixtures,
+      results,
+      1
+    );
+    expect(standings.qualifyingGroups).toEqual(new Set(['A']));
+    const resolver = createBracketResolver(
+      fixtures,
+      standings,
+      results,
+      new Map()
+    );
+    expect(resolver.resolveSlot('3BC')).toBeUndefined();
+  });
+
+  it('lets a manual pick override an ambiguous `3[A-L]+` slot', () => {
+    // `3AC` is ambiguous under the auto-resolver, but a stored pick for the
+    // exact slot string always wins (hybrid mode).
+    const standings = computeAllStandings(
+      [groupA, groupB, groupC],
+      fixtures,
+      results,
+      2
+    );
+    const picks = new Map([['3AC', 'FORCED']]);
+    const resolver = createBracketResolver(fixtures, standings, results, picks);
+    expect(resolver.resolveSlot('3AC')).toBe('FORCED');
+  });
+});

@@ -141,6 +141,18 @@ export interface AllStandings {
   byGroup: Map<string, StandingRow[]>;
   /** Ranked best third-placed teamIds (length = bestThirds), index 0 = T1. */
   bestThirds: string[];
+  /**
+   * Per-group 3rd-place row, regardless of whether it qualifies as a best
+   * third. Lets the resolver look up "the 3rd of group X" in O(1) when
+   * decoding a `3[A-L]+` slot (FIFA Annex C).
+   */
+  thirdByGroup: Map<string, StandingRow>;
+  /**
+   * Group ids whose 3rd-place finisher ranked inside the top-N best thirds.
+   * The resolver filters the candidate set of a `3[A-L]+` slot against this
+   * set to know whether each listed group actually has a 3rd playing on.
+   */
+  qualifyingGroups: Set<string>;
 }
 
 /** Compute every group's standings plus the ranked best third-placed teams. */
@@ -151,18 +163,24 @@ export function computeAllStandings(
   bestThirdsCount: number
 ): AllStandings {
   const byGroup = new Map<string, StandingRow[]>();
-  const thirds: StandingRow[] = [];
+  const thirdByGroup = new Map<string, StandingRow>();
   for (const group of groups) {
     const standings = computeGroupStandings(group, matches, results);
     byGroup.set(group.id, standings);
     const third = standings.find((r) => r.rank === 3);
-    if (third) thirds.push(third);
+    if (third) thirdByGroup.set(group.id, third);
   }
-  const bestThirds = thirds
-    .sort((a, b) => compareBase(a, b) || a.teamId.localeCompare(b.teamId))
-    .slice(0, bestThirdsCount)
-    .map((r) => r.teamId);
-  return { byGroup, bestThirds };
+  // Rank 3rds across all groups by Pts → GD → GF (then teamId for stability).
+  const ranked = [...thirdByGroup.entries()]
+    .map(([groupId, row]) => ({ groupId, row }))
+    .sort(
+      (a, b) =>
+        compareBase(a.row, b.row) || a.row.teamId.localeCompare(b.row.teamId)
+    );
+  const top = ranked.slice(0, bestThirdsCount);
+  const bestThirds = top.map((r) => r.row.teamId);
+  const qualifyingGroups = new Set(top.map((r) => r.groupId));
+  return { byGroup, bestThirds, thirdByGroup, qualifyingGroups };
 }
 
 /** Winner of a knockout match from its score (penalties break draws). */
@@ -184,7 +202,19 @@ export function winnerOf(
 }
 
 export interface BracketResolver {
-  /** Resolve a slot (`"1A"`, `"2B"`, `"T3"`, `"W73"`, `"L101"`) to a teamId. */
+  /**
+   * Resolve a slot to a teamId. Supported formats:
+   *   - `"1A"` / `"2B"` — rank 1/2 of a group (auto from standings).
+   *   - `"T1"` … `"T8"` — best third-placed team by global rank (legacy /
+   *     generic; the FIFA-correct format is `"3[A-L]+"` below).
+   *   - `"3[A-L]+"` (e.g. `"3CEFHI"`) — best third from a *set* of groups,
+   *     per FIFA Regulations Annex C. The set lists every group whose 3rd
+   *     could legitimately fill this slot; the resolver picks the one that
+   *     actually qualified. Returns `undefined` when ≥2 candidates are in
+   *     the top-8 (ambiguous until the Annex C row for that combination is
+   *     applied — manual picks win either way).
+   *   - `"W73"` / `"L101"` — winner / loser of a prior knockout match.
+   */
   resolveSlot: (slot?: string) => string | undefined;
   /** Resolve both sides of a knockout match. */
   resolveMatch: (match: TournamentMatch) => {
@@ -223,6 +253,9 @@ export function createBracketResolver(
     const winLoss = /^([WL])(\d+)$/.exec(slot);
     const rankSlot = /^([12])([A-L])$/.exec(slot);
     const thirdSlot = /^T(\d+)$/.exec(slot);
+    // FIFA Annex C: best 3rd place drawn from a set of groups. Example
+    // `3CEFHI` means "3rd of C, E, F, H or I". 1+ letter, all caps, A-L.
+    const best3rdSet = /^3([A-L]+)$/.exec(slot);
 
     if (rankSlot) {
       const [, posStr, group] = rankSlot;
@@ -232,6 +265,24 @@ export function createBracketResolver(
       teamId = row?.teamId;
     } else if (thirdSlot) {
       teamId = standings.bestThirds[Number(thirdSlot[1]) - 1];
+    } else if (best3rdSet) {
+      // Filter the listed groups to those whose 3rd actually made the top-8.
+      // 0 → no candidate (theoretically impossible under FIFA's math but we
+      // stay defensive); 1 → unambiguous, return it; 2+ → ambiguous, defer.
+      // The Annex C table / a manual `picks` entry will fill the gap later.
+      const letters = best3rdSet[1] ?? '';
+      const candidates: StandingRow[] = [];
+      for (const letter of letters) {
+        if (standings.qualifyingGroups.has(letter)) {
+          const row = standings.thirdByGroup.get(letter);
+          if (row) candidates.push(row);
+        }
+      }
+      if (candidates.length === 1) {
+        teamId = candidates[0]?.teamId;
+      } else {
+        teamId = undefined;
+      }
     } else if (winLoss) {
       const [, kind, numStr] = winLoss;
       const m = matchByNumber.get(Number(numStr));
