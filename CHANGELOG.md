@@ -22,6 +22,37 @@ adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `src/utils/annexC.ts` — Tabla del Anexo C de FIFA Regulations: las 495
+  combinaciones (`C(12,8)`) de qué 8 grupos de 12 clasifican como mejor
+  tercero, con la asignación de qué grupo llena cada uno de los 8 partidos
+  del R32 con slot `3[A-L]+`. Helper `annexCAssign(qualifying, matchNo)`
+  devuelve el `GroupId` que corresponde. Regenerable desde Wikipedia si
+  FIFA publica una revisión (ver `scripts/analysis/verify_annex_c.cjs`).
+- `src/utils/slotFormat.ts` — Helper que convierte slots simbólicos a
+  etiquetas legibles. Slots `3[A-L]+` se expanden a "3° de {C, E, F, H, I}"
+  para que el bracket sea comprensible cuando aún no hay equipo asignado.
+- `src/services/pickMigration.ts` — Migración one-shot de picks legacy
+  `T1..T8` al encoding FIFA `3[A-L]+`. **Aditiva**: si el equipo del pick
+  sigue siendo 3° de su grupo y ese grupo clasifica al top-8, se crea
+  el pick nuevo bajo el slot `3[A-L]+` que el Anexo C le asigna. El pick
+  viejo queda intacto en IndexedDB (sin pérdida de datos). Se ejecuta
+  automáticamente desde `useTournament` al cargar cada escenario.
+
+### Changed
+
+- `src/components/tournament/KnockoutMatchRow.tsx` — Cuando un slot
+  todavía no tiene equipo resuelto, ahora muestra la etiqueta legible
+  ("3° de {C, E, F, H, I}") con tooltip explicativo en vez del string
+  opaco (`3CEFHI`).
+- `src/services/tournamentService.ts` — El resolver ahora consulta el
+  Anexo C cuando hay 2+ candidatos del set elegibles. Devuelve el equipo
+  concreto en vez de `undefined` para los 8 partidos
+  mejor-tercero, siempre que se conozcan los grupos que clasifican.
+- `src/i18n/locales/{es,en}.json` — Nuevas claves `tournament.slot.bestThird`
+  y `tournament.slot.bestThirdHint`.
+
 ### Fixed (PR A — bracket R32/R16 alineado con FIFA Regulations Anexo C)
 
 - `enrichment/src/build-fixture.ts` — el array `r32` (líneas 247-265 antes)

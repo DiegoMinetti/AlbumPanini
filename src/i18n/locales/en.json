@@ -422,6 +422,10 @@
     "locked": "Prediction locked",
     "official": "Official",
     "officialScenarioNote": "FIFA auto-fills results as matches finish",
+    "slot": {
+      "bestThird": "3rd of {{groups}}",
+      "bestThirdHint": "Best 3rd from set {<strong>{{groups}}</strong>} — one of these groups fills this slot, depending on which 8 qualify."
+    },
     "verdict": {
       "exact": "Exact",
       "sign": "Result",

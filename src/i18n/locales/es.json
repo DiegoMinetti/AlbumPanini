@@ -422,6 +422,10 @@
     "locked": "Predicción cerrada",
     "official": "Oficial",
     "officialScenarioNote": "FIFA completa los resultados automáticamente",
+    "slot": {
+      "bestThird": "3.º de {{groups}}",
+      "bestThirdHint": "Mejor tercero del set {<strong>{{groups}}</strong>} — uno de estos grupos llena este slot, según los 8 que terminen clasificando."
+    },
     "verdict": {
       "exact": "Exacto",
       "sign": "Signo",

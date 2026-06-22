@@ -1,5 +1,10 @@
-import type { TournamentGroup, TournamentMatch } from '@/types/tournament';
+import type {
+  GroupId,
+  TournamentGroup,
+  TournamentMatch,
+} from '@/types/tournament';
 import type { StoredKnockoutPick, StoredMatchResult } from '@/types/scenario';
+import { annexCAssign } from '@/utils/annexC';
 
 /**
  * Pure tournament logic: group standings, best-third ranking and knockout slot
@@ -238,6 +243,13 @@ export function createBracketResolver(
   const matchByNumber = new Map<number, TournamentMatch>(
     matches.map((m) => [m.matchNumber, m])
   );
+  // `3[A-L]+` slot strings are unique per match, so a flat map from slot →
+  // match number is enough to look up the Anexo C row at resolution time.
+  const slotToMatchNumber = new Map<string, number>();
+  for (const m of matches) {
+    if (m.homeSlot) slotToMatchNumber.set(m.homeSlot, m.matchNumber);
+    if (m.awaySlot) slotToMatchNumber.set(m.awaySlot, m.matchNumber);
+  }
   const cache = new Map<string, string | undefined>();
   const inProgress = new Set<string>();
 
@@ -268,8 +280,9 @@ export function createBracketResolver(
     } else if (best3rdSet) {
       // Filter the listed groups to those whose 3rd actually made the top-8.
       // 0 → no candidate (theoretically impossible under FIFA's math but we
-      // stay defensive); 1 → unambiguous, return it; 2+ → ambiguous, defer.
-      // The Annex C table / a manual `picks` entry will fill the gap later.
+      // stay defensive); 1 → unambiguous, return it; 2+ → ambiguous — consult
+      // Anexo C to find the single group that fills this slot under the
+      // current qualifying set.
       const letters = best3rdSet[1] ?? '';
       const candidates: StandingRow[] = [];
       for (const letter of letters) {
@@ -280,8 +293,22 @@ export function createBracketResolver(
       }
       if (candidates.length === 1) {
         teamId = candidates[0]?.teamId;
-      } else {
-        teamId = undefined;
+      } else if (candidates.length >= 2) {
+        // Anexo C lookup: each `3[A-L]+` slot lives in exactly one match, so
+        // we know which match number to query the table with. Falls back to
+        // undefined if the qualifying set isn't in the table yet (defensive —
+        // shouldn't happen for any valid 8-of-12 subset).
+        const matchNumber = slotToMatchNumber.get(slot);
+        if (matchNumber !== undefined) {
+          const groupLetter = annexCAssign(
+            [...standings.qualifyingGroups].sort() as GroupId[],
+            matchNumber
+          );
+          if (groupLetter) {
+            const row = standings.thirdByGroup.get(groupLetter);
+            if (row) teamId = row.teamId;
+          }
+        }
       }
     } else if (winLoss) {
       const [, kind, numStr] = winLoss;

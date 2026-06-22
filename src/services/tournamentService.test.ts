@@ -388,3 +388,39 @@ describe('best3rd-set slots (FIFA Annex C)', () => {
     expect(resolver.resolveSlot('3AC')).toBe('FORCED');
   });
 });
+
+describe('Annex C table (FIFA Regulations)', () => {
+  // The Anexo C table is the source-of-truth data for FIFA's 8-of-12 best-
+  // third-place assignment. We don't pin specific team outcomes here (the
+  // table is data-driven from FIFA), but we do pin the structure: 495 rows
+  // (C(12,8) combinations of qualifying groups), each row mapping the 8 R32
+  // best-third slots to the group letter that fills them.
+  it('contains exactly C(12,8) = 495 rows, each covering the 8 best-third slots', async () => {
+    const { ANNEX_C, annexCAssign } = await import('@/utils/annexC');
+    expect(Object.keys(ANNEX_C).length).toBe(495);
+    // Pick a sample row and verify the structural shape.
+    const sample = ANNEX_C.ABCDEFGH;
+    expect(sample).toBeDefined();
+    // Every row maps the 8 best-third match numbers (74, 77, 79, 80, 81,
+    // 82, 85, 87) to a GroupId (A..L).
+    expect(Object.keys(sample).sort()).toEqual([
+      '74',
+      '77',
+      '79',
+      '80',
+      '81',
+      '82',
+      '85',
+      '87',
+    ]);
+    for (const v of Object.values(sample)) {
+      expect(v).toMatch(/^[A-L]$/);
+    }
+    // Helper returns the right group letter for a known combination.
+    expect(annexCAssign(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], 74)).toBe(
+      'C'
+    );
+    // Out-of-table input → undefined.
+    expect(annexCAssign(['A', 'B', 'C'], 74)).toBeUndefined();
+  });
+});

@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { useScenarioStore } from '@/stores/scenarioStore';
 import { ensureOfficialScenario } from '@/services/scenarioService';
 import { autoFillOfficialScenarios } from '@/services/officialAutoFillService';
+import { migrateLegacyTPicks } from '@/services/pickMigration';
 import {
   computeAllStandings,
   createBracketResolver,
@@ -156,6 +157,45 @@ export function useTournament(collectionId: string | null): TournamentData {
 
   const results = useMemo(() => indexResults(resultRows ?? []), [resultRows]);
   const picks = useMemo(() => indexPicks(pickRows ?? []), [pickRows]);
+
+  /**
+   * Migrate legacy `T1..T8` knockout picks into the new `3[A-L]+` slots.
+   * Runs once per scenario load. Idempotent: skipping a slot that already
+   * has a non-legacy pick means re-running is safe. We never delete the
+   * legacy rows — they stay in IndexedDB for audit / rollback.
+   */
+  useEffect(() => {
+    if (!tournament || !activeScenarioId || !resultRows || !pickRows) return;
+    // Cheap pre-check: skip if no legacy picks exist in this scenario.
+    const hasLegacy = pickRows.some((p) => /^T\d+$/.test(p.slot));
+    if (!hasLegacy) return;
+    void (async () => {
+      try {
+        const res = await migrateLegacyTPicks(
+          activeScenarioId,
+          tournament.groups,
+          tournament.matches,
+          resultRows
+            .filter((r) => r.played)
+            .map((r) => ({
+              matchId: r.matchId,
+              homeGoals: r.homeGoals ?? 0,
+              awayGoals: r.awayGoals ?? 0,
+              homePens: r.homePens,
+              awayPens: r.awayPens,
+              played: true,
+            }))
+        );
+        if (res.migrated > 0) {
+          console.info(
+            `[useTournament] migrated ${res.migrated}/${res.legacyFound} legacy T-picks in ${activeScenarioId} (${res.unmappable} unmappable)`
+          );
+        }
+      } catch (err) {
+        console.warn('[useTournament] T-pick migration failed', err);
+      }
+    })();
+  }, [tournament, activeScenarioId, resultRows, pickRows]);
 
   const standings = useMemo(() => {
     if (!tournament) return EMPTY_STANDINGS;

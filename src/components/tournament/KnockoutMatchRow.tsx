@@ -11,6 +11,7 @@ import type { StoredTeam } from '@/types/collection';
 import type { TournamentMatch } from '@/types/tournament';
 import type { StoredOfficialResult } from '@/types/prediction';
 import { isLockedForPrediction, isPredictionCorrect } from '@/utils/prediction';
+import { formatSlotLabel } from '@/utils/slotFormat';
 
 interface KnockoutMatchRowProps {
   match: TournamentMatch;
@@ -85,11 +86,41 @@ function TeamSide({
           </span>
         </>
       ) : (
-        <span className="truncate text-body-md italic text-on-surface-variant">
-          {label ?? '—'}
-        </span>
+        <SlotLabel label={label} />
       )}
     </div>
+  );
+}
+
+/**
+ * Render a symbolic slot label (`1A`, `3CEFHI`, `W73`, …) with the
+ * "3.º de {C, E, F, H, I}" expansion + a hover hint for best-third slots.
+ */
+function SlotLabel({ label }: { label?: string }) {
+  const { t } = useTranslation();
+  if (!label) {
+    return (
+      <span className="truncate text-body-md italic text-on-surface-variant">
+        —
+      </span>
+    );
+  }
+  const formatted = formatSlotLabel(label);
+  if (formatted.isBestThirdSet && formatted.groups) {
+    const groups = formatted.groups.join(', ');
+    return (
+      <span
+        className="truncate text-body-md italic text-on-surface-variant"
+        title={t('tournament.slot.bestThirdHint', { groups })}
+      >
+        {t('tournament.slot.bestThird', { groups })}
+      </span>
+    );
+  }
+  return (
+    <span className="truncate text-body-md italic text-on-surface-variant">
+      {formatted.label}
+    </span>
   );
 }
 
