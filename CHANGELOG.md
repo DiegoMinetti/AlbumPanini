@@ -44,6 +44,22 @@ adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (`top-[calc(app-topbar-h+56px)]`), en vez de pelearse por la misma
   posición.
 
+### Fixed
+
+- **Bracket desactualizado en apps ya instaladas** (`worldcup-2026`
+  bump `2.0.2 → 2.0.3`): el código del bracket y el JSON se arreglaron
+  en PRs A/B/F (slots `3[A-L]+` con Anexo C), pero la `version` del
+  package nunca se subió. `syncDefaultCollection` (`src/services/
+  collectionLoader.ts:232`) sólo re-instala cuando la version del
+  manifest es estrictamente mayor, así que cualquier install existente
+  seguía leyendo el bracket viejo de IndexedDB y veía pairings
+  incorrectos en la Llave (p.ej. M86 = ARG vs FRA cuando debería ser
+  ARG vs segundo-de-H). El bump de version dispara el re-sync en el
+  próximo launch — los picks existentes sobreviven: `installPackage`
+  sólo reemplaza teams/stickers/collection, no predictions, y
+  `migrateLegacyTPicks` migra los picks `T1..T8` legacy a los nuevos
+  slots `3[A-L]+`.
+
 - **DB schema v4**: nueva tabla `appVersions` (`src/db/migrations.ts`).
   Cada row registra un build que el usuario instaló (SHA + version +
   installedAt + isCurrent). La migración es aditiva — no toca tablas

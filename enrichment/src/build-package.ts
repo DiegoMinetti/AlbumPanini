@@ -157,7 +157,7 @@ async function main(): Promise<void> {
     name: 'FIFA World Cup 2026',
     description:
       'Catálogo Panini FIFA World Cup 2026 enriquecido (Wikidata + Wikipedia).',
-    version: '2.0.0',
+    version: '2.0.3',
     language: 'es',
     teams: pkgTeams,
     stickers,
