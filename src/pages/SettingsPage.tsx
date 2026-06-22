@@ -17,7 +17,9 @@ import {
 } from '@/utils/timeZone';
 import type { Language, ThemeMode } from '@/types/settings';
 
-const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? '1.0.0';
+const BUILD_SHA = import.meta.env.VITE_APP_VERSION ?? 'dev';
+const APP_VERSION_LABEL =
+  BUILD_SHA === 'dev' ? 'dev' : `v${BUILD_SHA.slice(0, 7)}`;
 
 /**
  * Settings — usa M3 tokens en todos los textos de slate hard-coded.
@@ -39,6 +41,10 @@ export function SettingsPage() {
 
   const { active } = useActiveCollection();
   const history = useLiveQuery(() => db.getVersionHistory(), []);
+  const appVersions = useLiveQuery(
+    () => db.appVersions.orderBy('installedAt').reverse().limit(5).toArray(),
+    []
+  );
   const [resetOpen, setResetOpen] = useState(false);
 
   return (
@@ -177,14 +183,42 @@ export function SettingsPage() {
           <span className="text-on-surface-variant">
             {t('settings.version')}
           </span>
-          <span className="font-mono">{APP_VERSION}</span>
+          <span
+            className="font-mono text-label-md"
+            title={BUILD_SHA}
+            data-testid="settings-app-version"
+          >
+            {APP_VERSION_LABEL}
+          </span>
         </div>
         <div className="flex justify-between text-on-surface">
           <span className="text-on-surface-variant">
             {t('settings.dbVersion')}
           </span>
-          <span className="font-mono">v{LATEST_DB_VERSION}</span>
+          <span className="font-mono text-label-md">v{LATEST_DB_VERSION}</span>
         </div>
+        {appVersions && appVersions.length > 0 ? (
+          <details className="mt-1">
+            <summary className="cursor-pointer text-on-surface-variant">
+              Build history
+            </summary>
+            <ul className="mt-2 flex flex-col gap-1 font-mono text-label-md text-on-surface-variant">
+              {appVersions.map((v) => (
+                <li key={v.id} className="flex items-center gap-2">
+                  <span>{v.version}</span>
+                  {v.isCurrent ? (
+                    <span className="rounded-full bg-primary/15 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                      current
+                    </span>
+                  ) : null}
+                  <span className="text-[10px] text-on-surface-variant/70">
+                    {new Date(v.installedAt).toLocaleString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
         {history && history.length > 0 ? (
           <details className="mt-1">
             <summary className="cursor-pointer text-on-surface-variant">

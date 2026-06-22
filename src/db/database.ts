@@ -29,6 +29,23 @@ export interface DbVersionHistoryEntry {
   description: string;
 }
 
+/**
+ * A row in the `appVersions` table (v4+). One entry per app launch that
+ * carries a new build SHA — i.e. an actual upgrade event, not every page
+ * load. The most recent row is the "current install".
+ */
+export interface StoredAppVersion {
+  id?: number;
+  /** Semver-ish label, e.g. `1.0.0` (set by CI from `package.json`). */
+  version: string;
+  /** Full git SHA of the build (12+ hex chars). Unique per deploy. */
+  buildSha: string;
+  /** When this build was installed on this device. */
+  installedAt: number;
+  /** Whether this entry corresponds to the build the user is currently on. */
+  isCurrent: boolean;
+}
+
 export const META_KEYS = {
   dbVersionHistory: 'dbVersionHistory',
   installedAt: 'installedAt',
@@ -46,6 +63,7 @@ export class PaniniDatabase extends Dexie {
   inventory!: Table<StoredInventoryItem, string>;
   activity!: Table<ActivityEntry, number>;
   meta!: Table<MetaRecord, string>;
+  appVersions!: Table<StoredAppVersion, number>;
   scenarios!: Table<StoredScenario, string>;
   // Legacy (pre-v3) per-scenario results. Kept defined so the migration in
   // src/db/migrations.ts can read from them and so any leftover back-compat
@@ -114,7 +132,7 @@ export class PaniniDatabase extends Dexie {
     return (record?.value as DbVersionHistoryEntry[] | undefined) ?? [];
   }
 
-  /** Wipe all collection data (keeps meta). Used by "reset" / full restore. */
+  /** Wipe all collection data (keeps meta + app version history). Used by "reset" / full restore. */
   async clearAllData(): Promise<void> {
     await this.transaction(
       'rw',

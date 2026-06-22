@@ -24,6 +24,31 @@ adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **DB schema v4**: nueva tabla `appVersions` (`src/db/migrations.ts`).
+  Cada row registra un build que el usuario instaló (SHA + version +
+  installedAt + isCurrent). La migración es aditiva — no toca tablas
+  existentes; sólo agrega la nueva.
+- **App version tracking** (`src/services/appVersion.ts`): en cada
+  mount, `recordAppLaunch()` compara el SHA del build actual (env
+  var `VITE_APP_VERSION`) con el SHA del último build instalado. Si
+  cambian, marca el anterior como `isCurrent: false` y agrega el
+  nuevo como `isCurrent: true`. Devuelve un flag `updated` que
+  `App.tsx` usa para mostrar un toast discreto.
+- **Toast "Actualizado a vX (antes vY)"** después de un update. Aparece
+  solo si hubo un upgrade real (no en el primer install). Idempotente —
+  relanzar la app con el mismo SHA no muestra el toast dos veces.
+- **Build version en Settings** (subtle, "About" section): muestra
+  el SHA corto (`v7f3a9b2`) con tooltip del SHA completo, la versión
+  de DB (`v4`), y un `<details>` colapsable con el historial de los
+  últimos 5 builds instalados (marcando el current).
+- **Matches filter chips sticky**: la botonera superior de partidos
+  (Todos / Pasados / En vivo / Próximos) ahora queda fija arriba
+  debajo del top bar mientras scrolleás la lista. Fondo translúcido
+  con `backdrop-blur` para mantener legibilidad sin cortar el flujo.
+- **CHANGELOG actualizado.**
+
+### Changed
+
 - `src/utils/annexC.ts` — Tabla del Anexo C de FIFA Regulations: las 495
   combinaciones (`C(12,8)`) de qué 8 grupos de 12 clasifican como mejor
   tercero, con la asignación de qué grupo llena cada uno de los 8 partidos

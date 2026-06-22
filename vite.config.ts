@@ -16,6 +16,14 @@ const basePath = rawBasePath.endsWith('/') ? rawBasePath : `${rawBasePath}/`;
 
 export default defineConfig({
   base: basePath,
+  // Default for local dev builds — the deploy workflow overrides this
+  // with the real git SHA (see .github/workflows/deploy.yml).
+  envPrefix: 'VITE_',
+  define: {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(
+      process.env.VITE_APP_VERSION ?? 'dev'
+    ),
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

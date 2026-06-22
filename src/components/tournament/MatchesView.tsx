@@ -856,7 +856,17 @@ export function MatchesView({
 
   return (
     <div className="relative flex flex-col gap-4">
-      <StatusFilterChips value={filter} onChange={setFilter} counts={counts} />
+      <div
+        data-testid="matches-filter-bar"
+        className="sticky top-[var(--app-topbar-h,0px)] z-20 -mx-3
+          bg-surface/85 px-3 pb-2 pt-1.5 backdrop-blur supports-[backdrop-filter]:bg-surface/65"
+      >
+        <StatusFilterChips
+          value={filter}
+          onChange={setFilter}
+          counts={counts}
+        />
+      </div>
 
       <header className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-label-md text-on-surface-variant">
         <span data-testid="matches-summary">

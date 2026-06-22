@@ -14,6 +14,7 @@ export async function resetDb(): Promise<void> {
     db.stickers.clear(),
     db.inventory.clear(),
     db.activity.clear(),
+    db.appVersions.clear(),
     db.scenarios.clear(),
     db.matchResults.clear(),
     db.knockoutPicks.clear(),

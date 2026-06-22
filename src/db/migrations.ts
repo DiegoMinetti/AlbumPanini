@@ -75,6 +75,17 @@ export const migrations: DbMigration[] = [
       }
     },
   },
+  {
+    version: 4,
+    description:
+      'Add `appVersions` table to track app/build metadata per launch. ' +
+      'Lets the app show "updated to vX" toasts and surface the build ' +
+      'SHA in settings. Each row is one app launch with a new build; ' +
+      'the most recent row is the current install.',
+    stores: {
+      appVersions: '++id, version, installedAt',
+    },
+  },
   // ---------------------------------------------------------------------------
   // FUTURE MIGRATIONS — append below. Never edit an already-released entry.
   // ---------------------------------------------------------------------------

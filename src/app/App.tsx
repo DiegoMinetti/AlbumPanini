@@ -8,10 +8,12 @@ import { PwaAutoUpdater } from '@/components/feedback/PwaAutoUpdater';
 import { PwaUpdatePrompt } from '@/components/feedback/PwaUpdatePrompt';
 import { PwaInstallPrompt } from '@/components/feedback/PwaInstallPrompt';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useUiStore } from '@/stores/uiStore';
 import {
   seedDefaultCollection,
   syncDefaultCollection,
 } from '@/services/collectionLoader';
+import { recordAppLaunch } from '@/services/appVersion';
 
 const SESSION_LAUNCH_KEY = 'panini-launch-registered';
 
@@ -76,6 +78,26 @@ export function App() {
       }
     })();
     return () => controller.abort();
+  }, []);
+
+  // Record the current build in `appVersions` and — if the SHA changed
+  // since last launch — fire a subtle "updated to vX" toast so the user
+  // knows they're on the latest bundle (otherwise the aggressive PWA
+  // auto-update is invisible). Idempotent.
+  useEffect(() => {
+    void (async () => {
+      try {
+        const result = await recordAppLaunch();
+        if (!result.updated) return;
+        // Skip the toast on the very first install (no previous version
+        // to compare against — would feel like a noisy welcome banner).
+        if (!result.previousVersion) return;
+        const message = `Actualizado a ${result.currentVersion} (antes ${result.previousVersion})`;
+        useUiStore.getState().pushToast(message, 'success', 5000);
+      } catch (err) {
+        console.warn('[appVersion] recordAppLaunch failed', err);
+      }
+    })();
   }, []);
 
   return (
