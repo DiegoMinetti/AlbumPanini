@@ -4,6 +4,7 @@ import { RouterProvider } from 'react-router-dom';
 import { queryClient } from './queryClient';
 import { router } from './router';
 import { ToastViewport } from '@/components/feedback/ToastViewport';
+import { PwaAutoUpdater } from '@/components/feedback/PwaAutoUpdater';
 import { PwaUpdatePrompt } from '@/components/feedback/PwaUpdatePrompt';
 import { PwaInstallPrompt } from '@/components/feedback/PwaInstallPrompt';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -81,6 +82,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
       <ToastViewport />
+      <PwaAutoUpdater />
       <PwaUpdatePrompt />
       <PwaInstallPrompt />
     </QueryClientProvider>
