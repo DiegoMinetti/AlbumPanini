@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-22T01:03:27.508Z",
+  "generatedAt": "2026-06-22T03:27:08.745Z",
   "matches": [
     {
       "id": "m1",
@@ -27,7 +27,7 @@
       "apiFootballFixtureId": 3429
     },
     {
-      "id": "m3",
+      "id": "m4",
       "homeGoals": 1,
       "awayGoals": 1,
       "status": "FT",
@@ -36,10 +36,10 @@
       "venue": "Atlanta",
       "group": "A",
       "stage": "group",
-      "apiFootballFixtureId": 3430
+      "apiFootballFixtureId": 3431
     },
     {
-      "id": "m4",
+      "id": "m3",
       "homeGoals": 1,
       "awayGoals": 0,
       "status": "FT",
@@ -48,7 +48,7 @@
       "venue": "Guadalajara (Zapopan)",
       "group": "A",
       "stage": "group",
-      "apiFootballFixtureId": 3431
+      "apiFootballFixtureId": 3430
     },
     {
       "id": "m5",
@@ -93,7 +93,7 @@
       "apiFootballFixtureId": 3435
     },
     {
-      "id": "m9",
+      "id": "m10",
       "homeGoals": 4,
       "awayGoals": 1,
       "status": "FT",
@@ -102,10 +102,10 @@
       "venue": "Los Angeles (Inglewood)",
       "group": "B",
       "stage": "group",
-      "apiFootballFixtureId": 3436
+      "apiFootballFixtureId": 106316
     },
     {
-      "id": "m10",
+      "id": "m9",
       "homeGoals": 6,
       "awayGoals": 0,
       "status": "FT",
@@ -114,7 +114,7 @@
       "venue": "Vancouver",
       "group": "B",
       "stage": "group",
-      "apiFootballFixtureId": 106316
+      "apiFootballFixtureId": 3436
     },
     {
       "id": "m11",
@@ -159,7 +159,7 @@
       "apiFootballFixtureId": 106320
     },
     {
-      "id": "m15",
+      "id": "m16",
       "homeGoals": 0,
       "awayGoals": 1,
       "status": "FT",
@@ -168,10 +168,10 @@
       "venue": "Boston (Foxborough)",
       "group": "C",
       "stage": "group",
-      "apiFootballFixtureId": 106321
+      "apiFootballFixtureId": 106322
     },
     {
-      "id": "m16",
+      "id": "m15",
       "homeGoals": 3,
       "awayGoals": 0,
       "status": "FT",
@@ -180,7 +180,7 @@
       "venue": "Philadelphia",
       "group": "C",
       "stage": "group",
-      "apiFootballFixtureId": 106322
+      "apiFootballFixtureId": 106321
     },
     {
       "id": "m17",
@@ -315,22 +315,22 @@
       "apiFootballFixtureId": 106355
     },
     {
-      "id": "m29",
+      "id": "m30",
       "status": "SCHEDULED",
       "kickoff": "2026-06-25T16:00:00.000-04:00",
       "venue": "Philadelphia",
       "group": "E",
       "stage": "group",
-      "apiFootballFixtureId": 106356
+      "apiFootballFixtureId": 106378
     },
     {
-      "id": "m30",
+      "id": "m29",
       "status": "SCHEDULED",
       "kickoff": "2026-06-25T16:00:00.000-04:00",
       "venue": "New York/New Jersey (East Rutherford)",
       "group": "E",
       "stage": "group",
-      "apiFootballFixtureId": 106378
+      "apiFootballFixtureId": 106356
     },
     {
       "id": "m31",
@@ -381,22 +381,22 @@
       "apiFootballFixtureId": 106382
     },
     {
-      "id": "m35",
+      "id": "m36",
       "status": "SCHEDULED",
       "kickoff": "2026-06-25T18:00:00.000-05:00",
       "venue": "Dallas (Arlington)",
       "group": "F",
       "stage": "group",
-      "apiFootballFixtureId": 106383
+      "apiFootballFixtureId": 106384
     },
     {
-      "id": "m36",
+      "id": "m35",
       "status": "SCHEDULED",
       "kickoff": "2026-06-25T18:00:00.000-05:00",
       "venue": "Kansas City",
       "group": "F",
       "stage": "group",
-      "apiFootballFixtureId": 106384
+      "apiFootballFixtureId": 106383
     },
     {
       "id": "m37",
@@ -436,30 +436,33 @@
     },
     {
       "id": "m40",
-      "status": "SCHEDULED",
+      "homeGoals": 1,
+      "awayGoals": 3,
+      "status": "FT",
       "kickoff": "2026-06-21T18:00:00.000-07:00",
+      "finishedAt": "2026-06-21T18:00:00.000-07:00",
       "venue": "Vancouver",
       "group": "G",
       "stage": "group",
       "apiFootballFixtureId": 106409
     },
     {
-      "id": "m41",
+      "id": "m42",
       "status": "SCHEDULED",
       "kickoff": "2026-06-26T20:00:00.000-07:00",
       "venue": "Seattle",
       "group": "G",
       "stage": "group",
-      "apiFootballFixtureId": 106410
+      "apiFootballFixtureId": 106411
     },
     {
-      "id": "m42",
+      "id": "m41",
       "status": "SCHEDULED",
       "kickoff": "2026-06-26T20:00:00.000-07:00",
       "venue": "Vancouver",
       "group": "G",
       "stage": "group",
-      "apiFootballFixtureId": 106411
+      "apiFootballFixtureId": 106410
     },
     {
       "id": "m43",
@@ -510,22 +513,22 @@
       "apiFootballFixtureId": 106415
     },
     {
-      "id": "m47",
+      "id": "m48",
       "status": "SCHEDULED",
       "kickoff": "2026-06-26T19:00:00.000-05:00",
       "venue": "Houston",
       "group": "H",
       "stage": "group",
-      "apiFootballFixtureId": 106416
+      "apiFootballFixtureId": 106417
     },
     {
-      "id": "m48",
+      "id": "m47",
       "status": "SCHEDULED",
       "kickoff": "2026-06-26T18:00:00.000-06:00",
       "venue": "Guadalajara (Zapopan)",
       "group": "H",
       "stage": "group",
-      "apiFootballFixtureId": 106417
+      "apiFootballFixtureId": 106416
     },
     {
       "id": "m49",
@@ -630,22 +633,22 @@
       "apiFootballFixtureId": 106448
     },
     {
-      "id": "m59",
+      "id": "m60",
       "status": "SCHEDULED",
       "kickoff": "2026-06-27T21:00:00.000-05:00",
       "venue": "Kansas City",
       "group": "J",
       "stage": "group",
-      "apiFootballFixtureId": 106449
+      "apiFootballFixtureId": 106471
     },
     {
-      "id": "m60",
+      "id": "m59",
       "status": "SCHEDULED",
       "kickoff": "2026-06-27T21:00:00.000-05:00",
       "venue": "Dallas (Arlington)",
       "group": "J",
       "stage": "group",
-      "apiFootballFixtureId": 106471
+      "apiFootballFixtureId": 106449
     },
     {
       "id": "m61",
