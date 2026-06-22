@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-22T00:09:26.854Z",
+  "generatedAt": "2026-06-22T01:03:27.508Z",
   "matches": [
     {
       "id": "m1",
@@ -499,8 +499,11 @@
     },
     {
       "id": "m46",
-      "status": "SCHEDULED",
+      "homeGoals": 2,
+      "awayGoals": 2,
+      "status": "FT",
       "kickoff": "2026-06-21T18:00:00.000-04:00",
+      "finishedAt": "2026-06-21T18:00:00.000-04:00",
       "venue": "Miami (Miami Gardens)",
       "group": "H",
       "stage": "group",
