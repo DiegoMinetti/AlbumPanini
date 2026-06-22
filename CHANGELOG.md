@@ -22,7 +22,19 @@ adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **PWA auto-update reload loop on first install**: `PwaAutoUpdater`'s
+  `controllerchange` listener fired on the very first SW activation
+  (not just on real updates), causing an immediate reload of the page
+  on mount. E2E tests caught this: clicks on Settings tabs landed on
+  a page that was already mid-reload. Guard added — `hadControllerAtMount`
+  check before the reload call, so only genuine SW updates trigger a
+  page reload.
+
 ### Added
+
+- **DB schema v4**: nueva tabla `appVersions` (`src/db/migrations.ts`).
 
 - **DB schema v4**: nueva tabla `appVersions` (`src/db/migrations.ts`).
   Cada row registra un build que el usuario instaló (SHA + version +

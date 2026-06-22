@@ -37,6 +37,14 @@ export function PwaAutoUpdater() {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
 
+    // CRITICAL: `controllerchange` fires not just on SW updates but also
+    // on the very first registration (when the SW activates and takes
+    // control of the page via clientsClaim). Without this guard we'd
+    // reload the page immediately on mount — which breaks E2E tests
+    // and is a bad UX on slow networks. Track whether we already had a
+    // controller at mount; only reload on subsequent changes.
+    const hadControllerAtMount = !!navigator.serviceWorker.controller;
+
     // Use a holder object so the cleanup closure can read the latest interval
     // id without triggering ESLint's prefer-const (we assign once via .id).
     const intervalHolder: { id: ReturnType<typeof setInterval> | undefined } = {
@@ -74,9 +82,11 @@ export function PwaAutoUpdater() {
       if (document.visibilityState === 'visible') triggerUpdate();
     }, UPDATE_CHECK_INTERVAL_MS);
 
-    // 4. Force-reload when a new SW takes over. Without this, the page
-    //    continues serving the old bundle even though the SW has updated.
+    // 4. Force-reload when a new SW takes over — but only if we already
+    // had a controller at mount. The first controllerchange (initial
+    // SW activation) is benign and must not trigger a reload.
     const onControllerChange = (): void => {
+      if (!hadControllerAtMount) return;
       // `skipWaiting + clientsClaim` fires this event. Reloading is the
       // only way to make the React tree pick up the new bundle.
       setReloading(true);
