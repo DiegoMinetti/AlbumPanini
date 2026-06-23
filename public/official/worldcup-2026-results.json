@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-23T00:53:50.618Z",
+  "generatedAt": "2026-06-23T01:44:47.397Z",
   "matches": [
     {
       "id": "m1",
@@ -556,8 +556,11 @@
     },
     {
       "id": "m51",
-      "status": "SCHEDULED",
+      "homeGoals": 3,
+      "awayGoals": 0,
+      "status": "FT",
       "kickoff": "2026-06-22T17:00:00.000-04:00",
+      "finishedAt": "2026-06-22T17:00:00.000-04:00",
       "venue": "Philadelphia",
       "group": "I",
       "stage": "group",
