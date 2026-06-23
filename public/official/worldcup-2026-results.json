@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-23T18:22:57.300Z",
+  "generatedAt": "2026-06-23T19:14:02.078Z",
   "matches": [
     {
       "id": "m1",
@@ -688,8 +688,11 @@
     },
     {
       "id": "m63",
-      "status": "SCHEDULED",
+      "homeGoals": 5,
+      "awayGoals": 0,
+      "status": "FT",
       "kickoff": "2026-06-23T12:00:00.000-05:00",
+      "finishedAt": "2026-06-23T12:00:00.000-05:00",
       "venue": "Houston",
       "group": "K",
       "stage": "group",
