@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-23T04:26:55.707Z",
+  "generatedAt": "2026-06-23T05:54:40.685Z",
   "matches": [
     {
       "id": "m1",
@@ -634,8 +634,11 @@
     },
     {
       "id": "m58",
-      "status": "SCHEDULED",
+      "homeGoals": 1,
+      "awayGoals": 2,
+      "status": "FT",
       "kickoff": "2026-06-22T20:00:00.000-07:00",
+      "finishedAt": "2026-06-22T20:00:00.000-07:00",
       "venue": "San Francisco Bay Area (Santa Clara)",
       "group": "J",
       "stage": "group",
