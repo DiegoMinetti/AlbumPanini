@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-24T02:44:52.426Z",
+  "generatedAt": "2026-06-24T04:15:51.628Z",
   "matches": [
     {
       "id": "m1",
@@ -700,8 +700,11 @@
     },
     {
       "id": "m64",
-      "status": "SCHEDULED",
+      "homeGoals": 1,
+      "awayGoals": 0,
+      "status": "FT",
       "kickoff": "2026-06-23T20:00:00.000-06:00",
+      "finishedAt": "2026-06-23T20:00:00.000-06:00",
       "venue": "Guadalajara (Zapopan)",
       "group": "K",
       "stage": "group",
