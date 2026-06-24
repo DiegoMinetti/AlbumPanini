@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-24T00:50:40.536Z",
+  "generatedAt": "2026-06-24T01:42:43.787Z",
   "matches": [
     {
       "id": "m1",
@@ -763,8 +763,11 @@
     },
     {
       "id": "m70",
-      "status": "SCHEDULED",
+      "homeGoals": 0,
+      "awayGoals": 1,
+      "status": "FT",
       "kickoff": "2026-06-23T19:00:00.000-04:00",
+      "finishedAt": "2026-06-23T19:00:00.000-04:00",
       "venue": "Toronto",
       "group": "L",
       "stage": "group",
