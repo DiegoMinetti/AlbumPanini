@@ -34,11 +34,9 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: write
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # Usamos un PAT (GH_PAT) en vez del GITHUB_TOKEN por defecto
           # porque los pushes hechos con GITHUB_TOKEN NO disparan
@@ -48,14 +46,14 @@ jobs:
           token: ${{ secrets.GH_PAT }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 11.5.1
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
           cache-dependency-path: enrichment/pnpm-lock.yaml
 
