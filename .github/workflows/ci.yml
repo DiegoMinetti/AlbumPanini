@@ -17,7 +17,53 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Cheap gate that decides whether the test suite needs to run. The
+  # sync-official-results action commits every 15 min during match
+  # windows and only touches public/official/worldcup-2026-results.json
+  # — running lint/typecheck/vitest/build/e2e on each of those is
+  # wasted compute, so we skip the heavy jobs when only that file
+  # changed.
+  #
+  # Implemented as conditional jobs (not `paths-ignore` at the trigger)
+  # so the workflow still completes successfully and the downstream
+  # deploy workflow_run still fires — the deployed Pages site keeps
+  # updating on every sync commit.
+  detect-data-only:
+    name: Detect data-only commit
+    runs-on: ubuntu-latest
+    outputs:
+      data-only: ${{ steps.check.outputs.data-only }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Full fetch so we can diff against github.event.before on PRs
+          # (where the base can be arbitrarily deep).
+          fetch-depth: 0
+      - id: check
+        run: |
+          BASE="${{ github.event.before }}"
+          HEAD="${{ github.sha }}"
+          # First-ever push to a branch (no parent). Run tests — there's
+          # nothing to diff against and skipping would silently green-light
+          # an unknown changeset.
+          if [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            echo "data-only=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          NON_DATA=$(git diff --name-only "$BASE" "$HEAD" \
+            | grep -v '^public/official/worldcup-2026-results.json$' \
+            || true)
+          if [ -z "$NON_DATA" ]; then
+            echo "data-only=true" >> "$GITHUB_OUTPUT"
+            echo "Only public/official/worldcup-2026-results.json changed — skipping test suite."
+          else
+            echo "data-only=false" >> "$GITHUB_OUTPUT"
+            echo "Non-data changes detected — running full suite."
+          fi
+
   quality:
+    needs: detect-data-only
+    if: needs.detect-data-only.outputs.data-only != 'true'
     name: Lint · Typecheck · Unit tests · Build
     runs-on: ubuntu-latest
     steps:
@@ -55,6 +101,8 @@ jobs:
         run: npm run build
 
   e2e:
+    needs: detect-data-only
+    if: needs.detect-data-only.outputs.data-only != 'true'
     name: E2E (Playwright)
     runs-on: ubuntu-latest
     steps:
