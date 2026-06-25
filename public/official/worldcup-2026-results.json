@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-25T01:45:58.062Z",
+  "generatedAt": "2026-06-25T03:13:28.025Z",
   "matches": [
     {
       "id": "m1",
@@ -52,8 +52,11 @@
     },
     {
       "id": "m5",
-      "status": "SCHEDULED",
+      "homeGoals": 0,
+      "awayGoals": 3,
+      "status": "FT",
       "kickoff": "2026-06-24T19:00:00.000-06:00",
+      "finishedAt": "2026-06-24T19:00:00.000-06:00",
       "venue": "Mexico City",
       "group": "A",
       "stage": "group",
@@ -61,8 +64,11 @@
     },
     {
       "id": "m6",
-      "status": "SCHEDULED",
+      "homeGoals": 1,
+      "awayGoals": 0,
+      "status": "FT",
       "kickoff": "2026-06-24T19:00:00.000-06:00",
+      "finishedAt": "2026-06-24T19:00:00.000-06:00",
       "venue": "Monterrey (Guadalupe)",
       "group": "A",
       "stage": "group",
