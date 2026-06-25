@@ -13,6 +13,16 @@ test.beforeEach(async ({ page }) => {
 test('group stage shows groups and a score updates the standings', async ({
   page,
 }) => {
+  // Freeze the clock so the Group-A MD3 inputs aren't already locked by
+  // the kickoff guard. The test targets MD3 (Mexico vs Czechia, 2026-06-24
+  // 19:00 ART), which is the last match in Group A to lock — once
+  // real-world time passes that kickoff `isLockedForPrediction` flips the
+  // inputs to disabled and the test breaks. Mocking the clock keeps the
+  // test date-independent so it survives the rest of the tournament.
+  // Must be installed before any navigation so the override is in place
+  // when the app boots.
+  await page.clock.install({ time: new Date('2026-06-20T12:00:00Z') });
+
   await installByName(page, 'FIFA World Cup 2026');
   await goto(page, '/tournament');
 
