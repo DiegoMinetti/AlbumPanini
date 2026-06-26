@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-26T21:02:50.918Z",
+  "generatedAt": "2026-06-26T21:46:21.752Z",
   "matches": [
     {
       "id": "m1",
@@ -616,8 +616,11 @@
     },
     {
       "id": "m53",
-      "status": "SCHEDULED",
+      "homeGoals": 1,
+      "awayGoals": 4,
+      "status": "FT",
       "kickoff": "2026-06-26T15:00:00.000-04:00",
+      "finishedAt": "2026-06-26T15:00:00.000-04:00",
       "venue": "Boston (Foxborough)",
       "group": "I",
       "stage": "group",
@@ -625,8 +628,11 @@
     },
     {
       "id": "m54",
-      "status": "SCHEDULED",
+      "homeGoals": 5,
+      "awayGoals": 0,
+      "status": "FT",
       "kickoff": "2026-06-26T15:00:00.000-04:00",
+      "finishedAt": "2026-06-26T15:00:00.000-04:00",
       "venue": "Toronto",
       "group": "I",
       "stage": "group",
