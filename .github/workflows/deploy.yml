@@ -18,10 +18,62 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Cheap gate mirroring the one in CI: the sync-official-results workflow
+  # pushes every 15 min during match windows and only touches
+  # public/official/worldcup-2026-results.json. The build/deploy jobs would
+  # re-bundle the same dist/ and re-publish the Pages artifact, so we skip
+  # them when only that file changed.
+  #
+  # Re-computed here instead of read from CI because workflow_run has no
+  # direct access to the upstream job outputs. Since this workflow only
+  # triggers on pushes to main (branches: [main] filter on workflow_run),
+  # the parent commit (head_sha^1) is always the correct base for the diff.
+  detect-data-only:
+    name: Detect data-only commit
+    runs-on: ubuntu-latest
+    outputs:
+      data-only: ${{ steps.check.outputs.data-only }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+
+      - id: check
+        run: |
+          # Manual dispatch — always run the full deploy.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "data-only=false" >> "$GITHUB_OUTPUT"
+            echo "Manual dispatch — running full deploy."
+            exit 0
+          fi
+          HEAD="${{ github.event.workflow_run.head_sha }}"
+          BASE="${HEAD}^1"
+          # Defensive: if HEAD has no parent (very first commit ever),
+          # treat as non-data-only so deploy still runs.
+          if ! git rev-parse --verify "$BASE" >/dev/null 2>&1; then
+            echo "data-only=false" >> "$GITHUB_OUTPUT"
+            echo "No parent commit for $HEAD — running full deploy."
+            exit 0
+          fi
+          NON_DATA=$(git diff --name-only "$BASE" "$HEAD" \
+            | grep -v '^public/official/worldcup-2026-results.json$' \
+            || true)
+          if [ -z "$NON_DATA" ]; then
+            echo "data-only=true" >> "$GITHUB_OUTPUT"
+            echo "Only public/official/worldcup-2026-results.json changed — skipping deploy."
+          else
+            echo "data-only=false" >> "$GITHUB_OUTPUT"
+            echo "Non-data changes detected — running full deploy."
+          fi
+
   build:
+    needs: detect-data-only
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+      (github.event.workflow_run.conclusion == 'success' &&
+       needs.detect-data-only.outputs.data-only != 'true')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
