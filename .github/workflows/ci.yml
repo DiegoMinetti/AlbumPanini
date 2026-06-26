@@ -26,8 +26,10 @@ jobs:
   #
   # Implemented as conditional jobs (not `paths-ignore` at the trigger)
   # so the workflow still completes successfully and the downstream
-  # deploy workflow_run still fires — the deployed Pages site keeps
-  # updating on every sync commit.
+  # deploy workflow_run still fires. Deploy has its own mirror of this
+  # gate (see .github/workflows/deploy.yml → detect-data-only) and will
+  # skip the Pages re-publish when only the JSON changed — the JSON is
+  # served from the raw URL at runtime, so dist/ does not change.
   detect-data-only:
     name: Detect data-only commit
     runs-on: ubuntu-latest
