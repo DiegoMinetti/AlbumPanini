@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-26T03:13:54.843Z",
+  "generatedAt": "2026-06-26T04:47:34.112Z",
   "matches": [
     {
       "id": "m1",
@@ -268,8 +268,11 @@
     },
     {
       "id": "m23",
-      "status": "SCHEDULED",
+      "homeGoals": 3,
+      "awayGoals": 2,
+      "status": "FT",
       "kickoff": "2026-06-25T19:00:00.000-07:00",
+      "finishedAt": "2026-06-25T19:00:00.000-07:00",
       "venue": "Los Angeles (Inglewood)",
       "group": "D",
       "stage": "group",
@@ -277,8 +280,11 @@
     },
     {
       "id": "m24",
-      "status": "SCHEDULED",
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "status": "FT",
       "kickoff": "2026-06-25T19:00:00.000-07:00",
+      "finishedAt": "2026-06-25T19:00:00.000-07:00",
       "venue": "San Francisco Bay Area (Santa Clara)",
       "group": "D",
       "stage": "group",
