@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-27T01:43:29.772Z",
+  "generatedAt": "2026-06-27T02:45:54.846Z",
   "matches": [
     {
       "id": "m1",
@@ -550,8 +550,11 @@
     },
     {
       "id": "m48",
-      "status": "SCHEDULED",
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "status": "FT",
       "kickoff": "2026-06-26T19:00:00.000-05:00",
+      "finishedAt": "2026-06-26T19:00:00.000-05:00",
       "venue": "Houston",
       "group": "H",
       "stage": "group",
@@ -559,8 +562,11 @@
     },
     {
       "id": "m47",
-      "status": "SCHEDULED",
+      "homeGoals": 0,
+      "awayGoals": 1,
+      "status": "FT",
       "kickoff": "2026-06-26T18:00:00.000-06:00",
+      "finishedAt": "2026-06-26T18:00:00.000-06:00",
       "venue": "Guadalajara (Zapopan)",
       "group": "H",
       "stage": "group",
