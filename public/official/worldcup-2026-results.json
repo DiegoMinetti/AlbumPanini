@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-27T04:24:44.559Z",
+  "generatedAt": "2026-06-27T05:48:57.421Z",
   "matches": [
     {
       "id": "m1",
@@ -484,8 +484,11 @@
     },
     {
       "id": "m42",
-      "status": "SCHEDULED",
+      "homeGoals": 1,
+      "awayGoals": 1,
+      "status": "FT",
       "kickoff": "2026-06-26T20:00:00.000-07:00",
+      "finishedAt": "2026-06-26T20:00:00.000-07:00",
       "venue": "Seattle",
       "group": "G",
       "stage": "group",
@@ -493,8 +496,11 @@
     },
     {
       "id": "m41",
-      "status": "SCHEDULED",
+      "homeGoals": 1,
+      "awayGoals": 5,
+      "status": "FT",
       "kickoff": "2026-06-26T20:00:00.000-07:00",
+      "finishedAt": "2026-06-26T20:00:00.000-07:00",
       "venue": "Vancouver",
       "group": "G",
       "stage": "group",
