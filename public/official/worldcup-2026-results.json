@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-27T22:38:00.930Z",
+  "generatedAt": "2026-06-27T23:07:58.070Z",
   "matches": [
     {
       "id": "m1",
@@ -832,8 +832,11 @@
     },
     {
       "id": "m71",
-      "status": "SCHEDULED",
+      "homeGoals": 0,
+      "awayGoals": 2,
+      "status": "FT",
       "kickoff": "2026-06-27T17:00:00.000-04:00",
+      "finishedAt": "2026-06-27T17:00:00.000-04:00",
       "venue": "New York/New Jersey (East Rutherford)",
       "group": "L",
       "stage": "group",
@@ -841,8 +844,11 @@
     },
     {
       "id": "m72",
-      "status": "SCHEDULED",
+      "homeGoals": 2,
+      "awayGoals": 1,
+      "status": "FT",
       "kickoff": "2026-06-27T17:00:00.000-04:00",
+      "finishedAt": "2026-06-27T17:00:00.000-04:00",
       "venue": "Philadelphia",
       "group": "L",
       "stage": "group",
