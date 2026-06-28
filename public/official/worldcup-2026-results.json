@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-28T00:57:14.268Z",
+  "generatedAt": "2026-06-28T01:49:56.310Z",
   "matches": [
     {
       "id": "m1",
@@ -766,8 +766,11 @@
     },
     {
       "id": "m65",
-      "status": "SCHEDULED",
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "status": "FT",
       "kickoff": "2026-06-27T19:30:00.000-04:00",
+      "finishedAt": "2026-06-27T19:30:00.000-04:00",
       "venue": "Miami (Miami Gardens)",
       "group": "K",
       "stage": "group",
@@ -775,8 +778,11 @@
     },
     {
       "id": "m66",
-      "status": "SCHEDULED",
+      "homeGoals": 3,
+      "awayGoals": 1,
+      "status": "FT",
       "kickoff": "2026-06-27T19:30:00.000-04:00",
+      "finishedAt": "2026-06-27T19:30:00.000-04:00",
       "venue": "Atlanta",
       "group": "K",
       "stage": "group",
