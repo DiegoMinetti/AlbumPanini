@@ -1,6 +1,6 @@
 {
   "source": "openfootball",
-  "generatedAt": "2026-06-28T03:13:56.944Z",
+  "generatedAt": "2026-06-28T04:52:40.886Z",
   "matches": [
     {
       "id": "m1",
@@ -700,8 +700,11 @@
     },
     {
       "id": "m60",
-      "status": "SCHEDULED",
+      "homeGoals": 3,
+      "awayGoals": 3,
+      "status": "FT",
       "kickoff": "2026-06-27T21:00:00.000-05:00",
+      "finishedAt": "2026-06-27T21:00:00.000-05:00",
       "venue": "Kansas City",
       "group": "J",
       "stage": "group",
@@ -709,8 +712,11 @@
     },
     {
       "id": "m59",
-      "status": "SCHEDULED",
+      "homeGoals": 1,
+      "awayGoals": 3,
+      "status": "FT",
       "kickoff": "2026-06-27T21:00:00.000-05:00",
+      "finishedAt": "2026-06-27T21:00:00.000-05:00",
       "venue": "Dallas (Arlington)",
       "group": "J",
       "stage": "group",
